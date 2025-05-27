@@ -1,0 +1,23 @@
+.chakra-ui-light :host:not([data-theme]), .chakra-ui-light :root:not([data-theme]), .chakra-ui-light [data-theme]:not([data-theme]), [data-theme=light] :host:not([data-theme]), [data-theme=light] :root:not([data-theme]), [data-theme=light] [data-theme]:not([data-theme]), :host[data-theme=light], :root[data-theme=light], [data-theme][data-theme=light] {
+    --chakra-colors-chakra-body-text: var(--chakra-colors-gray-800);
+    --chakra-colors-chakra-body-bg: var(--chakra-colors-white);
+    --chakra-colors-chakra-border-color: var(--chakra-colors-gray-200);
+    --chakra-colors-chakra-inverse-text: var(--chakra-colors-white);
+    --chakra-colors-chakra-subtle-bg: var(--chakra-colors-gray-100);
+    --chakra-colors-chakra-subtle-text: var(--chakra-colors-gray-600);
+    --chakra-colors-chakra-placeholder-color: var(--chakra-colors-gray-500);
+}
+
+section {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 600ms ease-in-out, padding-bottom 600ms ease-in-out;
+
+    display: block;
+    unicode-bidi: isolate;
+
+    border-width: 0;
+    border-style: solid;
+    box-sizing: border-box;
+    word-wrap: break-word;
+}
