@@ -1,68 +1,102 @@
 # Poliscope QGIS Plugin
 
-Das **Poliscope QGIS Plugin** ermöglicht es, Sitzungsdaten aus Ratsinformationssystemen (RIS) per API direkt in QGIS zu nutzen.
-Dadurch können kommunale Entscheidungsprozesse geografisch visualisiert und analysiert werden.
+Das offizielle QGIS Plugin für die Integration von Poliscope-Daten in Ihre GIS-Arbeitsumgebung.
 
-## 🔍 Funktionen
+## Über Poliscope
 
-- Abruf von Sitzungsdaten aus verschiedenen RIS über standardisierte APIs
-- Integration der Daten als Layer in QGIS
-- Geografische Visualisierung von kommunalen Entscheidungsprozessen
-- Unterstützung für mehrere Städte und Gemeinden
+Poliscope revolutioniert die Informations- und Datenbeschaffung für Projektentwickler im Bereich erneuerbarer Energien durch automatisierte Analyse von Kommunalpolitik. Mit einer zentralen API bringt Poliscope Transparenz und Effizienz in die kommunalpolitische Informationslandschaft Deutschlands.
 
-## 🚀 Installation
+## Features
 
-### Voraussetzungen
+- **🗺️ Direkte QGIS-Integration**: Nahtlose Einbindung kommunaler Planungsdaten in Ihre QGIS-Arbeitsumgebung
+- **🔍 Geografische Suche**: Suche nach Sitzungsdaten basierend auf dem aktuellen Kartenausschnitt
+- **📍 Fokusregionen**: Definieren Sie bevorzugte Regionen für automatische Updates
+- **📋 Merkliste**: Speichern und verwalten Sie wichtige Sitzungsdaten
+- **🔄 Live-Datenverbindung**: Echtzeit-Zugriff auf die Poliscope-Datenbank
+- **🎯 Erweiterte Filter**: Präzise Suchfilter für effiziente Datenanalyse
+- **🔒 Sichere API-Anbindung**: Verschlüsselte Verbindung über persönlichen API-Key
 
-- QGIS 3.10 oder höher
-- Python 3.7 oder höher
+## Systemanforderungen
 
-### Installation über QGIS Plugin-Manager
+- **QGIS**: Version 3.16 oder höher
+- **Python**: Version 3.7+
+- **Internet**: Aktive Internetverbindung erforderlich
+- **Account**: Gültiger Poliscope-Account mit API-Key
 
-1. Öffne QGIS.
-2. Gehe zu `Erweiterungen` > `Erweiterungen verwalten und installieren...`.
-3. Suche nach `Poliscope`.
-4. Klicke auf `Installieren`.
+## Installation
+
+### Über QGIS Plugin Manager (Empfohlen)
+
+1. QGIS öffnen
+2. **Plugins** → **Plugins verwalten und installieren**
+3. Nach **"Poliscope"** suchen
+4. Plugin installieren und aktivieren
 
 ### Manuelle Installation
 
-1. Repository klonen:
-   ```bash
-   git clone https://github.com/poliscope-de/poliscope-qgis-plugin.git
-   ```
+1. Plugin-ZIP aus dem [GitHub Repository](https://github.com/poliscope/qgis-plugin) herunterladen
+2. In QGIS: **Plugins** → **Plugins verwalten und installieren** → **Aus ZIP installieren**
+3. ZIP-Datei auswählen und installieren
 
-2. Den Ordner `poliscope-qgis-plugin` in das QGIS-Plugin-Verzeichnis kopieren:
-   - Windows:
-     ```
-     C:\Users\<Benutzername>\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\
-     ```
-   - macOS/Linux:
-     ```
-     ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
-     ```
+## Konfiguration
 
-3. QGIS neu starten und das Plugin unter `Erweiterungen` aktivieren.
+### 1. API-Key erstellen
 
-## 🛠️ Nutzung
+1. Besuchen Sie die [Poliscope GIS-Plugin Seite](https://www.poliscope.de/gis-plugin)
+2. Generieren Sie einen neuen API-Key
+3. **Wichtig**: Speichern Sie den Key sicher ab - er wird nur einmal angezeigt!
 
-1. Aktiviere das Plugin in QGIS.
-2. Wähle im Plugin-Menü die gewünschte Stadt oder Gemeinde aus.
-3. Die Sitzungsdaten werden als Layer in dein QGIS-Projekt geladen.
-4. Nutze die QGIS-Werkzeuge, um die Daten zu analysieren und zu visualisieren.
+### 2. Plugin konfigurieren
 
-## 📂 Projektstruktur
+1. In QGIS das Poliscope Plugin öffnen
+2. Auf das **Zahnrad-Icon** (Einstellungen) klicken
+3. API-Key einfügen
+4. **QGIS neu starten** (erforderlich!)
 
-- `api/` – Schnittstellen zu verschiedenen RIS
-- `resources/` – Icons und Ressourcen
-- `scripts/` – Hilfsskripte
-- `ui/` – Benutzeroberflächen
-- `utils/` – Hilfsfunktionen
+## Nutzung
 
+### Neuigkeiten Tab
+- Aktuelle Sitzungen aus Ihren Fokusregionen
+- Erstellen Sie Fokusregionen auf der Poliscope-Website
+- Nutzen Sie Filter zur Verfeinerung der Suche
+- Klicken Sie "Aktualisieren" nach Filteränderungen
 
-## 📞 Kontakt
+### Suche Tab
+- **Viewport-Suche**: Alle Sitzungen im aktuellen Kartenausschnitt
+- **Zentrale Suche**: Nur Verwaltungseinheit in der Kartenmitte
+- Ideal für gezielte Suchen in einzelnen Städten
 
-Für Fragen oder Anregungen: [info@poliscope.de](mailto:info@poliscope.de)
+### Merkliste Tab
+- Alle gespeicherten Sitzungen aus Plugin und Web-App
+- Gewohnte Filterfunktionen verfügbar
+- Synchronisation zwischen verschiedenen Poliscope-Anwendungen
+
+## Tipps & Tricks
+
+💡 **Kleiner Bildschirm**: Klappen Sie Filter zu für bessere Übersicht der Ergebnisse
+
+💡 **Präzise Suche**: Nutzen Sie die "Zentrum-Suche"-Option für exakte geografische Abgrenzung
+
+💡 **Automatische Updates**: Konfigurieren Sie Fokusregionen für relevante Gebiete
+
+## Support & Feedback
+
+- **🐛 Bugs & Features**: [GitHub Issues](https://github.com/poliscope-de/poliscope-qgis-plugin/issues)
+- **❓ Allgemeine Fragen**: [Kontaktseite](https://www.poliscope.de/kontakt)
+- **📧 Technischer Support**: support@poliscope.de
+
+## Lizenz
+
+Dieses Plugin steht unter der [GPL-3.0 license](LICENSE).
+
+## Entwicklung
+
+Interessiert an der Weiterentwicklung? Wir freuen uns über Contributions!
+
+## Über uns
+
+Poliscope GmbH ist ein Technologieführer im Bereich der kommunalpolitischen Datenanalyse mit Sitz in Lüneburg. Unser Ziel ist es, den Standard für politische Transparenz und datengetriebene Entscheidungsfindung in Deutschland zu setzen.
 
 ---
 
-*Hinweis: Dieses Plugin befindet sich in der aktiven Entwicklung. Funktionen können sich ändern.*
+**Poliscope GmbH** | Katzenstr. 1a, 21335 Lüneburg | [www.poliscope.de](https://www.poliscope.de)
