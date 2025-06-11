@@ -34,7 +34,7 @@ Poliscope revolutioniert die Informations- und Datenbeschaffung für Projektentw
 
 ### Manuelle Installation
 
-1. Plugin-ZIP aus dem [GitHub Repository](https://github.com/poliscope/qgis-plugin) herunterladen
+1. Plugin-ZIP aus dem [GitHub Repository](https://github.com/poliscope-de/poliscope-qgis-plugin) oder direkt unter [QGIS-Plugins](https://plugins.qgis.org/plugins/poliscope_qgis_plugin/) herunterladen
 2. In QGIS: **Plugins** → **Plugins verwalten und installieren** → **Aus ZIP installieren**
 3. ZIP-Datei auswählen und installieren
 
