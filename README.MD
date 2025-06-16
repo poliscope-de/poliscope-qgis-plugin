@@ -93,6 +93,15 @@ Dieses Plugin steht unter der [GPL-3.0 license](LICENSE).
 
 Interessiert an der Weiterentwicklung? Wir freuen uns über Contributions!
 
+### Erstellen einer installierbaren ZIP-Datei
+
+1. Kopiere das gesamte Plugin-Verzeichnis in einen neuen Ordner.
+2. Entferne das `.git` Verzeichnis.
+3. Benenne den Ordner um in `poliscope_qgis_plugin`
+4. Erstelle eine ZIP-Datei aus diesem Ordner.
+
+Punkt 1-3 sind nur für öffentliche Releases im QGIS Plugin Repository notwendig. Für lokale Installationen kann die ZIP-Datei direkt aus dem Repository erstellt werden.
+
 ## Über uns
 
 Poliscope GmbH ist ein Technologieführer im Bereich der kommunalpolitischen Datenanalyse mit Sitz in Lüneburg. Unser Ziel ist es, den Standard für politische Transparenz und datengetriebene Entscheidungsfindung in Deutschland zu setzen.
