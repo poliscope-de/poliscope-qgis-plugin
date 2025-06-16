@@ -506,7 +506,7 @@ class PoliscopePlugin:
                 self.addMissingApiKeyItemToList(self.dockwidget.watchlistList)
 
             # QGIS Plugin Version Prüfen
-            if Utils.get_plugin_version()[:3] != self.api.get_qgis_plugin_version()[:3]:
+            if self.api and Utils.get_plugin_version()[:3] != self.api.get_qgis_plugin_version()[:3]:
                 self.QGIS_PLUGIN_VERSION_UP2DATE = False
                 self.addWrongPluginVersionItemToList(self.dockwidget.newsList)
                 self.addWrongPluginVersionItemToList(
