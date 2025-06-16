@@ -20,9 +20,12 @@ repository=https://github.com/poliscope-de/poliscope-qgis-plugin
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=1.0.2 Fix a bug that prevents first install and setting the API-Key
+changelog=
+    1.0.2 Fix a bug that prevents first install and setting the API-Key
+	1.0.1 Edit Metadata 
+	1.0.0 First release
 
-homepage=https://www.poliscope.de
+homepage=https://app.poliscope.de/public/features/qgis-plugin
 category=Plugins
 icon=logo.png
 # experimental flag
