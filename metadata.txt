@@ -21,8 +21,8 @@ repository=https://github.com/poliscope-de/poliscope-qgis-plugin
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
-    1.0.3 Fix plugin sidebar not opening after project restart
-    1.0.2 Fix a bug that prevents first install and setting the API-Key
+	1.0.3 Fix plugin sidebar not opening after project restart
+	1.0.2 Fix a bug that prevents first install and setting the API-Key
 	1.0.1 Edit Metadata 
 	1.0.0 First release
 
