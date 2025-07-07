@@ -95,10 +95,9 @@ Interessiert an der Weiterentwicklung? Wir freuen uns über Contributions!
 
 ### Erstellen einer installierbaren ZIP-Datei
 
-1. Kopiere das gesamte Plugin-Verzeichnis in einen neuen Ordner.
+1. Kopiere das gesamte Plugin-Verzeichnis in einen neuen Ordner `poliscope_qgis_plugin`.
 2. Entferne das `.git` Verzeichnis.
-3. Benenne den Ordner um in `poliscope_qgis_plugin`
-4. Erstelle eine ZIP-Datei aus diesem Ordner.
+3. Erstelle eine ZIP-Datei aus diesem Ordner.
 
 Punkt 1-3 sind nur für öffentliche Releases im QGIS Plugin Repository notwendig. Für lokale Installationen kann die ZIP-Datei direkt aus dem Repository erstellt werden.
 
