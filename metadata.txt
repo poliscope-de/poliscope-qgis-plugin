@@ -6,7 +6,7 @@
 name=Poliscope Plugin
 qgisMinimumVersion=3.0
 description=KI-basiertes Crawling von Ratsinformationssystemen der 5.000+ Planungsträger optimiert Ihre Flächensicherung und verschafft den Wissensvorsprung am Erneuerbare Energie - Markt.
-version=1.0.2
+version=1.0.3
 author=Poliscope GmbH
 email=info@poliscope.de
 
@@ -21,6 +21,7 @@ repository=https://github.com/poliscope-de/poliscope-qgis-plugin
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+    1.0.3 Fix plugin sidebar not opening after project restart
     1.0.2 Fix a bug that prevents first install and setting the API-Key
 	1.0.1 Edit Metadata 
 	1.0.0 First release
