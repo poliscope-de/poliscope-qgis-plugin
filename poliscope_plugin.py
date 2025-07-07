@@ -101,8 +101,6 @@ class PoliscopePlugin:
         self.BBoxSearchClicked = False
         self.CenterSearchClicked = False
 
-        self.run()
-
     def tr(self, message):
         return QCoreApplication.translate('PoliscopePlugin', message)
 
