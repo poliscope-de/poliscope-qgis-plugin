@@ -516,8 +516,9 @@ class PoliscopePlugin:
             self.dockwidget.setWindowTitle(self.tr(u'Poliscope Plugin'))
             icon_path = ":/plugins/poliscope_plugin/resources/icons/icon.png"
             self.dockwidget.setWindowIcon(QIcon(icon_path))
-            self.dockwidget.show()
-            self.pluginIsActive = True
+
+        self.dockwidget.show()
+        self.pluginIsActive = True
 
     def addWrongPluginVersionItemToList(self, list_widget: QtWidgets.QListWidget):
         item_widget = ListWrongPluginVersionErrorWidget()
