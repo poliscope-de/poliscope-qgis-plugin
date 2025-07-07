@@ -99,7 +99,7 @@ Interessiert an der Weiterentwicklung? Wir freuen uns über Contributions!
 2. Entferne das `.git` Verzeichnis.
 3. Erstelle eine ZIP-Datei aus diesem Ordner.
 
-Punkt 1-3 sind nur für öffentliche Releases im QGIS Plugin Repository notwendig. Für lokale Installationen kann die ZIP-Datei direkt aus dem Repository erstellt werden.
+Punkte 1 + 2 sind nur für öffentliche Releases im QGIS Plugin Repository notwendig. Für lokale Installationen kann die ZIP-Datei direkt aus dem Repository erstellt werden.
 
 ## Über uns
 
