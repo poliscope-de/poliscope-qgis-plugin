@@ -27,7 +27,7 @@ changelog=
 	1.0.1 Edit Metadata 
 	1.0.0 First release
 
-homepage=https://app.poliscope.de/public/features/qgis-plugin
+homepage=https://app.poliscope.de/public/leistungen/qgis-plugin
 category=Plugins
 icon=logo.png
 # experimental flag
