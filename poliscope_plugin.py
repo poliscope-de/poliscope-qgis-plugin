@@ -571,15 +571,18 @@ class PoliscopePlugin:
                     if checkbox.isChecked():
                         checkedFocusregionsIDs.append(checkbox.property("id"))
 
-                self.entityRSCodes_news = self.getEntitiesByFokusregionIds(
-                    checkedFocusregionsIDs)
+                # Use focusregion endpoint if focusregions are selected
+                if checkedFocusregionsIDs:
+                    self.meetings_count_news = self.api.get_focusregion_meetings_count(
+                        filters=self.filter_news, focusregion_ids=checkedFocusregionsIDs)
 
-                self.meetings_count_news = self.api.get_meetings_count(
-                    filters=self.filter_news, entityRSCodes=self.entityRSCodes_news)
-
-                # Abrufen der Meetings
-                meetings = self.api.get_meetings(
-                    filters=self.filter_news, entityRSCodes=self.entityRSCodes_news, sortString=self.sortString_news)
+                    # Abrufen der Meetings
+                    meetings = self.api.get_focusregion_meetings(
+                        filters=self.filter_news, focusregion_ids=checkedFocusregionsIDs, sortString=self.sortString_news)
+                else:
+                    # No focusregions selected - return empty results
+                    self.meetings_count_news = 0
+                    meetings = []
 
                 if self.meetings_count_news == 0:
                     self.lMeetingCount_news.setText(
@@ -1333,8 +1336,20 @@ class PoliscopePlugin:
             if self.meetings_count_news > (self.currPage_news * 10):
                 self.currPage_news += 1
                 self.setRefNewsButton2Loading()
-                meetings = self.api.get_meetings(
-                    filters=self.filter_news, entityRSCodes=self.entityRSCodes_news, sortString=self.sortString_news, page=self.currPage_news)
+
+                # Get checked focusregions
+                checkedFocusregionsIDs = []
+                for checkbox in self.gbFocusregions_news.findChildren(QCheckBox):
+                    if checkbox.isChecked():
+                        checkedFocusregionsIDs.append(checkbox.property("id"))
+
+                # Use focusregion endpoint if focusregions are selected
+                if checkedFocusregionsIDs:
+                    meetings = self.api.get_focusregion_meetings(
+                        filters=self.filter_news, focusregion_ids=checkedFocusregionsIDs, sortString=self.sortString_news, page=self.currPage_news)
+                else:
+                    meetings = []
+
                 self.setMeetingsToList(meetings)
                 self.setRefNewsButton2Normal()
         else:

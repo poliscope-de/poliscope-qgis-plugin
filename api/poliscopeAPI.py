@@ -117,6 +117,8 @@ class MeetingsAPI:
     """
     MEETINGS_URL = "https://api.poliscope.de/v1/meetings/query"
     MEETINGS_COUNT_URL = "https://api.poliscope.de/v1/meetings/count"
+    MEETINGS_FOCUSREGIONS_URL = "https://api.poliscope.de/v1/meetings/focusregions/query"
+    MEETINGS_FOCUSREGIONS_COUNT_URL = "https://api.poliscope.de/v1/meetings/focusregions/count"
     MEETINGS_BOOKMARKED_URL = "https://api.poliscope.de/v1/meetings/bookmarked/query"
     MEETINGS_BOOKMARKED_COUNT_URL = url = "https://api.poliscope.de/v1/meetings/bookmarked/count"
     MEETINGS_BOOKMARK_URL = url = "https://api.poliscope.de/v1/meetings/{meeting_id}/bookmark"
@@ -178,6 +180,59 @@ class MeetingsAPI:
         payload = {"filter": filters, "entity_rs": entityRSCodes}
         response = requests.post(
             self.MEETINGS_COUNT_URL, json=payload, headers=self.headers)
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            response.raise_for_status()
+
+    def get_focusregion_meetings(self, filters: Optional[Dict[str, Any]] = None, focusregion_ids: Optional[List[str]] = None, sortString: Optional[str] = None, page: Optional[int] = 1) -> List[Meeting]:
+        """
+        Ruft Meetings von der API mit Fokusregionen-Filtern ab.
+        Diese Methode nutzt den speziellen Fokusregionen-Endpoint, der die konfigurierten
+        Scores und Topics der Fokusregionen auf Backend-Seite anwendet.
+        """
+        if not filters:
+            filters = {}
+
+        if not focusregion_ids:
+            focusregion_ids = []
+
+        payload = {"filter": filters, "fields": ["id", "url", "ris.id", "bookmarks.user.id",
+                                                 "ris.entities.rs", "ris.entities.name", "ris.entities.children.name",
+                                                 "ris.entities.parent.name", "ris.entities.parent.type", "ris.entities.parent.rs",
+                                                 "ris.entities.parent.parent.name", "ris.entities.parent.parent.type", "ris.entities.parent.parent.rs",
+                                                 "ris.entities.parent.parent.parent.name", "ris.entities.parent.parent.parent.type", "ris.entities.parent.parent.parent.rs",
+                                                 "lastStatusUpdate", "title", "description", "status", "date",
+                                                 "topics.publicProcedure.name", "topics.publicProcedure.description", "topics.topic",
+                                                 "solarScore", "windScore", "documents.type", "documents.url", "documents.file.title", "documents.file.id", "documents.file.type", "documents.file.filesize", "signals.agendaItems.agendaItem_id", "agendaItems.id", "agendaItems.description",
+                                                 "agendaItems.number", "agendaItems.title", "agendaItems.documents.url", "agendaItems.documents.file.title", "agendaItems.documents.file.filesize",
+                                                 "agendaItems.documents.file.id", "agendaItems.documents.file.type",
+                                                 ], "focusregion_ids": focusregion_ids, "sort": sortString, "page": page, "limit": 10}
+        response = requests.post(
+            self.MEETINGS_FOCUSREGIONS_URL, json=payload, headers=self.headers)
+        print(payload)
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, list):
+                return [Meeting(item) for item in data]
+            return [Meeting(item) for item in data.get("data", [])]
+        else:
+            response.raise_for_status()
+
+    def get_focusregion_meetings_count(self, filters: Optional[Dict[str, Any]] = None, focusregion_ids: Optional[List[str]] = None) -> int:
+        """
+        Ruft die Anzahl der Meetings von der API mit Fokusregionen-Filtern ab.
+        """
+        if not filters:
+            filters = {}
+
+        if not focusregion_ids:
+            focusregion_ids = []
+
+        payload = {"filter": filters, "focusregion_ids": focusregion_ids}
+        response = requests.post(
+            self.MEETINGS_FOCUSREGIONS_COUNT_URL, json=payload, headers=self.headers)
         if response.status_code == 200:
             data = response.json()
             return data
@@ -295,32 +350,18 @@ class MeetingsAPI:
 
     @staticmethod
     def create_wind_and_solar_score_filter(wind_strength: int, solar_strength: int) -> Dict[str, Any]:
-        return {
-            "signals": {
-                "_and": [
-                    {
-                        "_some": {
-                            "monitor": {
-                                "_eq": "39f29802-6d28-4e4b-a384-df486d84dd7c"  # Solar
-                            },
-                            "strength": {
-                                "_gte": solar_strength
-                            }
-                        }
-                    },
-                    {
-                        "_some": {
-                            "monitor": {
-                                "_eq": "49d66672-ed64-4f7a-8ca3-5afe51056ffe"  # Wind
-                            },
-                            "strength": {
-                                "_gte": wind_strength
-                            }
-                        }
-                    }
-                ]
-            }
-        }
+        filters = []
+        if wind_strength > 0:
+            filters.append({"windScore": {"_gte": wind_strength}})
+        if solar_strength > 0:
+            filters.append({"solarScore": {"_gte": solar_strength}})
+
+        if len(filters) == 0:
+            return {}
+        elif len(filters) == 1:
+            return filters[0]
+        else:
+            return {"_and": filters}
 
     @staticmethod
     def create_status_filter(status_list: List[str]) -> Dict[str, Any]:
