@@ -66,7 +66,7 @@
         <height>16</height>
        </size>
       </property>
-      <widget class="QWidget" name="tab_news">
+      <widget class="QWidget" name="tab_focusregion">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -74,7 +74,7 @@
         </sizepolicy>
        </property>
        <attribute name="title">
-        <string>Neuigkeiten</string>
+        <string>Fokusregionen</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -97,7 +97,7 @@
              </size>
             </property>
             <property name="title">
-             <string comment="dfgfdg" extracomment="dfgdfgfdg">Neuigkeiten filtern ( 09.03.25 - 09.05.25)</string>
+             <string>Fokusregionen filtern</string>
             </property>
             <property name="checkable">
              <bool>false</bool>
@@ -112,7 +112,7 @@
                 <enum>QLayout::SetMaximumSize</enum>
                </property>
                <item>
-                <widget class="QGroupBox" name="gbFocusregions_news">
+                <widget class="QGroupBox" name="gbFocusregions_focusregion">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                    <horstretch>0</horstretch>
@@ -171,7 +171,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="lDateOfMeeting_news">
+                <widget class="QLabel" name="lDateOfMeeting_focusregion">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                    <horstretch>0</horstretch>
@@ -201,7 +201,7 @@
                   <enum>QLayout::SetMaximumSize</enum>
                  </property>
                  <item>
-                  <widget class="QgsDateTimeEdit" name="mteBegin_news">
+                  <widget class="QgsDateTimeEdit" name="mteBegin_focusregion">
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
@@ -214,7 +214,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QgsDateTimeEdit" name="mteEnd_news">
+                  <widget class="QgsDateTimeEdit" name="mteEnd_focusregion">
                    <property name="dateTime">
                     <datetime>
                      <hour>0</hour>
@@ -242,28 +242,28 @@
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_21">
                  <item>
-                  <widget class="QPushButton" name="pbNext30Days_news">
+                  <widget class="QPushButton" name="pbNext30Days_focusregion">
                    <property name="text">
                     <string>Nächste 30 Tage</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbLast30Days_news">
+                  <widget class="QPushButton" name="pbLast30Days_focusregion">
                    <property name="text">
                     <string>Letzte 30 Tage</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbThisYear_news">
+                  <widget class="QPushButton" name="pbThisYear_focusregion">
                    <property name="text">
                     <string>Dieses Jahr</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbLastYear_news">
+                  <widget class="QPushButton" name="pbLastYear_focusregion">
                    <property name="text">
                     <string>Letztes Jahr</string>
                    </property>
@@ -276,7 +276,7 @@
                  <item>
                   <layout class="QVBoxLayout" name="verticalLayout_21">
                    <item>
-                    <widget class="QGroupBox" name="gbQuellen_news">
+                    <widget class="QGroupBox" name="gbQuellen_focusregion">
                      <property name="font">
                       <font>
                        <weight>75</weight>
@@ -288,7 +288,7 @@
                      </property>
                      <layout class="QGridLayout" name="gridLayout_3">
                       <item row="2" column="0">
-                       <widget class="QCheckBox" name="cbVorlagen_news">
+                       <widget class="QCheckBox" name="cbVorlagen_focusregion">
                         <property name="text">
                          <string>Vorlagen</string>
                         </property>
@@ -298,7 +298,7 @@
                        </widget>
                       </item>
                       <item row="0" column="0">
-                       <widget class="QCheckBox" name="cbTOPs_news">
+                       <widget class="QCheckBox" name="cbTOPs_focusregion">
                         <property name="text">
                          <string>TOPs</string>
                         </property>
@@ -308,7 +308,7 @@
                        </widget>
                       </item>
                       <item row="1" column="0">
-                       <widget class="QCheckBox" name="cbTOPBeschreibungen_news">
+                       <widget class="QCheckBox" name="cbTOPBeschreibungen_focusregion">
                         <property name="text">
                          <string>TOP Beschreibungen</string>
                         </property>
@@ -318,7 +318,7 @@
                        </widget>
                       </item>
                       <item row="3" column="0">
-                       <widget class="QCheckBox" name="cbVorlagenBeschreibungen_news">
+                       <widget class="QCheckBox" name="cbVorlagenBeschreibungen_focusregion">
                         <property name="text">
                          <string>Vorlagen Beschreibungen</string>
                         </property>
@@ -331,7 +331,7 @@
                        </widget>
                       </item>
                       <item row="4" column="0">
-                       <widget class="QCheckBox" name="cbDokumente_news">
+                       <widget class="QCheckBox" name="cbDokumente_focusregion">
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
@@ -361,7 +361,7 @@
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_4">
                    <item alignment="Qt::AlignTop">
-                    <widget class="QGroupBox" name="gbVerwaltungsebene_news">
+                    <widget class="QGroupBox" name="gbVerwaltungsebene_focusregion">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -391,7 +391,7 @@
                        <number>9</number>
                       </property>
                       <item row="0" column="0">
-                       <widget class="QCheckBox" name="cbPlanungsregionen_news">
+                       <widget class="QCheckBox" name="cbPlanungsregionen_focusregion">
                         <property name="text">
                          <string>Planungsregionen</string>
                         </property>
@@ -401,7 +401,7 @@
                        </widget>
                       </item>
                       <item row="1" column="0">
-                       <widget class="QCheckBox" name="cbLandkreise_news">
+                       <widget class="QCheckBox" name="cbLandkreise_focusregion">
                         <property name="text">
                          <string>Landkreise</string>
                         </property>
@@ -411,7 +411,7 @@
                        </widget>
                       </item>
                       <item row="2" column="0">
-                       <widget class="QCheckBox" name="cbGemeindeverbaende_news">
+                       <widget class="QCheckBox" name="cbGemeindeverbaende_focusregion">
                         <property name="text">
                          <string>Gemeindeverbände und Gemeinden</string>
                         </property>
@@ -449,7 +449,7 @@
                   <enum>QLayout::SetMaximumSize</enum>
                  </property>
                  <item>
-                  <widget class="QLabel" name="lSortBy_news">
+                  <widget class="QLabel" name="lSortBy_focusregion">
                    <property name="font">
                     <font>
                      <weight>75</weight>
@@ -468,7 +468,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="cbxSortierung_news">
+                  <widget class="QComboBox" name="cbxSortierung_focusregion">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -500,7 +500,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lMeetingCount_news">
+           <widget class="QLabel" name="lMeetingCount_focusregion">
             <property name="styleSheet">
              <string notr="true">color:#718096;</string>
             </property>
@@ -513,7 +513,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="newsList">
+           <widget class="QListWidget" name="focusregionList">
             <property name="autoFillBackground">
              <bool>true</bool>
             </property>
@@ -574,7 +574,7 @@
             <item row="0" column="1">
              <layout class="QVBoxLayout" name="verticalLayout_12">
               <item>
-               <widget class="QLabel" name="lblResultCount_news">
+               <widget class="QLabel" name="lblResultCount_focusregion">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -587,7 +587,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pbMehrLaden_news">
+               <widget class="QPushButton" name="pbMehrLaden_focusregion">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -630,7 +630,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QPushButton" name="newsRefButton">
+           <widget class="QPushButton" name="focusregionRefButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -643,7 +643,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pbOptions_news">
+           <widget class="QPushButton" name="pbOptions_focusregion">
             <property name="maximumSize">
              <size>
               <width>26</width>

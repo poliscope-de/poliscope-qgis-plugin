@@ -147,17 +147,28 @@ get_qgis_plugin_version()
 
 ### Step 5 — `ui/poliscope_plugin_dockwidget_base.ui`
 
-#### Neuigkeiten tab
-Remove: score buttons (wind/PV), status filter row, storage filter row, sort dropdown (ComboBox)
-Keep: date range (QgsDateTimeEdit from/to), Aktualisieren button, focus region checkboxes, collapsible filter box
+#### Fokusregionen tab (formerly Neuigkeiten)
+> All object names use `_focusregion` suffix (replacing `_news`).
+
+Remove: score buttons (wind/PV), status filter row, storage filter row, sort dropdown, checkboxes for focusregions
+Keep: date range (QgsDateTimeEdit from/to), Aktualisieren button, collapsible filter box
 Add:
-- `cbxSortierung_news` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
-- `gbQuellen_news` — QgsCollapsibleGroupBox "Quellen" (default: open) with checkboxes:
-  - `cbTOPs_news`, `cbTOPBeschreibungen_news`, `cbVorlagen_news`, `cbVorlagenBeschreibungen_news`, `cbDokumente_news` (all checked by default)
-- `gbVerwaltungsebene_news` — QGroupBox "Verwaltungsebene" with checkboxes:
-  - `cbPlanungsregionen_news`, `cbLandkreise_news`, `cbGemeindeverbaende_news` (all unchecked by default)
-- `lblResultCount_news` — QLabel ""
-- `pbMehrLaden_news` — QPushButton "Mehr laden" (hidden by default)
+- `gbFokusregionen_focusregion` — QGroupBox "Fokusregionen" containing one radio button per focusregion,
+  populated at runtime by `list_focusregions()` (pending endpoint from admin — see project_pending_endpoints.md).
+  Each entry renders as:
+    `rbFocusregion_{id}` — QRadioButton "[Name] (neu: X)"
+    `pbKomplettDurchsuchen_{id}` — QPushButton "komplett durchsuchen" (disabled until GET /focusregions/{id}
+    returns covered entityIds; on click: switch to Suche tab, pre-fill entity_ids filter, trigger search)
+  - "neu: X" count comes from `get_focusregion_counts()` (server-side tracking — consistent across browser and QGIS)
+  - After Aktualisieren: count resets server-side, call `get_focusregion_counts()` again to update display
+- `cbxSortierung_focusregion` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
+- `gbQuellen_focusregion` — QgsCollapsibleGroupBox "Quellen" (default: open) with checkboxes:
+  - `cbTOPs_focusregion`, `cbTOPBeschreibungen_focusregion`, `cbVorlagen_focusregion`,
+    `cbVorlagenBeschreibungen_focusregion`, `cbDokumente_focusregion` (all checked by default)
+- `gbVerwaltungsebene_focusregion` — QGroupBox "Verwaltungsebene" with checkboxes:
+  - `cbPlanungsregionen_focusregion`, `cbLandkreise_focusregion`, `cbGemeindeverbaende_focusregion` (all unchecked by default)
+- `lblResultCount_focusregion` — QLabel ""
+- `pbMehrLaden_focusregion` — QPushButton "Mehr laden" (hidden by default)
 
 #### Suche tab
 Remove: score buttons, status filter row, storage filter row
@@ -179,11 +190,11 @@ Add (inside collapsible filter box):
     - `rbTiefenrecherche_search` "Tiefenrecherche" — limit=250 (API searches ~750 candidates internally)
     - `rbUmfassend_search` "Umfassend" — limit=500 (API searches ~1500 candidates internally)
     - toolTip on gbSuchtiefe_search: "Höhere Suchtiefe erhöht die Ladezeit"
-  - `gbErgebnisqualitaet_search` — QGroupBox "Ergebnisqualität" with radio buttons (hidden when Keyword mode active):
-    - `rbTopTreffer_search` "Top-Treffer" — scoreThreshold=0.60
-    - `rbAusgewogen_search` "Ausgewogen" — scoreThreshold=0.35 (API default)
-    - `rbAlleTreffer_search` "Alle Treffer" — scoreThreshold=0.15
-    - toolTip on gbErgebnisqualitaet_search: "Top-Treffer ≥0.60 | Ausgewogen ≥0.35 | Alle Treffer ≥0.15"
+  - `gbScore_search` — QGroupBox "Score" with radio buttons (hidden when Keyword mode active):
+    - `rbPraezise_search` "Präzise (0.50)" — scoreThreshold=0.50
+    - `rbAusgewogen_search` "Ausgewogen (0.35)" — scoreThreshold=0.35 (API default)
+    - `rbBreit_search` "Breit (0.20)" — scoreThreshold=0.20
+    - toolTip on gbScore_search: "Präzise: nur sehr relevante Treffer | Ausgewogen: Standard | Breit: auch schwächere Treffer"
 
 - `cbxSortierung_search` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
   - Note: sort is client-side, applied per batch of 50 independently
@@ -315,27 +326,27 @@ Work through these in order. Widget names in `code` are the objectName to set in
 
 ### 1. `poliscope_plugin_dockwidget_base.ui`
 
-#### Tab: Neuigkeiten
-- [x] Remove wind score buttons (all 3)
-- [x] Remove PV/Solar score buttons (all 3)
-- [x] Remove status filter row (Alle / Mit Beschlussvorlage / Nur Beschlüsse)
-- [x] Remove storage filter row (Gespeichert / Nicht gespeichert / Versteckt)
-- [x] Change sort dropdown: `cbxSortierung_news` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
-- [x] Add `gbQuellen_news` — QgsCollapsibleGroupBox "Quellen" (default: open) with:
-  - [x] `cbTOPs_news` — QCheckBox "TOPs" (checked by default)
-  - [x] `cbTOPBeschreibungen_news` — QCheckBox "TOP Beschreibungen" (checked by default)
-  - [x] `cbVorlagen_news` — QCheckBox "Vorlagen" (checked by default)
-  - [x] `cbVorlagenBeschreibungen_news` — QCheckBox "Vorlagen Beschreibungen" (checked by default)
-  - [x] `cbDokumente_news` — QCheckBox "Dokumente" (checked by default)
-- [x] Add `gbVerwaltungsebene_news` — QGroupBox "Verwaltungsebene" with:
-  - [x] `cbPlanungsregionen_news` — QCheckBox "Planungsregionen" (unchecked by default)
-  - [x] `cbLandkreise_news` — QCheckBox "Landkreise" (unchecked by default)
-  - [x] `cbGemeindeverbaende_news` — QCheckBox "Gemeindeverbände & Gemeinden" (unchecked by default)
-- [x] Add below `newsList` (result list footer):
-  - [x] `lblResultCount_news` — QLabel ""
-  - [x] `pbMehrLaden_news` — QPushButton "Mehr laden" (hidden by default)
+#### Tab: Fokusregionen (formerly Neuigkeiten)
+- [ ] Rename tab label from "Neuigkeiten" to "Fokusregionen"
+- [ ] Rename all `_news` object names to `_focusregion`
+- [ ] Remove old focusregion checkboxes
+- [ ] Add `gbFokusregionen_focusregion` — QGroupBox "Fokusregionen" (populated at runtime, not in Qt Designer)
+- [ ] Add `cbxSortierung_focusregion` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
+- [ ] Add `gbQuellen_focusregion` — QgsCollapsibleGroupBox "Quellen" (default: open) with:
+  - [ ] `cbTOPs_focusregion` — QCheckBox "TOPs" (checked by default)
+  - [ ] `cbTOPBeschreibungen_focusregion` — QCheckBox "TOP Beschreibungen" (checked by default)
+  - [ ] `cbVorlagen_focusregion` — QCheckBox "Vorlagen" (checked by default)
+  - [ ] `cbVorlagenBeschreibungen_focusregion` — QCheckBox "Vorlagen Beschreibungen" (checked by default)
+  - [ ] `cbDokumente_focusregion` — QCheckBox "Dokumente" (checked by default)
+- [ ] Add `gbVerwaltungsebene_focusregion` — QGroupBox "Verwaltungsebene" with:
+  - [ ] `cbPlanungsregionen_focusregion` — QCheckBox "Planungsregionen" (unchecked by default)
+  - [ ] `cbLandkreise_focusregion` — QCheckBox "Landkreise" (unchecked by default)
+  - [ ] `cbGemeindeverbaende_focusregion` — QCheckBox "Gemeindeverbände & Gemeinden" (unchecked by default)
+- [ ] Add below result list (footer):
+  - [ ] `lblResultCount_focusregion` — QLabel ""
+  - [ ] `pbMehrLaden_focusregion` — QPushButton "Mehr laden" (hidden by default)
 
-Note: Suchmodus, Suchtiefe, Relevanz not added here — these are API-side params not supported by `/focusregions/{id}/results`
+Note: Suchmodus, Suchtiefe, Score not added here — not supported by `/focusregions/{id}/results`
 
 #### Tab: Suche
 - [x] Remove wind score buttons (all 3)
@@ -354,11 +365,11 @@ Note: Suchmodus, Suchtiefe, Relevanz not added here — these are API-side param
     - [x] `rbTiefenrecherche_search` — QRadioButton "Tiefenrecherche"
     - [x] `rbUmfassend_search` — QRadioButton "Umfassend"
     - [x] toolTip on gbSuchtiefe_search: "Höhere Suchtiefe erhöht die Ladezeit"
-  - [x] `gbErgebnisqualitaet_search` — QGroupBox "Ergebnisqualität" with:
-    - [x] `rbTopTreffer_search` — QRadioButton "Top-Treffer"
-    - [x] `rbAusgewogen_search` — QRadioButton "Ausgewogen" (checked by default)
-    - [x] `rbAlleTreffer_search` — QRadioButton "Alle Treffer"
-    - [x] toolTip on gbErgebnisqualitaet_search: "Top-Treffer ≥0.60 | Ausgewogen ≥0.35 | Alle Treffer ≥0.15"
+  - [ ] `gbScore_search` — QGroupBox "Score" (rename from "Ergebnisqualität", update objectName) with:
+    - [ ] `rbPraezise_search` — QRadioButton "Präzise (0.50)"
+    - [ ] `rbAusgewogen_search` — QRadioButton "Ausgewogen (0.35)" (checked by default)
+    - [ ] `rbBreit_search` — QRadioButton "Breit (0.20)"
+    - [ ] toolTip on gbScore_search: "Präzise: nur sehr relevante Treffer | Ausgewogen: Standard | Breit: auch schwächere Treffer"
 - [x] Add `cbxSortierung_search` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
 - [x] Add `gbQuellen_search` — QgsCollapsibleGroupBox "Quellen" (default: open) with:
   - [x] `cbTOPs_search` — QCheckBox "TOPs" (checked by default)
