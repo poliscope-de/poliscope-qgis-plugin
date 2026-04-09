@@ -1078,7 +1078,7 @@
                     <item>
                      <layout class="QVBoxLayout" name="verticalLayout_28">
                       <item>
-                       <widget class="QGroupBox" name="gbErgebnisqualitaet_search">
+                       <widget class="QGroupBox" name="gbScore_search">
                         <property name="font">
                          <font>
                           <weight>75</weight>
@@ -1086,23 +1086,23 @@
                          </font>
                         </property>
                         <property name="toolTip">
-                         <string>Top-Treffer ≥0.70 | Ausgewogen ≥0.50 | Alle Treffer ≥0.30</string>
+                         <string>Präzise: nur sehr relevante Treffer | Ausgewogen: Standard | Breit: auch schwächere Treffer</string>
                         </property>
                         <property name="title">
-                         <string>Ergebnisqualität</string>
+                         <string>Score</string>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_8">
                          <item row="0" column="0">
-                          <widget class="QRadioButton" name="rbTopTreffer_search">
+                          <widget class="QRadioButton" name="rbPraezise_search">
                            <property name="text">
-                            <string>Top-Treffer</string>
+                            <string>Präzise (0.50)</string>
                            </property>
                           </widget>
                          </item>
                          <item row="1" column="0">
                           <widget class="QRadioButton" name="rbAusgewogen_search">
                            <property name="text">
-                            <string>Ausgewogen</string>
+                            <string>Ausgewogen (0.35)</string>
                            </property>
                            <property name="checked">
                             <bool>true</bool>
@@ -1110,9 +1110,9 @@
                           </widget>
                          </item>
                          <item row="2" column="0">
-                          <widget class="QRadioButton" name="rbAlleTreffer_search">
+                          <widget class="QRadioButton" name="rbBreit_search">
                            <property name="text">
-                            <string>Alle Treffer</string>
+                            <string>Breit (0.20)</string>
                            </property>
                           </widget>
                          </item>
