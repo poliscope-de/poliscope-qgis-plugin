@@ -153,14 +153,23 @@ get_qgis_plugin_version()
 Remove: score buttons (wind/PV), status filter row, storage filter row, sort dropdown, checkboxes for focusregions
 Keep: date range (QgsDateTimeEdit from/to), Aktualisieren button, collapsible filter box
 Add:
-- `gbFokusregionen_focusregion` — QGroupBox "Fokusregionen" containing one radio button per focusregion,
-  populated at runtime by `list_focusregions()` (pending endpoint from admin — see project_pending_endpoints.md).
-  Each entry renders as:
-    `rbFocusregion_{id}` — QRadioButton "[Name] (neu: X)"
-    `pbKomplettDurchsuchen_{id}` — QPushButton "komplett durchsuchen" (disabled until GET /focusregions/{id}
-    returns covered entityIds; on click: switch to Suche tab, pre-fill entity_ids filter, trigger search)
-  - "neu: X" count comes from `get_focusregion_counts()` (server-side tracking — consistent across browser and QGIS)
-  - After Aktualisieren: count resets server-side, call `get_focusregion_counts()` again to update display
+- `gbFokusregionen_focusregion` — QGroupBox "Fokusregionen", populated entirely at runtime in code.
+  Layout: QVBoxLayout with one entry per focusregion, followed by two fixed action buttons at the bottom.
+
+  **Per focusregion entry (built in code, not Qt Designer):**
+  - `rbFocusregion_{id}` — QRadioButton "[Name] (neu: X)"
+  - `QLabel` (indented, small/grey) — "zuletzt aktualisiert: DD.MM.YYYY"
+    - Date comes from server if available via `list_focusregions()` or `lastVisited` field (pending admin)
+  - "neu: X" count from `get_focusregion_counts()` (server-side — consistent across browser and QGIS)
+  - After Aktualisieren: call `get_focusregion_counts()` again to refresh count display
+
+  **Fixed action buttons (once, at bottom of group box — act on selected radio button):**
+  - `pbInKarteZeigen_focusregion` — QPushButton "In Karte zeigen"
+    → zooms map to the selected focusregion's geographic extent
+  - `pbAlleInhalte_focusregion` — QPushButton "Alle Inhalte durchsuchen"
+    → tooltip: "Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten"
+    → on click: switch to Suche tab, pre-fill entity_ids with focusregion's covered entities, trigger search
+    → disabled until GET /focusregions/{id} returns covered entityIds (pending admin)
 - `cbxSortierung_focusregion` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
 - `gbQuellen_focusregion` — QgsCollapsibleGroupBox "Quellen" (default: open) with checkboxes:
   - `cbTOPs_focusregion`, `cbTOPBeschreibungen_focusregion`, `cbVorlagen_focusregion`,
@@ -327,24 +336,24 @@ Work through these in order. Widget names in `code` are the objectName to set in
 ### 1. `poliscope_plugin_dockwidget_base.ui`
 
 #### Tab: Fokusregionen (formerly Neuigkeiten)
-- [ ] Rename tab label from "Neuigkeiten" to "Fokusregionen"
-- [ ] Rename all `_news` object names to `_focusregion`
-- [ ] Remove old focusregion checkboxes
-- [ ] Add `gbFokusregionen_focusregion` — QGroupBox "Fokusregionen" (populated at runtime, not in Qt Designer)
-- [ ] Add `cbxSortierung_focusregion` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
-- [ ] Add `gbQuellen_focusregion` — QgsCollapsibleGroupBox "Quellen" (default: open) with:
-  - [ ] `cbTOPs_focusregion` — QCheckBox "TOPs" (checked by default)
-  - [ ] `cbTOPBeschreibungen_focusregion` — QCheckBox "TOP Beschreibungen" (checked by default)
-  - [ ] `cbVorlagen_focusregion` — QCheckBox "Vorlagen" (checked by default)
-  - [ ] `cbVorlagenBeschreibungen_focusregion` — QCheckBox "Vorlagen Beschreibungen" (checked by default)
-  - [ ] `cbDokumente_focusregion` — QCheckBox "Dokumente" (checked by default)
-- [ ] Add `gbVerwaltungsebene_focusregion` — QGroupBox "Verwaltungsebene" with:
-  - [ ] `cbPlanungsregionen_focusregion` — QCheckBox "Planungsregionen" (unchecked by default)
-  - [ ] `cbLandkreise_focusregion` — QCheckBox "Landkreise" (unchecked by default)
-  - [ ] `cbGemeindeverbaende_focusregion` — QCheckBox "Gemeindeverbände & Gemeinden" (unchecked by default)
-- [ ] Add below result list (footer):
-  - [ ] `lblResultCount_focusregion` — QLabel ""
-  - [ ] `pbMehrLaden_focusregion` — QPushButton "Mehr laden" (hidden by default)
+- [x ] Rename tab label from "Neuigkeiten" to "Fokusregionen"
+- [ x] Rename all `_news` object names to `_focusregion`
+- [x ] Remove old focusregion checkboxes
+- [x ] Add `gbFokusregionen_focusregion` — QGroupBox "Fokusregionen" (populated at runtime, not in Qt Designer)
+- [x ] Add `cbxSortierung_focusregion` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
+- [ x] Add `gbQuellen_focusregion` — QgsCollapsibleGroupBox "Quellen" (default: open) with:
+  - [x ] `cbTOPs_focusregion` — QCheckBox "TOPs" (checked by default)
+  - [ x] `cbTOPBeschreibungen_focusregion` — QCheckBox "TOP Beschreibungen" (checked by default)
+  - [ x] `cbVorlagen_focusregion` — QCheckBox "Vorlagen" (checked by default)
+  - [x ] `cbVorlagenBeschreibungen_focusregion` — QCheckBox "Vorlagen Beschreibungen" (checked by default)
+  - [x ] `cbDokumente_focusregion` — QCheckBox "Dokumente" (checked by default)
+- [ x] Add `gbVerwaltungsebene_focusregion` — QGroupBox "Verwaltungsebene" with:
+  - [x ] `cbPlanungsregionen_focusregion` — QCheckBox "Planungsregionen" (unchecked by default)
+  - [ x] `cbLandkreise_focusregion` — QCheckBox "Landkreise" (unchecked by default)
+  - [ x] `cbGemeindeverbaende_focusregion` — QCheckBox "Gemeindeverbände & Gemeinden" (unchecked by default)
+- [x ] Add below result list (footer):
+  - [x ] `lblResultCount_focusregion` — QLabel ""
+  - [ x] `pbMehrLaden_focusregion` — QPushButton "Mehr laden" (hidden by default)
 
 Note: Suchmodus, Suchtiefe, Score not added here — not supported by `/focusregions/{id}/results`
 
