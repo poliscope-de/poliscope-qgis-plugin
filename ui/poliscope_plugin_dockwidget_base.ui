@@ -975,7 +975,10 @@
                   <string>Sucheinstellungen</string>
                  </property>
                  <property name="collapsed">
-                  <bool>true</bool>
+                  <bool>false</bool>
+                 </property>
+                 <property name="saveCollapsedState">
+                  <bool>false</bool>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_9">
                   <item row="0" column="0">

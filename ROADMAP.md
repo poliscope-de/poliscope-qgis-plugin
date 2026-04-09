@@ -50,7 +50,7 @@ The plugin is being rewritten to use the new Poliscope API v2 (semantic vector s
 **Auth:** `Authorization: Bearer {api_key}` header (replaces query param)
 
 **New data models:**
-- `ChunkHit`: id, score, text, chunkType, highlights, agendaItemId, documentId, proposalId, poliscopeUrl
+- `ChunkHit`: id, score, text, chunkType (all required), highlights (Optional[List[Tuple[int, int]]] — character offset pairs [start, end] within text, only present when query terms appear literally), agendaItemId (Optional), documentId (Optional), proposalId (Optional), poliscopeUrl (Optional)
 - `ResultContext`: date, entityName, entityLevel, entityId, parents[], location, meeting?, proposal?, document?
 - `ResultGroup`: groupKey, groupType, score, hits (ChunkHit[]), totalHits, context (ResultContext)
 - `MapPoint`: lat, lon, score, entityId, entityName, groupKey
