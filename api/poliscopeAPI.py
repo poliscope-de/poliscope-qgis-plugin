@@ -24,6 +24,108 @@ import requests
 # ---------------------------------------------------------------------------
 
 @dataclass
+class Entity:
+    """
+    An administrative entity (Verwaltungseinheit) such as a municipality,
+    district, or planning region.
+
+    Returned by GET /entities. Field availability depends on the 'detail'
+    level requested: summary returns only id, name, level. standard and full
+    return all fields.
+
+    Fields:
+        id           — Regionalschlüssel (RS code) uniquely identifying the entity
+        name         — display name (e.g. "Aachen, Stadt")
+        level        — administrative level: "10"=Bundesland, "pr"=Planungsregion,
+                       "40"=Landkreis, "50"=Verbandsgemeinde, "60"=Kommune
+        population   — population count. Optional.
+        area         — area in km². Optional.
+        postal_code  — postal code. Optional.
+        city         — city name. Optional.
+        street       — street address. Optional.
+        location     — geographic coordinates {"lat", "lon"} in WGS84. Optional.
+        ris          — RIS metadata including provider and associated entities. Optional.
+        parent       — RS code of the parent entity. Optional.
+        state        — RS code of the Bundesland this entity belongs to. Optional.
+        weblinks     — list of related web links. Optional.
+        ai_summary   — AI-generated summary text. Optional.
+        ai_summary_date — date the AI summary was generated (ISO 8601). Optional.
+    """
+    id: str
+    name: str
+    level: str
+    population: Optional[int]
+    area: Optional[float]
+    postal_code: Optional[str]
+    city: Optional[str]
+    street: Optional[str]
+    location: Optional[Dict[str, float]]
+    ris: Optional[Dict[str, Any]]
+    parent: Optional[str]
+    state: Optional[str]
+    weblinks: Optional[List[Dict[str, Any]]]
+    ai_summary: Optional[str]
+    ai_summary_date: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Entity':
+        return cls(
+            id = data.get('id', ""),
+            name = data.get('name', ""),
+            level = data.get('level', "10"),
+            population = data.get('population'),
+            area = data.get('area'),
+            postal_code = data.get('postalCode'),
+            city = data.get('city'),
+            street = data.get('street'),
+            location = data.get('location'),
+            ris = data.get('ris'),
+            parent = data.get('parent'),
+            state = data.get('state'),
+            weblinks = data.get('weblinks'),
+            ai_summary = data.get('aiSummary'),
+            ai_summary_date = data.get('aiSummaryDate')
+        )
+
+@dataclass
+class FileContent:
+    """
+    OCR-extracted text content for a file, returned by GET /files/{id}/content.
+    Contains the full OCR result broken down by page, each with Markdown text.
+
+    Fields:
+        version      — OCR pipeline version string
+        model        — OCR model used for text extraction
+        processed_at — ISO 8601 timestamp when the file was processed
+        page_count   — total number of pages in the file
+        pages        — per-page OCR results. Each entry has 'page' (1-indexed int)
+                       and 'markdown' (extracted text as Markdown string, or null
+                       if the page could not be processed)
+        failed_pages — list of 1-indexed page numbers that failed OCR. The API
+                       marks this field as required but nullable — it will be None
+                       if the API returns null, or an empty list if all pages
+                       succeeded.
+    """
+    version: str
+    model: str
+    processed_at: str
+    page_count: int
+    pages: List[Dict[str, Any]]
+    failed_pages: Optional[List[int]]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'FileContent':
+        return cls(
+            version = data.get('version', ""),
+            model = data.get('model', ""),
+            processed_at = data.get('processedAt', ""),
+            page_count = data.get('pageCount', 0),
+            pages = data.get('pages', []),
+            failed_pages = data.get('failedPages')
+        )
+
+
+@dataclass
 class FileSummary:
     """
     Metadata for a file attachment, including its download URL.
@@ -121,22 +223,32 @@ class ChunkHit:
     up to 3 ChunkHits, sorted by relevance score descending.
 
     Fields:
-        id             — composite chunk identifier in the format 'groupKey:index'
-        score          — relevance score. Semantic mode: 0–1 (higher is more
-                         relevant). Keyword mode: unbounded. Scores are not
-                         comparable across modes.
-        text           — full text of the matching chunk
-        chunk_type     — content category of this chunk. One of:
-                         'agendaItemTitle', 'agendaItemDescription',
-                         'proposalTitle', 'proposalDescription', 'document'
-        highlights     — character offset pairs [startOffset, endOffset] within
-                         text, marking literal query term matches. Optional —
-                         only present when query terms appear literally in text.
-        agenda_item_id — ID of the source agenda item, if applicable. Optional.
-        document_id    — ID of the source document, if applicable. Optional.
-        proposal_id    — ID of the source proposal, if applicable. Optional.
-        poliscope_url  — relative URL path to view this hit in the Poliscope
-                         web app. Optional.
+        id                   — composite chunk identifier in the format
+                               'chunkType:sourceId:chunkIndex'
+        score                — relevance score. Semantic mode: 0–1 (higher is more
+                               relevant). Keyword mode: unbounded. Scores are not
+                               comparable across modes.
+        text                 — full text of the matching chunk
+        chunk_type           — content category of this chunk. One of:
+                               'agendaItemTitle', 'agendaItemDescription',
+                               'proposalTitle', 'proposalDescription', 'document'
+        highlights           — character offset pairs [startOffset, endOffset] within
+                               text, marking literal query term matches. Optional —
+                               only present when query terms appear literally in text.
+        agenda_item_id       — ID of the source agenda item, if applicable. Optional.
+        document_id          — ID of the source document, if applicable. Optional.
+        proposal_id          — ID of the source proposal, if applicable. Optional.
+        poliscope_url        — relative URL path to view this hit's context in the
+                               Poliscope web app. Optional.
+        page_from            — first page number in the source PDF (1-based). Optional.
+        page_to              — last page number in the source PDF (1-based). Optional.
+        page_from_offset_pct — approximate percentage (0–100) into page_from where
+                               this chunk starts. Useful for scrolling to position
+                               within the page. Optional.
+        file_url             — relative API path to the source file, including a
+                               #page= fragment when available (e.g.
+                               '/v2/files/{id}/download#page=4'). Only present for
+                               document-type chunks. Optional.
     """
     id: str
     score: float
@@ -147,6 +259,10 @@ class ChunkHit:
     document_id: Optional[str]
     proposal_id: Optional[str]
     poliscope_url: Optional[str]
+    page_from: Optional[float]
+    page_to: Optional[float]
+    page_from_offset_pct: Optional[float]
+    file_url: Optional[str]
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ChunkHit':
@@ -157,9 +273,13 @@ class ChunkHit:
             chunk_type=data.get('chunkType', ""),
             highlights=data.get('highlights'),
             agenda_item_id=data.get('agendaItemId'),
-            document_id=data.get("documentId"),                                                                                                       
-            proposal_id=data.get("proposalId"),                                                                                                       
-            poliscope_url=data.get("poliscopeUrl")
+            document_id=data.get("documentId"),
+            proposal_id=data.get("proposalId"),
+            poliscope_url=data.get("poliscopeUrl"),
+            page_from=data.get("pageFrom"),
+            page_to=data.get("pageTo"),
+            page_from_offset_pct=data.get("pageFromOffsetPct"),
+            file_url=data.get("fileUrl")
         )
     
 @dataclass
@@ -266,6 +386,62 @@ class ResultGroup:
             context = ResultContext.from_dict(data.get('context', {}))
         )
     
+@dataclass
+class Focusregion:
+    """
+    A saved search region with team membership and notification support.
+    Returned by GET /focusregions and GET /focusregions/{id}.
+
+    Fields:
+        id           — unique focus region identifier
+        name         — display name of the focus region. Optional.
+        type         — focus region type. Optional.
+        query        — saved search query string used for this region. Optional.
+        team         — list of team members. Each entry has userId (required),
+                       paused (bool), lastVisit (ISO 8601 or null),
+                       newResultsCount (number or null), and optionally
+                       firstName, lastName, email.
+        search_mode  — search mode for the saved query ("semantic" or
+                       "keyword"). Optional.
+        entity_ids   — list of Regionalschlüssel (RS codes) this region covers.
+                       Optional.
+        levels       — list of administrative level filters. Optional.
+        topics       — free-form topic data. Structure not yet defined in the
+                       spec (anyOf: any | null). Optional.
+        rpm_edits    — free-form RPM edit data. Structure not yet defined in
+                       the spec (anyOf: any | null). Optional.
+        rpm_entities — list of entity references, each with id, name, level.
+                       Optional.
+    """
+    id: str
+    name: Optional[str]
+    type: Optional[str]
+    query: Optional[str]
+    team: List[Dict[str, Any]]
+    search_mode: Optional[str]
+    entity_ids: Optional[List[str]]
+    levels: Optional[List[str]]
+    topics: Optional[Any]
+    rpm_edits: Optional[Any]
+    rpm_entities: Optional[List[Dict[str, Any]]]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Focusregion':
+        return cls(
+            id = data.get('id', ""),
+            name = data.get('name'),
+            type = data.get('type'),
+            query = data.get('query'),
+            team = data.get('team', []),
+            search_mode = data.get('searchMode'),
+            entity_ids = data.get('entityIds'),
+            levels = data.get('levels'),
+            topics = data.get('topics'),
+            rpm_edits = data.get('rpmEdits'),
+            rpm_entities = data.get('rpmEntities')
+        )
+
+
 @dataclass
 class DocumentSummary:
     """
@@ -473,70 +649,6 @@ class Proposal:
         )
     
 
-@dataclass
-class Entity:
-    """
-    An administrative entity (Verwaltungseinheit) such as a municipality,
-    district, or planning region.
-
-    Returned by GET /entities. Field availability depends on the 'detail'
-    level requested: summary returns only id, name, level. standard and full
-    return all fields.
-
-    Fields:
-        id           — Regionalschlüssel (RS code) uniquely identifying the entity
-        name         — display name (e.g. "Aachen, Stadt")
-        level        — administrative level: "10"=Bundesland, "pr"=Planungsregion,
-                       "40"=Landkreis, "50"=Verbandsgemeinde, "60"=Kommune
-        population   — population count. Optional.
-        area         — area in km². Optional.
-        postal_code  — postal code. Optional.
-        city         — city name. Optional.
-        street       — street address. Optional.
-        location     — geographic coordinates {"lat", "lon"} in WGS84. Optional.
-        ris          — RIS metadata including provider and associated entities. Optional.
-        parent       — RS code of the parent entity. Optional.
-        state        — RS code of the Bundesland this entity belongs to. Optional.
-        weblinks     — list of related web links. Optional.
-        ai_summary   — AI-generated summary text. Optional.
-        ai_summary_date — date the AI summary was generated (ISO 8601). Optional.
-    """
-    id: str
-    name: str
-    level: str
-    population: Optional[int]
-    area: Optional[float]
-    postal_code: Optional[str]
-    city: Optional[str]
-    street: Optional[str]
-    location: Optional[Dict[str, float]]
-    ris: Optional[Dict[str, Any]]
-    parent: Optional[str]
-    state: Optional[str]
-    weblinks: Optional[List[Dict[str, Any]]]
-    ai_summary: Optional[str]
-    ai_summary_date: Optional[str]
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Entity':
-        return cls(
-            id = data.get('id', ""),
-            name = data.get('name', ""),
-            level = data.get('level', "10"),
-            population = data.get('population'),
-            area = data.get('area'),
-            postal_code = data.get('postalCode'),
-            city = data.get('city'),
-            street = data.get('street'),
-            location = data.get('location'),
-            ris = data.get('ris'),
-            parent = data.get('parent'),
-            state = data.get('state'),
-            weblinks = data.get('weblinks'),
-            ai_summary = data.get('aiSummary'),
-            ai_summary_date = data.get('aiSummaryDate')
-        )
-
 
 class PoliscopeAPI:
     """
@@ -575,6 +687,46 @@ class PoliscopeAPI:
         return None
 
     
+    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, limit=None, offset=None, detail=None):
+        """
+        List administrative entities with optional filtering and pagination.
+        Returns a tuple (list[Entity], meta) where meta contains pagination info,
+        or (None, None) on error.
+
+        Parameters:
+            q         — filter by name (case-insensitive substring)
+            level     — filter by administrative level ("10", "40", "50", "60", "pr")
+            parent_id — filter by parent entity RS code
+            state_id  — filter by Bundesland RS code
+            limit     — max results to return (default 10, max 500)
+            offset    — pagination offset (default 0)
+            detail    — response detail level: "summary", "standard", or "full"
+        """
+        params = {
+            "q": q,
+            "level": level,
+            "parentId": parent_id,
+            "stateId": state_id,
+            "limit": limit,
+            "offset": offset,
+            "detail": detail
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+
+        try:
+            response = requests.get(f"{self.BASE_URL}/entities", headers=self.headers, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                entities = [Entity.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return entities, meta
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return (None, None)
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen der Verwaltungseinheiten: {e}")
+        return (None, None)
+
     def get_entity(self, id: str, detail=None):
         """
         Fetch a single administrative entity by its Regionalschlüssel (RS code).
@@ -620,6 +772,59 @@ class PoliscopeAPI:
             print(f"[Exception] Fehler beim Abrufen der Datei: {e}")
         return None
     
+    def get_file_content(self, id: str):
+        """
+        Fetch OCR-extracted text content for a file by ID.
+        Returns a FileContent object with per-page Markdown text, or None on error or if not found.
+
+        Parameters:
+            id — unique file identifier. Required.
+        """
+        try:
+            response = requests.get(f"{self.BASE_URL}/files/{id}/content", headers=self.headers)
+            if response.status_code == 200:
+                data = response.json()
+                return FileContent.from_dict(data["data"])
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return None
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen des Dateiinhalts: {e}")
+        return None
+    
+    def get_focusregions(self, limit=None, offset=None, detail=None):
+        """
+        List focus regions where the authenticated user is a team member.
+        Returns a tuple (list[Focusregion], meta) where meta contains pagination
+        info, or (None, None) on error.
+
+        Parameters:
+            limit  — max results to return (API default 10, max 500)
+            offset — pagination offset (API default 0)
+            detail — response detail level: "summary" (API default), "standard",
+                     or "full"
+        """
+        params = {
+            'limit': limit,
+            'offset': offset,
+            'detail': detail
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+
+        try:
+            response = requests.get(f"{self.BASE_URL}/focusregions", headers=self.headers, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                focusregions = [Focusregion.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return focusregions, meta
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return (None, None)
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen der Fokusregionen: {e}")
+        return (None, None)
+
     def get_focusregion_counts(self):
         """
         Fetch the number of new search results per focus region for the authenticated user.
@@ -639,6 +844,95 @@ class PoliscopeAPI:
             print(f"[Exception] Fehler beim Abrufen der Fokusregionanzahl: {e}")
         return None
     
+    def get_focusregion(self, id: str, detail=None):
+        """
+        Fetch a single focus region by ID.
+        The authenticated user must be a team member of this focus region.
+        Returns a Focusregion object, or None on error or if not found.
+
+        Parameters:
+            id     — focus region ID. Required.
+            detail — response detail level: "summary", "standard" (default),
+                     or "full"
+        """
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = requests.get(f"{self.BASE_URL}/focusregions/{id}", headers=self.headers, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                return Focusregion.from_dict(data["data"])
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return None
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen der Fokusregion (ID: {id}): {e}")
+        return None
+
+    def mark_focusregion_visited(self, id: str):
+        """
+        Record a visit to a focus region for the authenticated user.
+        Sets the user's lastVisit timestamp to now, which resets the new
+        results counter returned by get_focusregion_counts().
+        Returns True on success, False on error or if not found.
+
+        Parameters:
+            id — focus region ID. Required.
+        """
+        try:
+            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/visit", headers=self.headers)
+            if response.status_code == 204:
+                return True
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            print(f"[Exception] Fehler beim Aktualisieren des Zeitstempels: {e}")
+        return False
+    
+    def pause_focusregion(self, id: str):
+        """
+        Pause this focus region for the authenticated user.
+        Pausing is per-user — other team members are unaffected. While paused,
+        new results are no longer counted for this user in get_focusregion_counts().
+        Returns True on success, False on error or if not found.
+
+        Parameters:
+            id — focus region ID. Required.
+        """
+        try:
+            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/pause", headers=self.headers)
+            if response.status_code == 204:
+                return True
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            print(f"[Exception] Fehler beim Pausieren der Fokusregion: {e}")
+        return False    
+    
+    def unpause_focusregion(self, id: str):
+        """
+        Resume this focus region for the authenticated user after it was paused.
+        New results will be counted again in get_focusregion_counts().
+        Returns True on success, False on error or if not found.
+
+        Parameters:
+            id — focus region ID. Required.
+        """
+        try:
+            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/unpause", headers=self.headers)
+            if response.status_code == 204:
+                return True
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            print(f"[Exception] Fehler beim Aufheben der Pausierung der Fokusregion: {e}")
+        return False
+
     def get_focusregion_results(self, id: str, new_since=None):
         """
         Execute a saved focus region search and return results.
@@ -668,98 +962,6 @@ class PoliscopeAPI:
         except Exception as e:
             print(f"[Exception] Fehler beim Abrufen der Fokusregionergebnisse: {e}")
         return None, None, None
-    
-    def get_meeting(self, id: str, detail=None):
-        """
-        Fetch a single meeting by ID, including its agenda items, documents, and bookmarks.
-        Returns a Meeting object, or None on error or if not found.
-
-        Parameters:
-            id     — unique meeting identifier. Required.
-            detail — response detail level: "summary", "standard" (default), or "full"
-        """
-
-        params = {}
-        if detail is not None:
-            params["detail"] = detail
-
-        try:
-            response = requests.get(f"{self.BASE_URL}/meetings/{id}", headers=self.headers, params=params)
-            if response.status_code == 200:
-                data = response.json()
-                return Meeting.from_dict(data["data"])
-            else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
-                return None
-        except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Sitzung: {e}")
-        return None
-    
-    def get_proposal(self, id: str, detail=None):
-        """
-        Fetch a single proposal by ID, including its documents and agenda items.
-        Returns a Proposal object, or None on error or if not found.
-
-        Parameters:
-            id     — unique proposal identifier. Required.
-            detail — response detail level: "summary", "standard" (default), or "full"
-        """
-
-        params = {}
-        if detail is not None:
-            params["detail"] = detail
-
-        try:
-            response = requests.get(f"{self.BASE_URL}/proposals/{id}", headers=self.headers, params=params)
-            if response.status_code == 200:
-                data = response.json()
-                return Proposal.from_dict(data["data"])
-            else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
-                return None
-        except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Vorlage: {e}")
-        return None
-    
-    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, limit=None, offset=None, detail=None):
-        """
-        List administrative entities with optional filtering and pagination.
-        Returns a tuple (list[Entity], meta) where meta contains pagination info,
-        or (None, None) on error.
-
-        Parameters:
-            q         — filter by name (case-insensitive substring)
-            level     — filter by administrative level ("10", "40", "50", "60", "pr")
-            parent_id — filter by parent entity RS code
-            state_id  — filter by Bundesland RS code
-            limit     — max results to return (default 10, max 500)
-            offset    — pagination offset (default 0)
-            detail    — response detail level: "summary", "standard", or "full"
-        """
-        params = {
-            "q": q,
-            "level": level,
-            "parentId": parent_id,
-            "stateId": state_id,
-            "limit": limit,
-            "offset": offset,
-            "detail": detail
-        }
-        params = {k: v for k, v in params.items() if v is not None}
-
-        try:
-            response = requests.get(f"{self.BASE_URL}/entities", headers=self.headers, params=params)
-            if response.status_code == 200:
-                data = response.json()
-                entities = [Entity.from_dict(item) for item in data["data"]]
-                meta = data["meta"]
-                return entities, meta
-            else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
-                return (None, None)
-        except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Verwaltungseinheiten: {e}")
-        return (None, None)
     
     def list_meetings(self, limit=None, offset=None, detail=None, entity_ids=None, from_date=None, to_date=None):
         """
@@ -800,6 +1002,130 @@ class PoliscopeAPI:
         except Exception as e:
             print(f"[Exception] Fehler beim Abrufen der Sitzungsliste: {e}")
         return (None, None)
+
+    def get_bookmarked_meetings(self, limit=None, offset=None, detail=None):
+        """
+        List meetings bookmarked by the authenticated user.
+        Returns a tuple (list[Meeting], meta) where meta contains pagination
+        info, or (None, None) on error.
+
+        Parameters:
+            limit  — max results to return (API default 10, max 500)
+            offset — pagination offset (API default 0)
+            detail — response detail level: "summary" (API default), "standard",
+                     or "full"
+        """
+        params = {
+        'limit': limit,
+        'offset': offset,
+        'detail': detail
+        }
+        params = {k: v for k,v in params.items() if v is not None}
+
+        try:
+            response = requests.get(f"{self.BASE_URL}/meetings/bookmarked", headers=self.headers, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                bookmarked_meetings = [Meeting.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return bookmarked_meetings, meta
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return (None, None)
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen der Merkliste: {e}")
+        return (None, None)
+
+    def add_bookmarked_meeting(self, id: str):
+        """
+        Bookmark a meeting for the authenticated user. Idempotent — calling
+        this on an already-bookmarked meeting has no effect.
+        Returns True on success, False on error.
+
+        Parameters:
+            id — unique meeting identifier. Required.
+        """
+        try:
+            response = requests.post(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers)
+            if response.status_code == 204:
+                return True
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            print(f"[Exception] Fehler beim Hinzufügen zur Merkliste: {e}")
+        return False
+    
+    def remove_bookmarked_meeting(self, id: str):
+        """
+        Remove a bookmark from a meeting for the authenticated user.
+        Returns True on success, False on error or if the bookmark does not exist.
+
+        Parameters:
+            id — unique meeting identifier. Required.
+        """
+        try:
+            response = requests.delete(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers)
+            if response.status_code == 204:
+                return True
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            print(f"[Exception] Fehler beim Entfernen von der Merkliste: {e}")
+        return False
+
+    def get_meeting(self, id: str, detail=None):
+        """
+        Fetch a single meeting by ID, including its agenda items, documents, and bookmarks.
+        Returns a Meeting object, or None on error or if not found.
+
+        Parameters:
+            id     — unique meeting identifier. Required.
+            detail — response detail level: "summary", "standard" (default), or "full"
+        """
+
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = requests.get(f"{self.BASE_URL}/meetings/{id}", headers=self.headers, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                return Meeting.from_dict(data["data"])
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return None
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen der Sitzung: {e}")
+        return None
+
+    def get_proposal(self, id: str, detail=None):
+        """
+        Fetch a single proposal by ID, including its documents and agenda items.
+        Returns a Proposal object, or None on error or if not found.
+
+        Parameters:
+            id     — unique proposal identifier. Required.
+            detail — response detail level: "summary", "standard" (default), or "full"
+        """
+
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = requests.get(f"{self.BASE_URL}/proposals/{id}", headers=self.headers, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                return Proposal.from_dict(data["data"])
+            else:
+                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                return None
+        except Exception as e:
+            print(f"[Exception] Fehler beim Abrufen der Vorlage: {e}")
+        return None
     
     def search(self, q: str, mode=None, types=None, entity_ids=None, bbox=None, levels=None, date_from=None, date_to=None, new_since=None, limit=None, score_threshold=None):
         """

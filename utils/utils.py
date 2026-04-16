@@ -14,7 +14,7 @@ from pathlib import Path
 import math
 
 
-from ..api.poliscopeAPI import Meeting
+from ..api.poliscopeAPI import ResultContext
 
 
 class Utils:
@@ -77,17 +77,11 @@ class Utils:
         return f"{image} {text}"
 
     @staticmethod
-    def buildRISBreadcrumbs(meeting: Meeting) -> str:
+    def buildRISBreadcrumbs(context: ResultContext) -> str:
         breadcrumbs = []
-        if meeting.great_grandparent_name and meeting.great_grandparent_type not in ["0"]:
-            breadcrumbs.append(Utils.convertRSTypes(
-                meeting.great_grandparent_type)+": "+meeting.great_grandparent_name)
-        if meeting.grandparent_name and meeting.grandparent_type not in ["0"]:
-            breadcrumbs.append(Utils.convertRSTypes(
-                meeting.grandparent_type)+": "+meeting.grandparent_name)
-        if meeting.parent_name and meeting.parent_type not in ["0"]:
-            breadcrumbs.append(Utils.convertRSTypes(
-                meeting.parent_type)+": "+meeting.parent_name)
+        for parent in context.parents:
+            if parent["level"] != "0":
+                breadcrumbs.append(Utils.convertRSTypes(parent["level"]) + ": " + parent["name"])
         return " > ".join(breadcrumbs)
 
     @staticmethod
@@ -108,59 +102,8 @@ class Utils:
             return ""
 
     @staticmethod
-    def convertSortStringToAPI(sortString):
-        if sortString == "Aktuellste Neuigkeiten zuerst":
-            return "-lastStatusUpdate"
-        elif sortString == "Zukünftige Sitzungen zuerst":
-            return "-date"
-        elif sortString == "Älteste Sitzung zuerst":
-            return "date"
-        elif sortString == "Älteste Neuigkeiten zuerst":
-            return "lastStatusUpdate"
-        else:
-            return ""
-
-    @staticmethod
-    def setPVScore(uiItem, pvScore):
-        if pvScore == 1:
-            uiItem.pbPVScore1.setChecked(True)
-        elif pvScore == 2:
-            uiItem.pbPVScore1.setChecked(True)
-            uiItem.pbPVScore2.setChecked(True)
-        elif pvScore == 3:
-            uiItem.pbPVScore1.setChecked(True)
-            uiItem.pbPVScore2.setChecked(True)
-            uiItem.pbPVScore3.setChecked(True)
-
-    @staticmethod
-    def setWindScore(uiItem, windScore):
-        if windScore == 1:
-            uiItem.pbWindScore1.setChecked(True)
-        elif windScore == 2:
-            uiItem.pbWindScore1.setChecked(True)
-            uiItem.pbWindScore2.setChecked(True)
-        elif windScore == 3:
-            uiItem.pbWindScore1.setChecked(True)
-            uiItem.pbWindScore2.setChecked(True)
-            uiItem.pbWindScore3.setChecked(True)
-
-    @staticmethod
-    def setLineIcon(uiItem, status):
-        plugin_dir = os.path.dirname(os.path.abspath(__file__))
-        line1Pixmap = Utils.load_svg_high_quality(os.path.join(
-            plugin_dir, "../resources/icons/Line/1_items.svg"),380, 24)
-        line2Pixmap = Utils.load_svg_high_quality(os.path.join(
-            plugin_dir, "../resources/icons/Line/2_items.svg"),380, 24)
-        line3Pixmap = Utils.load_svg_high_quality(os.path.join(
-            plugin_dir, "../resources/icons/Line/3_items.svg"),380, 24)
-
-        if status == "termin":
-            uiItem.lLine.setPixmap(QtGui.QPixmap(line1Pixmap))
-        if status == "vorlage":
-            uiItem.lLine.setPixmap(QtGui.QPixmap(line2Pixmap))
-        if status == "beschluss":
-            uiItem.lLine.setPixmap(QtGui.QPixmap(line3Pixmap))
-
+    def format_score(score: float) -> str:
+        return f"{round(score * 100)}%"
     @staticmethod
     def format_bytes(bytes_value: int) -> str:
         if bytes_value < 1024:

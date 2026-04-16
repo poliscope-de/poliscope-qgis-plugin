@@ -164,9 +164,11 @@ Add:
   - After Aktualisieren: call `get_focusregion_counts()` again to refresh count display
 
   **Fixed action buttons (once, at bottom of group box — act on selected radio button):**
-  - `pbInKarteZeigen_focusregion` — QPushButton "In Karte zeigen"
+  - `pbInKarteAnzeigen_focusregion` — QPushButton "In Karte anzeigen"
     → zooms map to the selected focusregion's geographic extent
-  - `pbAlleInhalte_focusregion` — QPushButton "Alle Inhalte durchsuchen"
+    → implementation pending: waiting for GET /focusregions/{id} from admin to return covered entityIds
+    → fallback when results are loaded: compute bbox from context.location across all ResultGroups
+  - `pbInSucheOeffnen_focusregion` — QPushButton "In Suche öffnen"
     → tooltip: "Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten"
     → on click: switch to Suche tab, pre-fill entity_ids with focusregion's covered entities, trigger search
     → disabled until GET /focusregions/{id} returns covered entityIds (pending admin)
@@ -374,11 +376,11 @@ Note: Suchmodus, Suchtiefe, Score not added here — not supported by `/focusreg
     - [x] `rbTiefenrecherche_search` — QRadioButton "Tiefenrecherche"
     - [x] `rbUmfassend_search` — QRadioButton "Umfassend"
     - [x] toolTip on gbSuchtiefe_search: "Höhere Suchtiefe erhöht die Ladezeit"
-  - [ ] `gbScore_search` — QGroupBox "Score" (rename from "Ergebnisqualität", update objectName) with:
-    - [ ] `rbPraezise_search` — QRadioButton "Präzise (0.50)"
-    - [ ] `rbAusgewogen_search` — QRadioButton "Ausgewogen (0.35)" (checked by default)
-    - [ ] `rbBreit_search` — QRadioButton "Breit (0.20)"
-    - [ ] toolTip on gbScore_search: "Präzise: nur sehr relevante Treffer | Ausgewogen: Standard | Breit: auch schwächere Treffer"
+  - [x ] `gbScore_search` — QGroupBox "Score" (rename from "Ergebnisqualität", update objectName) with:
+    - [ x] `rbPraezise_search` — QRadioButton "Präzise (0.50)"
+    - [ x] `rbAusgewogen_search` — QRadioButton "Ausgewogen (0.35)" (checked by default)
+    - [ x] `rbBreit_search` — QRadioButton "Breit (0.20)"
+    - [ x] toolTip on gbScore_search: "Präzise: nur sehr relevante Treffer | Ausgewogen: Standard | Breit: auch schwächere Treffer"
 - [x] Add `cbxSortierung_search` — QComboBox, items: "Relevanz", "Datum (neueste zuerst)", "Datum (älteste zuerst)"
 - [x] Add `gbQuellen_search` — QgsCollapsibleGroupBox "Quellen" (default: open) with:
   - [x] `cbTOPs_search` — QCheckBox "TOPs" (checked by default)
@@ -429,12 +431,26 @@ Note: Suchmodus, Suchtiefe, Score not added here — not supported by `/focusreg
 
 ### 3. `detail_dialog.ui`
 
-- [ ] Remove wind score button row (`pbWind1`, `pbWind2`, `pbWind3`)
-- [ ] Remove PV score button row (`pbPV1`, `pbPV2`, `pbPV3`)
-- [ ] Remove `lStatus` — status icon label
-- [ ] Remove `gbTopics` — topics group box
+- [ x] Remove wind score button row (`pbWind1`, `pbWind2`, `pbWind3`)
+- [ x] Remove PV score button row (`pbPV1`, `pbPV2`, `pbPV3`)
+- [ x] Remove `lStatus` — status icon label
+- [ x] Remove `gbTopics` — topics group box
 
 ---
+
+## Pending — waiting for admin API
+
+- **`pbInKarteAnzeigen_focusregion`** — zoom map to focusregion extent
+  Waiting for `GET /focusregions/{id}` to return covered entityIds.
+  Plan: fetch entity locations for those IDs → compute bbox → call `openLocationInQGIS()`.
+  Fallback (available now): compute bbox from `context.location` across loaded ResultGroups.
+
+- **`pbInSucheOeffnen_focusregion`** — open Suche tab pre-filled for this focusregion
+  Waiting for `GET /focusregions/{id}` to return covered entityIds.
+  Plan: switch to Suche tab, set entity_ids filter, trigger search.
+
+- **`list_focusregions()`** — populate focusregion radio buttons with names + lastVisited date
+  Waiting for `GET /focusregions` endpoint from admin.
 
 ## Open Questions
 - none currently
