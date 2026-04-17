@@ -503,55 +503,55 @@ zuletzt aktualisiert: 16.05.2025</string>
                  <property name="sizeConstraint">
                   <enum>QLayout::SetMaximumSize</enum>
                  </property>
-                 <item>
-                  <widget class="QLabel" name="lSortBy_focusregion">
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Sunken</enum>
-                   </property>
-                   <property name="text">
-                    <string>Sortieren nach</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="cbxSortierung_focusregion">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>Relevanz</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Datum (neueste zuerst)</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Datum (älteste zuerst)</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
                 </layout>
                </item>
               </layout>
              </item>
             </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lSortBy_focusregion">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Sunken</enum>
+            </property>
+            <property name="text">
+             <string>Sortieren nach</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cbxSortierung_focusregion">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Relevanz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Datum (neueste zuerst)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Datum (älteste zuerst)</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item>
@@ -751,15 +751,6 @@ zuletzt aktualisiert: 16.05.2025</string>
           <property name="placeholderText">
            <string>Suchbegriff eingeben…</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="wBeliebteSuchen_search" native="true">
-          <layout class="QGridLayout" name="gridLayout_13">
-           <item row="0" column="0">
-            <layout class="QHBoxLayout" name="horizontalLayout_7"/>
-           </item>
-          </layout>
          </widget>
         </item>
         <item>
@@ -1048,7 +1039,7 @@ zuletzt aktualisiert: 16.05.2025</string>
                   <string>Sucheinstellungen</string>
                  </property>
                  <property name="collapsed">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="saveCollapsedState">
                   <bool>false</bool>
@@ -1294,7 +1285,7 @@ zuletzt aktualisiert: 16.05.2025</string>
                    <string notr="true">color:#718096;</string>
                   </property>
                   <property name="text">
-                   <string>50 vom 127 Ergenissen</string>
+                   <string>0 von 0 Ergebnissen</string>
                   </property>
                  </widget>
                 </item>

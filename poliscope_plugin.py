@@ -250,6 +250,7 @@ class PoliscopePlugin:
                 QtWidgets.QPushButton, "pbMehrLaden_search")
             self.pbMehrLaden_search.clicked.connect(self.loadMore_search)
             self.pbMehrLaden_search.setVisible(False)
+            self.lblResultCount_search.setText("")
 
             # BBox / Zentrum Suche Buttons
             self.searchBbSearchButton = self.dockwidget.findChild(
@@ -636,9 +637,17 @@ class PoliscopePlugin:
             else:
                 item_widget.pbOpenRIS.setEnabled(False)
 
-            # Poliscope Web-URL aus erstem ChunkHit
-            if result_group.hits and result_group.hits[0].poliscope_url:
-                web_url = "https://app.poliscope.de" + result_group.hits[0].poliscope_url
+            # Poliscope Web-URL
+            entity_id = result_group.context.entity_id
+            item_id = result_group.group_key.split(":", 1)[1] if ":" in result_group.group_key else ""
+            if result_group.group_type == "meeting" and entity_id and item_id:
+                web_url = f"https://poliscope.de/app/entity/{entity_id}/meeting/{item_id}"
+                if result_group.hits and result_group.hits[0].agenda_item_id:
+                    web_url += f"/agenda-item/{result_group.hits[0].agenda_item_id}"
+                item_widget.pbWeb.clicked.connect(
+                    lambda checked=False, url=web_url: webbrowser.open(url))
+            elif result_group.group_type == "proposal" and entity_id and item_id:
+                web_url = f"https://poliscope.de/app/entity/{entity_id}/proposal/{item_id}"
                 item_widget.pbWeb.clicked.connect(
                     lambda checked=False, url=web_url: webbrowser.open(url))
             else:
