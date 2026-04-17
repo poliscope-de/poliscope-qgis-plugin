@@ -60,7 +60,6 @@ class PoliscopePlugin:
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
-            
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
 
@@ -157,19 +156,22 @@ class PoliscopePlugin:
 
             #########################
             # Tab Suche
-            #Suchanfrage
+
+            # Suchanfrage
             self.leQuery_search = self.dockwidget.findChild(
                 QtWidgets.QLineEdit, "leQuery_search")
-            
-            #Suche Filtern Box
+
+            # Suche Filtern Box
             self.cgbSearch = self.dockwidget.findChild(
-                QgsCollapsibleGroupBox, "cgbSearch")            
-            ##Suchzeitraum
+                QgsCollapsibleGroupBox, "cgbSearch")
+
+            ## Suchzeitraum
             self.dateBegin_search = self.dockwidget.findChild(
                 QtWidgets.QDateTimeEdit, "mteBegin_search")
             self.dateEnd_search = self.dockwidget.findChild(
                 QtWidgets.QDateTimeEdit, "mteEnd_search")
-            ##Zeit Buttons
+
+            ## Zeit Buttons
             self.dockwidget.pbLast30Days_search.clicked.connect(
                 self.setDateLast30Days_search)
             self.dockwidget.pbNext30Days_search.clicked.connect(
@@ -178,7 +180,8 @@ class PoliscopePlugin:
                 self.setDateLastYear_search)
             self.dockwidget.pbThisYear_search.clicked.connect(
                 self.setDateThisYear_search)
-            ##Quellen
+
+            ## Quellen
             self.cbTOPs_search = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbTOPs_search")
             self.cbTOPBeschreibungen_search = self.dockwidget.findChild(
@@ -189,30 +192,38 @@ class PoliscopePlugin:
                 QtWidgets.QCheckBox, "cbVorlagenBeschreibungen_search")
             self.cbDokumente_search = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbDokumente_search")
-            ##Verwaltungsebene
+
+            ## Verwaltungsebene
             self.cbPlanungsregionen_search = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbPlanungsregionen_search")
             self.cbLandkreise_search = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbLandkreise_search")
             self.cbGemeindeverbaende_search = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbGemeindeverbaende_search")
-            
-            #Sucheinstellungen
+
+            # Sucheinstellungen
             self.gbSucheinstellungen_search = self.dockwidget.findChild(
                 QgsCollapsibleGroupBox, "gbSucheinstellungen_search")
-            ##Suchmodus
+
+            ## Suchmodus
             self.rbSemantisch_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbSemantisch_search")
             self.rbKeyword_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbKeyword_search")
-            ##Suchtiefe
+            self.gbScore_search = self.dockwidget.findChild(
+                QGroupBox, "gbScore_search")
+            self.rbSemantisch_search.toggled.connect(self.onSuchmodusChanged)
+            self.rbKeyword_search.toggled.connect(self.onSuchmodusChanged)
+
+            ## Suchtiefe
             self.rbSchnellsuche_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbSchnellsuche_search")
             self.rbTiefenrecherche_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbTiefenrecherche_search")
             self.rbUmfassend_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbUmfassend_search")
-            ##Score
+
+            ## Score
             self.rbPraezise_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbPraezise_search")
             self.rbAusgewogen_search = self.dockwidget.findChild(
@@ -220,38 +231,256 @@ class PoliscopePlugin:
             self.rbBreit_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbBreit_search")
 
-            #Sortierung
+            # Sortierung
             self.cbxSortierung_search = self.dockwidget.findChild(
                 QtWidgets.QComboBox, "cbxSortierung_search")
-            
-            #Meetings
+            self.cbxSortierung_search.currentIndexChanged.connect(self.onSortingChanged)
+
+            # Meetings
             ## Meetingliste
             self.searchList = self.dockwidget.findChild(
                 QtWidgets.QListWidget, "searchList")
-            ##Anzahl der Meetings
+            ## Anzahl der Meetings
             self.lMeetingCount_search = self.dockwidget.findChild(
                 QtWidgets.QLabel, "lMeetingCount_search")
-            ##Anzahl der Meetings im Vergleich zu allen Ergebnissen
+            ## Anzahl der Ergebnisse vs. angezeigte
             self.lblResultCount_search = self.dockwidget.findChild(
                 QtWidgets.QLabel, "lblResultCount_search")
             self.pbMehrLaden_search = self.dockwidget.findChild(
                 QtWidgets.QPushButton, "pbMehrLaden_search")
-            self.dockwidget.clicked.connect(self.loadMore_search)
-
-    # Die nächsten 50 Ergebnisse Laden für die Suche
-    def loadMore_search(self):
-        next_batch = self.results_search[self.displayedCount_search:self.displayedCount_search+50]
-        self.setResultsToList(next_batch, self.searchList)
-        self.displayedCount_search.setText(
-            f"{self.displayedCount_search} von {len(self.results_search)} Ergebnissen"
-        if self.dispayedCount_search >= len(self.results_search):
+            self.pbMehrLaden_search.clicked.connect(self.loadMore_search)
             self.pbMehrLaden_search.setVisible(False)
-        )
-    
-    #Datumsfunktionen
-    ## Datumsfunktionen für die Fokusregion
-    def setCgbTitleSearch(self, dateString):
-        self.cbgFocusregion.setTitle(f"Fokusregion filtern ({dateString})")
+
+            # BBox / Zentrum Suche Buttons
+            self.searchBbSearchButton = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "searchBbSearchButton")
+            self.searchCenterSearchButton = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "searchCenterSearchButton")
+            self.searchBbSearchButton.clicked.connect(self.onBBoxSearchClicked)
+            self.searchCenterSearchButton.clicked.connect(self.onCenterSearchClicked)
+
+            # Options (Zahnrad)
+            self.pbOptions_search = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbOptions_search")
+            self.pbOptions_search.clicked.connect(self.openOptions)
+
+            # Enable/disable search buttons depending on API key
+            has_api = self.api is not None
+            self.searchBbSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
+            self.searchCenterSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
+
+            # Startdatum: letztes Jahr bis heute + 2 Monate
+            today = date.today()
+            today_last_year = today - relativedelta(years=1)
+            today_plus_two_months = today + relativedelta(months=2)
+            self.dateBegin_search.setDate(
+                QDate(today_last_year.year, today_last_year.month, today_last_year.day))
+            self.dateEnd_search.setDate(
+                QDate(today_plus_two_months.year, today_plus_two_months.month, today_plus_two_months.day))
+            self.setCgbTitleSearch(
+                today_last_year.strftime("%d.%m.%y") + " - " + today_plus_two_months.strftime("%d.%m.%y"))
+
+            self.pluginIsActive = True
+
+    # BBox / Zentrum Suche
+    def onBBoxSearchClicked(self):
+        self.BBoxSearchClicked = True
+        self.CenterSearchClicked = False
+        self.btnHandlerRefresh_search()
+
+    def onCenterSearchClicked(self):
+        self.CenterSearchClicked = True
+        self.BBoxSearchClicked = False
+        self.btnHandlerRefresh_search()
+
+    # Options-Dialog (API-Key eingeben)
+    def openOptions(self):
+        settings = QSettings()
+        settings.beginGroup("PoliscopePlugin")
+        current_key = settings.value("api_key", "", type=str)
+        settings.endGroup()
+
+        new_key, ok = QInputDialog.getText(
+            None, "API-Key", "Bitte API-Key eingeben:", text=current_key)
+        if ok and new_key:
+            settings = QSettings()
+            settings.beginGroup("PoliscopePlugin")
+            settings.setValue("api_key", new_key)
+            settings.endGroup()
+            self.api = PoliscopeAPI(api_key=new_key)
+            self.searchBbSearchButton.setEnabled(True)
+            self.searchCenterSearchButton.setEnabled(True)
+
+    # Score-Box ausgrauen wenn Keyword-Modus aktiv
+    def onSuchmodusChanged(self):
+        self.gbScore_search.setEnabled(self.rbSemantisch_search.isChecked())
+
+    # Suche ausführen
+    def btnHandlerRefresh_search(self):
+        if not self.api:
+            return
+
+        # Query
+        q = self.leQuery_search.text().strip()
+        if not q:
+            return
+
+        # Suchmodus
+        mode = "semantic" if self.rbSemantisch_search.isChecked() else "keyword"
+
+        # Suchtiefe → limit
+        if self.rbTiefenrecherche_search.isChecked():
+            limit = 250
+        elif self.rbUmfassend_search.isChecked():
+            limit = 500
+        else:
+            limit = 50
+
+        # Score-Schwelle (nur bei semantisch relevant)
+        if mode == "semantic":
+            if self.rbPraezise_search.isChecked():
+                score_threshold = 0.50
+            elif self.rbBreit_search.isChecked():
+                score_threshold = 0.20
+            else:
+                score_threshold = 0.35
+        else:
+            score_threshold = None
+
+        # Quellen → types
+        type_map = {
+            self.cbTOPs_search: "agendaItemTitle",
+            self.cbTOPBeschreibungen_search: "agendaItemDescription",
+            self.cbVorlagen_search: "proposalTitle",
+            self.cbVorlagenBeschreibungen_search: "proposalDescription",
+            self.cbDokumente_search: "document",
+        }
+        selected_types = [v for cb, v in type_map.items() if cb.isChecked()]
+        types = ",".join(selected_types) if selected_types else None
+
+        # Verwaltungsebene → levels
+        level_map = {
+            self.cbPlanungsregionen_search: "pr",
+            self.cbLandkreise_search: "40",
+            self.cbGemeindeverbaende_search: "50,60",
+        }
+        selected_levels = [v for cb, v in level_map.items() if cb.isChecked()]
+        levels = ",".join(selected_levels) if selected_levels else None
+
+        # Datum
+        date_from = self.dateBegin_search.date().toString("yyyy-MM-dd")
+        date_to = self.dateEnd_search.date().toString("yyyy-MM-dd")
+
+        # BBox oder Zentrum
+        bbox = None
+        if self.BBoxSearchClicked:
+            bbox = Utils.get_current_canvas_bbox_polygon_epsg4326(self.iface)
+            if bbox:
+                lons = [p[0] for p in bbox]
+                lats = [p[1] for p in bbox]
+                bbox = f"{min(lons)},{min(lats)},{max(lons)},{max(lats)}"
+        elif self.CenterSearchClicked:
+            center_polygon = Utils.get_current_canvas_bbox_center_epsg4326(self.iface)
+            if center_polygon:
+                lons = [p[0] for p in center_polygon]
+                lats = [p[1] for p in center_polygon]
+                bbox = f"{min(lons)},{min(lats)},{max(lons)},{max(lats)}"
+
+        # Ladeindikator einschalten
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.searchBbSearchButton.setEnabled(False)
+        self.searchCenterSearchButton.setEnabled(False)
+
+        try:
+            result_groups, map_points, meta = self.api.search(
+                q=q,
+                mode=mode,
+                types=types,
+                bbox=bbox,
+                levels=levels,
+                date_from=date_from,
+                date_to=date_to,
+                limit=limit,
+                score_threshold=score_threshold
+            )
+        finally:
+            QApplication.restoreOverrideCursor()
+            self.searchBbSearchButton.setEnabled(True)
+            self.searchCenterSearchButton.setEnabled(True)
+
+        if result_groups is None:
+            return
+
+        # Ergebnisse speichern und Liste zurücksetzen
+        self.results_search = result_groups
+        self.displayedCount_search = 0
+        self.nr = 0
+        self.searchList.clear()
+
+        # Sortieren und erste 50 anzeigen
+        sorted_results = self.sortResults(self.results_search)
+        first_batch = sorted_results[:50]
+        self.setResultsToList(first_batch, self.searchList)
+        self.displayedCount_search = len(first_batch)
+
+        # Anzahl-Label aktualisieren
+        total = len(self.results_search)
+        if total == 0:
+            self.lMeetingCount_search.setText("Keine Sitzungen gefunden")
+        elif total == 1:
+            self.lMeetingCount_search.setText("1 Sitzung gefunden")
+        else:
+            self.lMeetingCount_search.setText(f"{total} Sitzungen gefunden")
+
+        self.lblResultCount_search.setText(
+            f"{self.displayedCount_search} von {total} Ergebnissen")
+
+        # "Mehr laden" einblenden wenn nötig
+        if total > 50:
+            self.pbMehrLaden_search.setVisible(True)
+            self.pbMehrLaden_search.setEnabled(True)
+        else:
+            self.pbMehrLaden_search.setVisible(False)
+
+    # Sofort neu sortieren wenn Sortierung geändert wird
+    def onSortingChanged(self):
+        if not self.results_search:
+            return
+        self.nr = 0
+        self.searchList.clear()
+        sorted_results = self.sortResults(self.results_search)
+        first_batch = sorted_results[:self.displayedCount_search or 50]
+        self.setResultsToList(first_batch, self.searchList)
+
+    # Ergebnisse nach aktueller Sortierung sortieren
+    def sortResults(self, results):
+        sort_text = self.cbxSortierung_search.currentText()
+        if sort_text == "Datum (neueste zuerst)":
+            return sorted(results,
+                key=lambda rg: rg.context.date or "", reverse=True)
+        elif sort_text == "Datum (älteste zuerst)":
+            return sorted(results,
+                key=lambda rg: rg.context.date or "")
+        return results  # "Relevanz" — API-Reihenfolge beibehalten
+
+    # Die nächsten 50 Ergebnisse laden
+    def loadMore_search(self):
+        sorted_results = self.sortResults(self.results_search)
+        next_batch = sorted_results[
+            self.displayedCount_search:self.displayedCount_search + 50]
+        self.setResultsToList(next_batch, self.searchList)
+        self.displayedCount_search += len(next_batch)
+
+        total = len(self.results_search)
+        self.lblResultCount_search.setText(
+            f"{self.displayedCount_search} von {total} Ergebnissen")
+
+        if self.displayedCount_search >= total:
+            self.pbMehrLaden_search.setVisible(False)
+
+    # Datumsfunktionen für die Fokusregion
+    def setCgbTitleFocusregion(self, dateString):
+        self.cgbFocusregion.setTitle(f"Fokusregion filtern ({dateString})")
 
     def setDateLast30Days_focusregion(self):
         today = date.today()
@@ -259,9 +488,8 @@ class PoliscopePlugin:
         self.dateBegin_focusregion.setDate(
             QDate(last_30_days.year, last_30_days.month, last_30_days.day))
         self.dateEnd_focusregion.setDate(QDate(today.year, today.month, today.day))
-        end_str = today.strftime("%d.%m.%y")
-        begin_str = last_30_days.strftime("%d.%m.%y")
-        self.setCgbTitleFocusregion(begin_str + " - " + end_str)
+        self.setCgbTitleFocusregion(
+            last_30_days.strftime("%d.%m.%y") + " - " + today.strftime("%d.%m.%y"))
 
     def setDateNext30Days_focusregion(self):
         today = date.today()
@@ -269,30 +497,29 @@ class PoliscopePlugin:
         self.dateBegin_focusregion.setDate(QDate(today.year, today.month, today.day))
         self.dateEnd_focusregion.setDate(
             QDate(next_30_days.year, next_30_days.month, next_30_days.day))
-        begin_str = today.strftime("%d.%m.%y")
-        end_str = next_30_days.strftime("%d.%m.%y")
-        self.setCgbTitleFocusregion(begin_str + " - " + end_str)
+        self.setCgbTitleFocusregion(
+            today.strftime("%d.%m.%y") + " - " + next_30_days.strftime("%d.%m.%y"))
 
     def setDateThisYear_focusregion(self):
         today = date.today()
         self.dateBegin_focusregion.setDate(QDate(today.year, 1, 1))
         self.dateEnd_focusregion.setDate(QDate(today.year, 12, 31))
-        begin_str = date(today.year, 1, 1).strftime("%d.%m.%y")
-        end_str = date(today.year, 12, 31).strftime("%d.%m.%y")
-        self.setCgbTitleFocusregion(begin_str + " - " + end_str)
+        self.setCgbTitleFocusregion(
+            date(today.year, 1, 1).strftime("%d.%m.%y") + " - " +
+            date(today.year, 12, 31).strftime("%d.%m.%y"))
 
     def setDateLastYear_focusregion(self):
         today = date.today()
         last_year = today.year - 1
         self.dateBegin_focusregion.setDate(QDate(last_year, 1, 1))
         self.dateEnd_focusregion.setDate(QDate(last_year, 12, 31))
-        begin_str = date(last_year, 1, 1).strftime("%d.%m.%y")
-        end_str = date(last_year, 12, 31).strftime("%d.%m.%y")
-        self.setCgbTitleFocusregion(begin_str + " - " + end_str)
+        self.setCgbTitleFocusregion(
+            date(last_year, 1, 1).strftime("%d.%m.%y") + " - " +
+            date(last_year, 12, 31).strftime("%d.%m.%y"))
 
-    ## Datumsfunktionen für die Search
-    def setCbgTitleSearch(self, dateString):
-        self.cgbSearch.setTtitle(f"Suche filtern ({dateString})")
+    # Datumsfunktionen für die Suche
+    def setCgbTitleSearch(self, dateString):
+        self.cgbSearch.setTitle(f"Suche filtern ({dateString})")
 
     def setDateLast30Days_search(self):
         today = date.today()
@@ -300,40 +527,37 @@ class PoliscopePlugin:
         self.dateBegin_search.setDate(
             QDate(last_30_days.year, last_30_days.month, last_30_days.day))
         self.dateEnd_search.setDate(QDate(today.year, today.month, today.day))
-        end_str = today.strftime("%d.%m.%y")
-        begin_str = last_30_days.strftime("%d.%m.%y")
-        self.setCgbTitleSearch(begin_str + " - " + end_str)
-        
+        self.setCgbTitleSearch(
+            last_30_days.strftime("%d.%m.%y") + " - " + today.strftime("%d.%m.%y"))
+
     def setDateNext30Days_search(self):
         today = date.today()
         next_30_days = today + timedelta(days=30)
-        self.dateBegin_search.setDate(
-            QDate(today.year, today.month, today.day))
+        self.dateBegin_search.setDate(QDate(today.year, today.month, today.day))
         self.dateEnd_search.setDate(
             QDate(next_30_days.year, next_30_days.month, next_30_days.day))
-        begin_str = today.strftime("%d.%m.%y")
-        end_str = next_30_days.strftime("%d.%m.%y")
-        self.setCgbTitleSearch(begin_str + " - " + end_str)
+        self.setCgbTitleSearch(
+            today.strftime("%d.%m.%y") + " - " + next_30_days.strftime("%d.%m.%y"))
 
     def setDateThisYear_search(self):
         today = date.today()
         self.dateBegin_search.setDate(QDate(today.year, 1, 1))
         self.dateEnd_search.setDate(QDate(today.year, 12, 31))
-        begin_str = date(today.year, 1, 1).strftime("%d.%m.%y")
-        end_str = date(today.year, 12, 31).strftime("%d.%m.%y")
-        self.setCgbTitleSearch(begin_str + " - " + end_str)
+        self.setCgbTitleSearch(
+            date(today.year, 1, 1).strftime("%d.%m.%y") + " - " +
+            date(today.year, 12, 31).strftime("%d.%m.%y"))
 
     def setDateLastYear_search(self):
         today = date.today()
         last_year = today.year - 1
         self.dateBegin_search.setDate(QDate(last_year, 1, 1))
         self.dateEnd_search.setDate(QDate(last_year, 12, 31))
-        begin_str = date(last_year, 1, 1).strftime("%d.%m.%y")
-        end_str = date(last_year, 12, 31).strftime("%d.%m.%y")
-        self.setCgbTitleSearch(begin_str + " - " + end_str)
-    
-    ## Datumsfunktionen für die Watchlist
-    def setCbgTitleWatchlist(self, dateString):
+        self.setCgbTitleSearch(
+            date(last_year, 1, 1).strftime("%d.%m.%y") + " - " +
+            date(last_year, 12, 31).strftime("%d.%m.%y"))
+
+    # Datumsfunktionen für die Watchlist
+    def setCgbTitleWatchlist(self, dateString):
         self.cgbWatchlist.setTitle(f"Merkliste filtern ({dateString})")
 
     def setDateLast30Days_watchlist(self):
@@ -341,45 +565,46 @@ class PoliscopePlugin:
         last_30_days = today - timedelta(days=30)
         self.dateBegin_watchlist.setDate(
             QDate(last_30_days.year, last_30_days.month, last_30_days.day))
-        self.dateEnd_watchlist.setDate(
-            QDate(today.year, today.month, today.day))
-        end_str = today.strftime("%d.%m.%y")
-        begin_str = last_30_days.strftime("%d.%m.%y")
-        self.setCgbTitleWatchlist(begin_str + " - " + end_str)
+        self.dateEnd_watchlist.setDate(QDate(today.year, today.month, today.day))
+        self.setCgbTitleWatchlist(
+            last_30_days.strftime("%d.%m.%y") + " - " + today.strftime("%d.%m.%y"))
 
     def setDateNext30Days_watchlist(self):
         today = date.today()
         next_30_days = today + timedelta(days=30)
-        self.dateBegin_watchlist.setDate(
-            QDate(today.year, today.month, today.day))
+        self.dateBegin_watchlist.setDate(QDate(today.year, today.month, today.day))
         self.dateEnd_watchlist.setDate(
             QDate(next_30_days.year, next_30_days.month, next_30_days.day))
-        begin_str = today.strftime("%d.%m.%y")
-        end_str = next_30_days.strftime("%d.%m.%y")
-        self.setCgbTitleWatchlist(begin_str + " - " + end_str)
+        self.setCgbTitleWatchlist(
+            today.strftime("%d.%m.%y") + " - " + next_30_days.strftime("%d.%m.%y"))
 
     def setDateThisYear_watchlist(self):
         today = date.today()
         self.dateBegin_watchlist.setDate(QDate(today.year, 1, 1))
         self.dateEnd_watchlist.setDate(QDate(today.year, 12, 31))
-        begin_str = date(today.year, 1, 1).strftime("%d.%m.%y")
-        end_str = date(today.year, 12, 31).strftime("%d.%m.%y")
-        self.setCgbTitleWatchlist(begin_str + " - " + end_str)
+        self.setCgbTitleWatchlist(
+            date(today.year, 1, 1).strftime("%d.%m.%y") + " - " +
+            date(today.year, 12, 31).strftime("%d.%m.%y"))
 
     def setDateLastYear_watchlist(self):
         today = date.today()
         last_year = today.year - 1
         self.dateBegin_watchlist.setDate(QDate(last_year, 1, 1))
         self.dateEnd_watchlist.setDate(QDate(last_year, 12, 31))
-        begin_str = date(last_year, 1, 1).strftime("%d.%m.%y")
-        end_str = date(last_year, 12, 31).strftime("%d.%m.%y")
-        self.setCgbTitleWatchlist(begin_str + " - " + end_str)
+        self.setCgbTitleWatchlist(
+            date(last_year, 1, 1).strftime("%d.%m.%y") + " - " +
+            date(last_year, 12, 31).strftime("%d.%m.%y"))
 
-    #Filling the list_itme_widget
+    # Ergebnisliste befüllen
     def setResultsToList(self, results, list_widget):
-        type_map = {"meeting": "Sitzung", "proposal": "Vorlage", "document": "Dokument"}                                                                                          for result_group in results:
+        type_map = {
+            "meeting": "Sitzung",
+            "proposal": "Vorlage",
+            "document": "Dokument"
+        }
         for result_group in results:
-            item_widget = ListItemWidget()                                                                                                                                  
+            item_widget = ListItemWidget()
+            item_widget.lLastStatusUpdate.setVisible(False)
             item_widget.lTitle.setText(result_group.context.entity_name)
             item_widget.lDate.setText(Utils.format_date(result_group.context.date))
             item_widget.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(result_group.context))
@@ -388,11 +613,47 @@ class PoliscopePlugin:
                 item_widget.lLocation.setText(
                     Utils.getLocationString(f"{loc['lat']}, {loc['lon']}"))
             item_widget.lScore.setText(Utils.format_score(result_group.score))
-            item_widget.lChunkType.setText(type_map.get(result_group.group_type, result_group.group_type))
+            item_widget.lChunkType.setText(
+                type_map.get(result_group.group_type, result_group.group_type))
             if result_group.hits:
                 item_widget.lHitsPreview.setText(result_group.hits[0].text[:200])
             item_widget.pbDetails.clicked.connect(
                 lambda checked=False, rg=result_group: self.showDetailDialog(rg))
+
+            # RIS-URL aus dem Kontext holen (je nach Typ)
+            if result_group.group_type == "meeting" and result_group.context.meeting:
+                ris_url = result_group.context.meeting.get('url')
+            elif result_group.group_type == "proposal" and result_group.context.proposal:
+                ris_url = result_group.context.proposal.get('url')
+            elif result_group.group_type == "document" and result_group.context.document:
+                ris_url = result_group.context.document.get('url')
+            else:
+                ris_url = None
+
+            if ris_url:
+                item_widget.pbOpenRIS.clicked.connect(
+                    lambda checked=False, url=ris_url: webbrowser.open(url))
+            else:
+                item_widget.pbOpenRIS.setEnabled(False)
+
+            # Poliscope Web-URL aus erstem ChunkHit
+            if result_group.hits and result_group.hits[0].poliscope_url:
+                web_url = "https://app.poliscope.de" + result_group.hits[0].poliscope_url
+                item_widget.pbWeb.clicked.connect(
+                    lambda checked=False, url=web_url: webbrowser.open(url))
+            else:
+                item_widget.pbWeb.setEnabled(False)
+
+            # Merkliste (nur für Sitzungen)
+            if result_group.group_type == "meeting" and result_group.context.meeting:
+                meeting_id = result_group.context.meeting.get('id')
+                is_bookmarked = bool(result_group.context.meeting.get('bookmarks'))
+                item_widget.pbBookmark.setChecked(is_bookmarked)
+                item_widget.pbBookmark.clicked.connect(
+                    lambda checked=False, mid=meeting_id, btn=item_widget.pbBookmark:
+                        self.bookmarkButtonPressed(mid, btn))
+            else:
+                item_widget.pbBookmark.setEnabled(False)
 
             container = QtWidgets.QWidget()
             container.setObjectName("container")
@@ -409,3 +670,13 @@ class PoliscopePlugin:
             list_widget.addItem(item)
             list_widget.setItemWidget(item, container)
             self.nr += 1
+
+    def bookmarkButtonPressed(self, meeting_id, button):
+        if button.isChecked():
+            self.api.add_bookmarked_meeting(meeting_id)
+        else:
+            self.api.remove_bookmarked_meeting(meeting_id)
+
+    def showDetailDialog(self, result_group):
+        dialog = DetailDialog(result_group, self.api)
+        dialog.exec_()
