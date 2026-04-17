@@ -61,7 +61,7 @@
        <string/>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -144,6 +144,19 @@
                   <property name="bottomMargin">
                    <number>3</number>
                   </property>
+                  <item row="1" column="0">
+                   <widget class="QPushButton" name="pbInKarteZentrieren_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>In Karte zentrieren</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="0">
                    <widget class="QRadioButton" name="rbExample_1_focusregion">
                     <property name="font">
@@ -161,6 +174,22 @@ zuletzt aktualisiert: 01.04.2026</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="1" column="1">
+                   <widget class="QPushButton" name="pbInSucheOeffnen_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten</string>
+                    </property>
+                    <property name="text">
+                     <string>In Suche öffnen</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="1">
                    <widget class="QRadioButton" name="rbExample_1_focusregion_2">
                     <property name="font">
@@ -175,32 +204,13 @@ zuletzt aktualisiert: 16.05.2025</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QPushButton" name="pbInKarteZentrieren_focusregion">
-                    <property name="font">
-                     <font>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
+                  <item row="2" column="0">
+                   <widget class="QCheckBox" name="cbNurNeuigkeiten_focusregion">
                     <property name="text">
-                     <string>In Karte zentrieren</string>
+                     <string>Nur Neuigkeiten (seit dem letzten Besuch)</string>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QPushButton" name="pbInSucheOeffnen_focusregion">
-                    <property name="font">
-                     <font>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="toolTip">
-                     <string>Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten</string>
-                    </property>
-                    <property name="text">
-                     <string>In Suche öffnen</string>
+                    <property name="checked">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -693,7 +703,7 @@ zuletzt aktualisiert: 16.05.2025</string>
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Aktualisieren</string>
+             <string>Liste aktualisieren</string>
             </property>
            </widget>
           </item>

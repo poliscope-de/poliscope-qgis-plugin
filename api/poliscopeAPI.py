@@ -687,7 +687,7 @@ class PoliscopeAPI:
         return None
 
     
-    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, limit=None, offset=None, detail=None):
+    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, ids=None, limit=None, offset=None, detail=None):
         """
         List administrative entities with optional filtering and pagination.
         Returns a tuple (list[Entity], meta) where meta contains pagination info,
@@ -698,6 +698,7 @@ class PoliscopeAPI:
             level     — filter by administrative level ("10", "40", "50", "60", "pr")
             parent_id — filter by parent entity RS code
             state_id  — filter by Bundesland RS code
+            ids       — comma-separated RS codes to fetch specific entities
             limit     — max results to return (default 10, max 500)
             offset    — pagination offset (default 0)
             detail    — response detail level: "summary", "standard", or "full"
@@ -707,6 +708,7 @@ class PoliscopeAPI:
             "level": level,
             "parentId": parent_id,
             "stateId": state_id,
+            "ids": ids,
             "limit": limit,
             "offset": offset,
             "detail": detail

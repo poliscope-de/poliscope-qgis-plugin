@@ -18,7 +18,7 @@
 """
 import os
 import webbrowser
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from dateutil.relativedelta import relativedelta
 
@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QSettings, QDate
 from PyQt5.QtWidgets import (
     QTabWidget, QInputDialog, QMessageBox, QLabel,
-    QGroupBox, QCheckBox
+    QGroupBox, QCheckBox, QButtonGroup, QRadioButton
 )
 
 from qgis.core import QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
@@ -75,6 +75,7 @@ class PoliscopePlugin:
         self.results_count_focusregion = 0
         self.results_focusregion = []
         self.displayedCount_focusregion = 0
+        self._focusregion_cache = {}
 
         self.results_count_search = 0
         self.results_search = []
@@ -151,8 +152,93 @@ class PoliscopePlugin:
                 self.api = None
 
             #########################
-            # Tab Focusregionen
-            # Meetingliste
+            # Tab Fokusregionen
+
+            self._focusregions = None
+            self._focusregion_button_group = None
+
+            self.focusregionRefButton = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "focusregionRefButton")
+            self.focusregionRefButton.clicked.connect(
+                lambda: self.btnHandlerRefresh_focusregion(force=True))
+
+            self.focusregionList = self.dockwidget.findChild(
+                QtWidgets.QListWidget, "focusregionList")
+            self.lMeetingCount_focusregion = self.dockwidget.findChild(
+                QtWidgets.QLabel, "lMeetingCount_focusregion")
+            self.lblResultCount_focusregion = self.dockwidget.findChild(
+                QtWidgets.QLabel, "lblResultCount_focusregion")
+            self.pbMehrLaden_focusregion = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbMehrLaden_focusregion")
+            self.pbMehrLaden_focusregion.clicked.connect(self.loadMore_focusregion)
+            self.pbMehrLaden_focusregion.setVisible(False)
+            self.lblResultCount_focusregion.setText("")
+
+            self.cbxSortierung_focusregion = self.dockwidget.findChild(
+                QtWidgets.QComboBox, "cbxSortierung_focusregion")
+            self.cbxSortierung_focusregion.currentIndexChanged.connect(
+                self.onSortingChanged_focusregion)
+
+            self.dateBegin_focusregion = self.dockwidget.findChild(
+                QtWidgets.QDateTimeEdit, "mteBegin_focusregion")
+            self.dateEnd_focusregion = self.dockwidget.findChild(
+                QtWidgets.QDateTimeEdit, "mteEnd_focusregion")
+
+            self.dockwidget.pbLast30Days_focusregion.clicked.connect(
+                self.setDateLast30Days_focusregion)
+            self.dockwidget.pbNext30Days_focusregion.clicked.connect(
+                self.setDateNext30Days_focusregion)
+            self.dockwidget.pbLastYear_focusregion.clicked.connect(
+                self.setDateLastYear_focusregion)
+            self.dockwidget.pbThisYear_focusregion.clicked.connect(
+                self.setDateThisYear_focusregion)
+
+            self.cbTOPs_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbTOPs_focusregion")
+            self.cbTOPBeschreibungen_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbTOPBeschreibungen_focusregion")
+            self.cbVorlagen_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbVorlagen_focusregion")
+            self.cbVorlagenBeschreibungen_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbVorlagenBeschreibungen_focusregion")
+            self.cbDokumente_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbDokumente_focusregion")
+            self.cbPlanungsregionen_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbPlanungsregionen_focusregion")
+            self.cbLandkreise_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbLandkreise_focusregion")
+            self.cbGemeindeverbaende_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbGemeindeverbaende_focusregion")
+
+            self.gbFocusregions_focusregion = self.dockwidget.findChild(
+                QGroupBox, "gbFocusregions_focusregion")
+            self.cgbSucheFiltern_focusregion = self.dockwidget.findChild(
+                QgsCollapsibleGroupBox, "cgbSucheFiltern_focusregion")
+
+            self.pbInKarteZentrieren_focusregion = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbInKarteZentrieren_focusregion")
+            self.pbInSucheOeffnen_focusregion = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbInSucheOeffnen_focusregion")
+            self.pbInKarteZentrieren_focusregion.clicked.connect(
+                self.onInKarteZentrieren_focusregion)
+            self.pbInSucheOeffnen_focusregion.clicked.connect(
+                self.onInSucheOeffnen_focusregion)
+
+            self.pbOptions_focusregion = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbOptions_focusregion")
+            self.pbOptions_focusregion.clicked.connect(self.openOptions)
+
+            # Startdatum: letztes Jahr bis heute + 2 Monate
+            today_fr = date.today()
+            today_fr_last_year = today_fr - relativedelta(years=1)
+            today_fr_plus_two = today_fr + relativedelta(months=2)
+            self.dateBegin_focusregion.setDate(
+                QDate(today_fr_last_year.year, today_fr_last_year.month, today_fr_last_year.day))
+            self.dateEnd_focusregion.setDate(
+                QDate(today_fr_plus_two.year, today_fr_plus_two.month, today_fr_plus_two.day))
+            self.setCgbTitleFocusregion(
+                today_fr_last_year.strftime("%d.%m.%y") + " - " +
+                today_fr_plus_two.strftime("%d.%m.%y"))
 
             #########################
             # Tab Suche
@@ -269,6 +355,10 @@ class PoliscopePlugin:
             has_api = self.api is not None
             self.searchBbSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
             self.searchCenterSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
+
+            # Auto-load focusregion names on startup (no results yet)
+            if has_api:
+                self._load_focusregion_radio_buttons()
 
             # Startdatum: letztes Jahr bis heute + 2 Monate
             today = date.today()
@@ -481,7 +571,7 @@ class PoliscopePlugin:
 
     # Datumsfunktionen für die Fokusregion
     def setCgbTitleFocusregion(self, dateString):
-        self.cgbFocusregion.setTitle(f"Fokusregion filtern ({dateString})")
+        self.cgbSucheFiltern_focusregion.setTitle(f"Suche filtern ({dateString})")
 
     def setDateLast30Days_focusregion(self):
         today = date.today()
@@ -685,6 +775,285 @@ class PoliscopePlugin:
             self.api.add_bookmarked_meeting(meeting_id)
         else:
             self.api.remove_bookmarked_meeting(meeting_id)
+
+    def _load_focusregion_radio_buttons(self):
+        focusregions, _ = self.api.get_focusregions(limit=500, detail="standard")
+        counts = self.api.get_focusregion_counts() or {}
+        if focusregions:
+            self._populate_focusregion_radio_buttons(focusregions, counts)
+            self._focusregions = self._deduped_focusregions
+            if self._focusregions:
+                self.onFocusregionSelected(self._focusregions[0].id)
+
+    def btnHandlerRefresh_focusregion(self, force=False):
+        if not self.api:
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            # First press: load focusregions and their counts
+            if self._focusregions is None:
+                focusregions, _ = self.api.get_focusregions(limit=500, detail="standard")
+                counts = self.api.get_focusregion_counts() or {}
+                if not focusregions:
+                    return
+                self._populate_focusregion_radio_buttons(focusregions, counts)
+                self._focusregions = self._deduped_focusregions
+                if self._focusregions:
+                    self.onFocusregionSelected(self._focusregions[0].id)
+
+            # Get selected focusregion
+            fr = self._get_selected_focusregion()
+            if not fr:
+                return
+
+            if not force and fr.id in self._focusregion_cache:
+                result_groups = self._focusregion_cache[fr.id]
+            else:
+                result_groups, _, _ = self.api.get_focusregion_results(fr.id)
+                if result_groups is not None:
+                    self._focusregion_cache[fr.id] = result_groups
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        if result_groups is None:
+            return
+
+        # Auto-set date range from the (already filtered) result list
+        dates = [rg.context.date[:10] for rg in result_groups if rg.context.date]
+        if dates:
+            d_from = datetime.strptime(min(dates), '%Y-%m-%d')
+            d_to = datetime.strptime(max(dates), '%Y-%m-%d')
+        else:
+            d_from = d_to = None
+
+        if d_from and d_to:
+            self.dateBegin_focusregion.setDate(QDate(d_from.year, d_from.month, d_from.day))
+            self.dateEnd_focusregion.setDate(QDate(d_to.year, d_to.month, d_to.day))
+            fr_name = fr.name or fr.id
+            self.setCgbTitleFocusregion(
+                f"{fr_name} | " + d_from.strftime("%d.%m.%y") + " - " + d_to.strftime("%d.%m.%y"))
+
+        # Client-side filter + sort
+        filtered = self._filter_focusregion_results(result_groups)
+        self.results_focusregion = filtered
+        self.displayedCount_focusregion = 0
+        self.nr = 0
+        self.focusregionList.clear()
+
+        sorted_results = self.sortResults_focusregion(filtered)
+        first_batch = sorted_results[:50]
+        self.setResultsToList(first_batch, self.focusregionList)
+        self.displayedCount_focusregion = len(first_batch)
+
+        total = len(filtered)
+        if total == 0:
+            self.lMeetingCount_focusregion.setText("Keine Ergebnisse gefunden")
+        elif total == 1:
+            self.lMeetingCount_focusregion.setText("1 Ergebnis gefunden")
+        else:
+            self.lMeetingCount_focusregion.setText(f"{total} Ergebnisse gefunden")
+
+        self.lblResultCount_focusregion.setText(
+            f"{self.displayedCount_focusregion} von {total} Ergebnissen")
+
+        if total > 50:
+            self.pbMehrLaden_focusregion.setVisible(True)
+            self.pbMehrLaden_focusregion.setEnabled(True)
+        else:
+            self.pbMehrLaden_focusregion.setVisible(False)
+
+    def _populate_focusregion_radio_buttons(self, focusregions, counts):
+        gb = self.gbFocusregions_focusregion
+        layout = gb.layout()
+
+        # Remove existing radio buttons, keep push buttons
+        for rb in gb.findChildren(QRadioButton):
+            layout.removeWidget(rb)
+            rb.deleteLater()
+
+        # Temporarily remove push buttons so we can re-add them at the right row
+        layout.removeWidget(self.pbInKarteZentrieren_focusregion)
+        layout.removeWidget(self.pbInSucheOeffnen_focusregion)
+
+        # Deduplicate by name, keeping the entry with the most recent lastVisit
+        def _last_visit(fr):
+            for member in (fr.team or []):
+                lv = member.get('lastVisit')
+                if lv:
+                    return lv
+            return ""
+
+        seen = {}
+        deduped = []
+        for fr in focusregions:
+            name = fr.name or fr.id
+            if name not in seen:
+                seen[name] = len(deduped)
+                deduped.append(fr)
+            else:
+                idx = seen[name]
+                if _last_visit(fr) > _last_visit(deduped[idx]):
+                    deduped[idx] = fr
+        focusregions = deduped
+        self._deduped_focusregions = deduped
+
+        self._focusregion_button_group = QButtonGroup(gb)
+        for i, fr in enumerate(focusregions):
+            row = i // 2
+            col = i % 2
+            new_count = counts.get(fr.id, 0)
+            label = fr.name or fr.id
+            label = f"{label} (neu: {new_count})"
+            # Add last-visit date from the first team member that has one
+            last_visit_str = _last_visit(fr)
+            if last_visit_str:
+                try:
+                    lv_dt = datetime.strptime(last_visit_str[:10], '%Y-%m-%d')
+                    label += f"\nzuletzt aktualisiert: {lv_dt.strftime('%d.%m.%Y')}"
+                except Exception:
+                    pass
+            rb = QRadioButton(label, gb)
+            rb.setProperty("focusregion_id", fr.id)
+            rb.toggled.connect(
+                lambda checked, _id=fr.id: self.onFocusregionSelected(_id) if checked else None)
+            self._focusregion_button_group.addButton(rb, i)
+            layout.addWidget(rb, row, col)
+            if i == 0:
+                rb.setChecked(True)
+
+        # Re-add push buttons at the row after the last radio row
+        last_radio_row = max(0, (len(focusregions) - 1) // 2)
+        button_row = last_radio_row + 1
+        layout.addWidget(self.pbInKarteZentrieren_focusregion, button_row, 0)
+        layout.addWidget(self.pbInSucheOeffnen_focusregion, button_row, 1)
+
+    def _get_selected_focusregion(self):
+        if not self._focusregion_button_group or not self._focusregions:
+            return None
+        checked = self._focusregion_button_group.checkedButton()
+        if not checked:
+            return None
+        fr_id = checked.property("focusregion_id")
+        for fr in self._focusregions:
+            if fr.id == fr_id:
+                return fr
+        return None
+
+    def _filter_focusregion_results(self, result_groups):
+        date_from = self.dateBegin_focusregion.date().toString("yyyy-MM-dd")
+        date_to = self.dateEnd_focusregion.date().toString("yyyy-MM-dd")
+
+        type_map = {
+            self.cbTOPs_focusregion: "agendaItemTitle",
+            self.cbTOPBeschreibungen_focusregion: "agendaItemDescription",
+            self.cbVorlagen_focusregion: "proposalTitle",
+            self.cbVorlagenBeschreibungen_focusregion: "proposalDescription",
+            self.cbDokumente_focusregion: "document",
+        }
+        selected_types = [v for cb, v in type_map.items() if cb.isChecked()]
+
+        level_map = {
+            self.cbPlanungsregionen_focusregion: ["pr"],
+            self.cbLandkreise_focusregion: ["40"],
+            self.cbGemeindeverbaende_focusregion: ["50", "60"],
+        }
+        selected_levels = []
+        for cb, levels in level_map.items():
+            if cb.isChecked():
+                selected_levels.extend(levels)
+
+        filtered = []
+        for rg in result_groups:
+            if rg.context.date:
+                item_date = rg.context.date[:10]
+                if item_date < date_from or item_date > date_to:
+                    continue
+            if selected_types and not any(
+                hit.chunk_type in selected_types for hit in rg.hits
+            ):
+                continue
+            if selected_levels and rg.context.entity_level not in selected_levels:
+                continue
+            filtered.append(rg)
+
+        return filtered
+
+    def sortResults_focusregion(self, results):
+        sort_text = self.cbxSortierung_focusregion.currentText()
+        if sort_text == "Datum (neueste zuerst)":
+            return sorted(results, key=lambda rg: rg.context.date or "", reverse=True)
+        elif sort_text == "Datum (älteste zuerst)":
+            return sorted(results, key=lambda rg: rg.context.date or "")
+        return results
+
+    def loadMore_focusregion(self):
+        sorted_results = self.sortResults_focusregion(self.results_focusregion)
+        next_batch = sorted_results[
+            self.displayedCount_focusregion:self.displayedCount_focusregion + 50]
+        self.setResultsToList(next_batch, self.focusregionList)
+        self.displayedCount_focusregion += len(next_batch)
+
+        total = len(self.results_focusregion)
+        self.lblResultCount_focusregion.setText(
+            f"{self.displayedCount_focusregion} von {total} Ergebnissen")
+
+        if self.displayedCount_focusregion >= total:
+            self.pbMehrLaden_focusregion.setVisible(False)
+
+    def onFocusregionSelected(self, focusregion_id):
+        if not self._focusregions:
+            return
+        if focusregion_id not in self._focusregion_cache:
+            result_groups, _, _ = self.api.get_focusregion_results(focusregion_id)
+            if result_groups is None:
+                return
+            self._focusregion_cache[focusregion_id] = result_groups
+        result_groups = self._focusregion_cache[focusregion_id]
+        dates = [rg.context.date[:10] for rg in result_groups if rg.context.date]
+        if dates:
+            d_from = datetime.strptime(min(dates), '%Y-%m-%d')
+            d_to = datetime.strptime(max(dates), '%Y-%m-%d')
+            self.dateBegin_focusregion.setDate(QDate(d_from.year, d_from.month, d_from.day))
+            self.dateEnd_focusregion.setDate(QDate(d_to.year, d_to.month, d_to.day))
+
+    def onInKarteZentrieren_focusregion(self):
+        fr = self._get_selected_focusregion()
+        if not fr or not fr.entity_ids:
+            return
+        ids_param = ",".join(fr.entity_ids)
+        entities, _ = self.api.list_entities(ids=ids_param, detail="standard")
+        if not entities:
+            return
+        locations = [e.location for e in entities if e.location]
+        if not locations:
+            return
+        lons = [loc['lon'] for loc in locations]
+        lats = [loc['lat'] for loc in locations]
+        target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        canvas = self.iface.mapCanvas()
+        transform = QgsCoordinateTransform(
+            target_crs, canvas.mapSettings().destinationCrs(), QgsProject.instance())
+        extent = QgsRectangle(min(lons), min(lats), max(lons), max(lats))
+        transformed = transform.transformBoundingBox(extent)
+        canvas.setExtent(transformed)
+        canvas.refresh()
+
+    def onInSucheOeffnen_focusregion(self):
+        fr = self._get_selected_focusregion()
+        if not fr or not fr.query:
+            return
+        self.leQuery_search.setText(fr.query)
+        self.tabWidget.setCurrentIndex(1)
+
+    def onSortingChanged_focusregion(self):
+        if not self.results_focusregion:
+            return
+        self.nr = 0
+        self.focusregionList.clear()
+        sorted_results = self.sortResults_focusregion(self.results_focusregion)
+        first_batch = sorted_results[:self.displayedCount_focusregion or 50]
+        self.setResultsToList(first_batch, self.focusregionList)
 
     def showDetailDialog(self, result_group):
         dialog = DetailDialog(result_group, self.api)
