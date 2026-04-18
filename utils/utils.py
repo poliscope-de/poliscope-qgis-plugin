@@ -102,6 +102,30 @@ class Utils:
             return ""
 
     @staticmethod
+    def build_highlighted_text(text: str, highlights, max_chars: int = 200) -> str:
+        snippet = text[:max_chars]
+        if not highlights:
+            return snippet
+        result = []
+        pos = 0
+        for h in sorted(highlights, key=lambda x: x[0]):
+            start, end = h[0], min(h[1], len(snippet))
+            if start >= len(snippet):
+                break
+            if pos < start:
+                result.append(snippet[pos:start]
+                    .replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+            result.append('<b>')
+            result.append(snippet[start:end]
+                .replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+            result.append('</b>')
+            pos = end
+        if pos < len(snippet):
+            result.append(snippet[pos:]
+                .replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+        return ''.join(result)
+
+    @staticmethod
     def format_score(score: float) -> str:
         return f"{round(score * 100)}%"
     @staticmethod

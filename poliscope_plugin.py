@@ -723,7 +723,9 @@ class PoliscopePlugin:
             item_widget.lChunkType.setText(
                 type_map.get(result_group.group_type, result_group.group_type))
             if result_group.hits:
-                item_widget.lHitsPreview.setText(result_group.hits[0].text[:200])
+                hit = result_group.hits[0]
+                item_widget.lHitsPreview.setText(
+                    Utils.build_highlighted_text(hit.text, hit.highlights))
             item_widget.pbDetails.clicked.connect(
                 lambda checked=False, rg=result_group: self.showDetailDialog(rg))
 
