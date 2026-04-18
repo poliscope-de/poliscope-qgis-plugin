@@ -23,7 +23,7 @@ from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QSettings, QDate
+from PyQt5.QtCore import QSettings, QDate, QSize
 from PyQt5.QtWidgets import (
     QTabWidget, QInputDialog, QMessageBox, QLabel,
     QGroupBox, QCheckBox, QButtonGroup, QRadioButton
@@ -219,14 +219,21 @@ class PoliscopePlugin:
                 QtWidgets.QPushButton, "pbInKarteZentrieren_focusregion")
             self.pbInSucheOeffnen_focusregion = self.dockwidget.findChild(
                 QtWidgets.QPushButton, "pbInSucheOeffnen_focusregion")
+            self.pbZentriertInSucheOeffnen_focusregion = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbZentriertInSucheOeffnen_focusregion")
             self.pbInKarteZentrieren_focusregion.clicked.connect(
                 self.onInKarteZentrieren_focusregion)
             self.pbInSucheOeffnen_focusregion.clicked.connect(
                 self.onInSucheOeffnen_focusregion)
+            self.pbZentriertInSucheOeffnen_focusregion.clicked.connect(
+                self.onZentriertInSucheOeffnen_focusregion)
 
             self.pbOptions_focusregion = self.dockwidget.findChild(
                 QtWidgets.QPushButton, "pbOptions_focusregion")
             self.pbOptions_focusregion.clicked.connect(self.openOptions)
+
+            self.cbNurNeuigkeiten_focusregion = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbNurNeuigkeiten_focusregion")
 
             # Startdatum: letztes Jahr bis heute + 2 Monate
             today_fr = date.today()
@@ -359,6 +366,15 @@ class PoliscopePlugin:
             # Auto-load focusregion names on startup (no results yet)
             if has_api:
                 self._load_focusregion_radio_buttons()
+
+            self._show_list_hint(
+                self.focusregionList,
+                "Fokusregion auswählen und <b>Liste aktualisieren</b> klicken, "
+                "um Ergebnisse zu laden.<br><br>"
+                "Fokusregionen können nur im Browser verwaltet werden: "
+                "<a href='https://poliscope.de/app/focusregions'>"
+                "poliscope.de/app/focusregions</a>"
+            )
 
             # Startdatum: letztes Jahr bis heute + 2 Monate
             today = date.today()
@@ -807,12 +823,22 @@ class PoliscopePlugin:
             if not fr:
                 return
 
-            if not force and fr.id in self._focusregion_cache:
-                result_groups = self._focusregion_cache[fr.id]
+            nur_neuigkeiten = self.cbNurNeuigkeiten_focusregion.isChecked()
+            last_visit = next(
+                (m.get('lastVisit') for m in (fr.team or []) if m.get('lastVisit')), None)
+            cache_key = (fr.id, nur_neuigkeiten)
+
+            if force:
+                self._focusregion_cache.pop((fr.id, True), None)
+                self._focusregion_cache.pop((fr.id, False), None)
+
+            if cache_key in self._focusregion_cache:
+                result_groups = self._focusregion_cache[cache_key]
             else:
-                result_groups, _, _ = self.api.get_focusregion_results(fr.id)
+                new_since = last_visit if (nur_neuigkeiten and last_visit) else None
+                result_groups, _, _ = self.api.get_focusregion_results(fr.id, new_since=new_since)
                 if result_groups is not None:
-                    self._focusregion_cache[fr.id] = result_groups
+                    self._focusregion_cache[cache_key] = result_groups
         finally:
             QApplication.restoreOverrideCursor()
 
@@ -848,6 +874,29 @@ class PoliscopePlugin:
 
         total = len(filtered)
         if total == 0:
+            if nur_neuigkeiten:
+                lv_display = ""
+                if last_visit:
+                    try:
+                        lv_display = datetime.strptime(
+                            last_visit[:10], '%Y-%m-%d').strftime('%d.%m.%Y')
+                    except Exception:
+                        pass
+                fr_name = fr.name or fr.id
+                lv_part = f" am <b>{lv_display}</b>" if lv_display else ""
+                self._show_list_hint(
+                    self.focusregionList,
+                    f"Keine Neuigkeiten seit dem letzten Besuch{lv_part} "
+                    f"in <b>{fr_name}</b>.<br><br>"
+                    f"Den Haken bei <b>Nur Neuigkeiten</b> entfernen, "
+                    f"um alle Ergebnisse im ausgewählten Zeitraum zu sehen.<br><br>"
+                    f"Mit <b>Suchbegriff öffnen</b> den Suchbegriff der Fokusregion "
+                    f"in der Suche öffnen und erweiterte Einstellungen nutzen."
+                )
+                self.lMeetingCount_focusregion.setText("")
+                self.lblResultCount_focusregion.setText("")
+                self.pbMehrLaden_focusregion.setVisible(False)
+                return
             self.lMeetingCount_focusregion.setText("Keine Ergebnisse gefunden")
         elif total == 1:
             self.lMeetingCount_focusregion.setText("1 Ergebnis gefunden")
@@ -875,6 +924,7 @@ class PoliscopePlugin:
         # Temporarily remove push buttons so we can re-add them at the right row
         layout.removeWidget(self.pbInKarteZentrieren_focusregion)
         layout.removeWidget(self.pbInSucheOeffnen_focusregion)
+        layout.removeWidget(self.pbZentriertInSucheOeffnen_focusregion)
 
         # Deduplicate by name, keeping the entry with the most recent lastVisit
         def _last_visit(fr):
@@ -925,8 +975,9 @@ class PoliscopePlugin:
         # Re-add push buttons at the row after the last radio row
         last_radio_row = max(0, (len(focusregions) - 1) // 2)
         button_row = last_radio_row + 1
-        layout.addWidget(self.pbInKarteZentrieren_focusregion, button_row, 0)
-        layout.addWidget(self.pbInSucheOeffnen_focusregion, button_row, 1)
+        layout.addWidget(self.pbInKarteZentrieren_focusregion, button_row, 0, 1, 2)
+        layout.addWidget(self.pbInSucheOeffnen_focusregion, button_row + 1, 0)
+        layout.addWidget(self.pbZentriertInSucheOeffnen_focusregion, button_row + 1, 1)
 
     def _get_selected_focusregion(self):
         if not self._focusregion_button_group or not self._focusregions:
@@ -1004,12 +1055,12 @@ class PoliscopePlugin:
     def onFocusregionSelected(self, focusregion_id):
         if not self._focusregions:
             return
-        if focusregion_id not in self._focusregion_cache:
+        if (focusregion_id, False) not in self._focusregion_cache:
             result_groups, _, _ = self.api.get_focusregion_results(focusregion_id)
             if result_groups is None:
                 return
-            self._focusregion_cache[focusregion_id] = result_groups
-        result_groups = self._focusregion_cache[focusregion_id]
+            self._focusregion_cache[(focusregion_id, False)] = result_groups
+        result_groups = self._focusregion_cache[(focusregion_id, False)]
         dates = [rg.context.date[:10] for rg in result_groups if rg.context.date]
         if dates:
             d_from = datetime.strptime(min(dates), '%Y-%m-%d')
@@ -1046,6 +1097,15 @@ class PoliscopePlugin:
         self.leQuery_search.setText(fr.query)
         self.tabWidget.setCurrentIndex(1)
 
+    def onZentriertInSucheOeffnen_focusregion(self):
+        fr = self._get_selected_focusregion()
+        if not fr:
+            return
+        self.onInKarteZentrieren_focusregion()
+        if fr.query:
+            self.leQuery_search.setText(fr.query)
+        self.tabWidget.setCurrentIndex(1)
+
     def onSortingChanged_focusregion(self):
         if not self.results_focusregion:
             return
@@ -1054,6 +1114,18 @@ class PoliscopePlugin:
         sorted_results = self.sortResults_focusregion(self.results_focusregion)
         first_batch = sorted_results[:self.displayedCount_focusregion or 50]
         self.setResultsToList(first_batch, self.focusregionList)
+
+    def _show_list_hint(self, list_widget, html_text):
+        label = QLabel(html_text)
+        label.setWordWrap(True)
+        label.setOpenExternalLinks(True)
+        label.setContentsMargins(10, 12, 10, 12)
+        label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        item = QtWidgets.QListWidgetItem()
+        item.setFlags(Qt.NoItemFlags)
+        item.setSizeHint(QSize(0, 110))
+        list_widget.addItem(item)
+        list_widget.setItemWidget(item, label)
 
     def showDetailDialog(self, result_group):
         dialog = DetailDialog(result_group, self.api)
