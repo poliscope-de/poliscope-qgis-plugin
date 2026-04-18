@@ -115,7 +115,7 @@ class PoliscopePlugin:
         return action
 
     def initGui(self):
-        icon_path = ':/plugins/poliscope_plugin/icon.png'
+        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
         self.add_action(icon_path, text=self.tr(u'Poliscope Plugin'),
                         callback=self.run, parent=self.iface.mainWindow())
         self.run()
@@ -138,6 +138,7 @@ class PoliscopePlugin:
 
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.dockwidget.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.png')))
 
             self.tabWidget = self.dockwidget.findChild(QTabWidget, "tabWidget")
 
@@ -358,23 +359,37 @@ class PoliscopePlugin:
                 QtWidgets.QPushButton, "pbOptions_search")
             self.pbOptions_search.clicked.connect(self.openOptions)
 
+            # Tab Merkliste
+            self.watchlistList = self.dockwidget.findChild(
+                QtWidgets.QListWidget, "watchlistList")
+            self.pbOptions_watchlist = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbOptions_watchlist")
+            self.pbOptions_watchlist.clicked.connect(self.openOptions)
+
             # Enable/disable search buttons depending on API key
             has_api = self.api is not None
             self.searchBbSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
             self.searchCenterSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
 
-            # Auto-load focusregion names on startup (no results yet)
-            if has_api:
+            if not has_api:
+                self._show_missing_api_key(self.focusregionList)
+                self._show_missing_api_key(self.searchList)
+                self._show_missing_api_key(self.watchlistList)
+            else:
                 self._load_focusregion_radio_buttons()
 
-            self._show_list_hint(
-                self.focusregionList,
-                "Fokusregion auswählen und <b>Liste aktualisieren</b> klicken, "
-                "um Ergebnisse zu laden.<br><br>"
-                "Fokusregionen können nur im Browser verwaltet werden: "
-                "<a href='https://poliscope.de/app/focusregions'>"
-                "poliscope.de/app/focusregions</a>"
-            )
+                self._show_list_hint(
+                    self.focusregionList,
+                    "Fokusregion auswählen und <b>Liste aktualisieren</b> klicken, "
+                    "um Ergebnisse zu laden.<br><br>"
+                    "Fokusregionen können nur im Browser verwaltet werden: "
+                    "<a href='https://poliscope.de/app/focusregions'>"
+                    "poliscope.de/app/focusregions</a>"
+                )
+                self._show_list_hint(
+                    self.searchList,
+                    "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken."
+                )
 
             # Startdatum: letztes Jahr bis heute + 2 Monate
             today = date.today()
@@ -386,11 +401,6 @@ class PoliscopePlugin:
                 QDate(today_plus_two_months.year, today_plus_two_months.month, today_plus_two_months.day))
             self.setCgbTitleSearch(
                 today_last_year.strftime("%d.%m.%y") + " - " + today_plus_two_months.strftime("%d.%m.%y"))
-
-            self._show_list_hint(
-                self.searchList,
-                "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken."
-            )
 
             self.pluginIsActive = True
 
@@ -413,15 +423,37 @@ class PoliscopePlugin:
         settings.endGroup()
 
         new_key, ok = QInputDialog.getText(
-            None, "API-Key", "Bitte API-Key eingeben:", text=current_key)
-        if ok and new_key:
-            settings = QSettings()
-            settings.beginGroup("PoliscopePlugin")
+            None, "API-Key eingeben", "Bitte API-Key eingeben:", text=current_key)
+
+        if not ok:
+            return
+
+        api_is_working = True
+        try:
+            PoliscopeAPI(api_key=new_key)
+        except Exception:
+            api_is_working = False
+
+        settings = QSettings()
+        settings.beginGroup("PoliscopePlugin")
+        if new_key:
             settings.setValue("api_key", new_key)
-            settings.endGroup()
+        else:
+            settings.setValue("api_key", "")
+        settings.endGroup()
+
+        if new_key and api_is_working:
             self.api = PoliscopeAPI(api_key=new_key)
             self.searchBbSearchButton.setEnabled(True)
             self.searchCenterSearchButton.setEnabled(True)
+            QMessageBox.information(
+                None, "Erfolg", "API-Key wurde gespeichert und ist gültig!")
+        elif new_key:
+            QMessageBox.warning(
+                None, "Warnung", "API-Key wurde gespeichert, ist aber nicht gültig. Bitte gültigen API-Key eingeben.")
+        else:
+            QMessageBox.critical(
+                None, "Achtung", "Es wurde ein leerer API-Key gespeichert.")
 
     # Score-Box ausgrauen wenn Keyword-Modus aktiv
     def onSuchmodusChanged(self):
@@ -1132,6 +1164,14 @@ class PoliscopePlugin:
         sorted_results = self.sortResults_focusregion(self.results_focusregion)
         first_batch = sorted_results[:self.displayedCount_focusregion or 50]
         self.setResultsToList(first_batch, self.focusregionList)
+
+    def _show_missing_api_key(self, list_widget):
+        item_widget = ListMissingApiKeyErrorWidget()
+        item = QtWidgets.QListWidgetItem()
+        item.setFlags(Qt.NoItemFlags)
+        item.setSizeHint(item_widget.sizeHint())
+        list_widget.addItem(item)
+        list_widget.setItemWidget(item, item_widget)
 
     def _show_list_hint(self, list_widget, html_text):
         label = QLabel(html_text)
