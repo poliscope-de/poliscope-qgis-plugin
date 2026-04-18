@@ -387,6 +387,11 @@ class PoliscopePlugin:
             self.setCgbTitleSearch(
                 today_last_year.strftime("%d.%m.%y") + " - " + today_plus_two_months.strftime("%d.%m.%y"))
 
+            self._show_list_hint(
+                self.searchList,
+                "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken."
+            )
+
             self.pluginIsActive = True
 
     # BBox / Zentrum Suche
@@ -430,6 +435,11 @@ class PoliscopePlugin:
         # Query
         q = self.leQuery_search.text().strip()
         if not q:
+            self.searchList.clear()
+            self._show_list_hint(
+                self.searchList,
+                "Bitte oben einen <b>Suchbegriff</b> eingeben."
+            )
             return
 
         # Suchmodus
@@ -724,6 +734,7 @@ class PoliscopePlugin:
                 type_map.get(result_group.group_type, result_group.group_type))
             if result_group.hits:
                 hit = result_group.hits[0]
+                item_widget.lHitsPreview.setTextFormat(Qt.RichText)
                 item_widget.lHitsPreview.setText(
                     Utils.build_highlighted_text(hit.text, hit.highlights))
             item_widget.pbDetails.clicked.connect(
@@ -1088,6 +1099,11 @@ class PoliscopePlugin:
         transform = QgsCoordinateTransform(
             target_crs, canvas.mapSettings().destinationCrs(), QgsProject.instance())
         extent = QgsRectangle(min(lons), min(lats), max(lons), max(lats))
+        if extent.isEmpty():
+            cx, cy = min(lons), min(lats)
+            extent = QgsRectangle(cx - 0.2, cy - 0.2, cx + 0.2, cy + 0.2)
+        else:
+            extent.scale(1.2)
         transformed = transform.transformBoundingBox(extent)
         canvas.setExtent(transformed)
         canvas.refresh()
