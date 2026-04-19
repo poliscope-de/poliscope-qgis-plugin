@@ -455,7 +455,7 @@ class PoliscopePlugin:
                 )
                 self._show_list_hint(
                     self.watchlistList,
-                    "Auf <b>Aktualisieren</b> klicken, um die Merkliste zu laden."
+                    "Auf <b>Liste aktualisieren</b> klicken, um die Merkliste zu laden."
                 )
 
             # Startdatum Merkliste: letztes Jahr bis heute + 2 Monate
@@ -1330,7 +1330,7 @@ class PoliscopePlugin:
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.watchlistRefButton.setEnabled(False)
         try:
-            meetings, _ = self.api.get_bookmarked_meetings(limit=500, detail="standard")
+            meetings, _ = self.api.get_bookmarked_meetings(limit=500, detail="full")
         finally:
             QApplication.restoreOverrideCursor()
             self.watchlistRefButton.setEnabled(True)
@@ -1367,6 +1367,21 @@ class PoliscopePlugin:
         total = len(sorted_meetings)
         if total == 0:
             self.lMeetingCount_watchlist.setText("Keine Sitzungen gefunden")
+            if self.rbFokusregion_watchlist.isChecked():
+                checked_names = [cb.text() for cb in self._watchlist_focusregion_checkboxes if cb.isChecked()]
+                if not checked_names:
+                    self._show_list_hint(self.watchlistList, "Bitte mindestens eine Fokusregion auswählen.")
+                elif len(checked_names) == 1:
+                    self._show_list_hint(
+                        self.watchlistList,
+                        f"In der Fokusregion <b>{checked_names[0]}</b> wurde in diesem Zeitraum nichts zur Merkliste hinzugefügt."
+                    )
+                else:
+                    names_html = ", ".join(f"<b>{n}</b>" for n in checked_names[:-1]) + f" und <b>{checked_names[-1]}</b>"
+                    self._show_list_hint(
+                        self.watchlistList,
+                        f"In den Fokusregionen {names_html} wurde in diesem Zeitraum nichts zur Merkliste hinzugefügt."
+                    )
         elif total == 1:
             self.lMeetingCount_watchlist.setText("1 Sitzung gefunden")
         else:
@@ -1427,22 +1442,51 @@ class PoliscopePlugin:
 
             if geo_mode == "fokusregion":
                 if selected_fr_entity_ids:
-                    meeting_entity_ids = {e.get('id', '') for e in m.ris.get('entities', [])}
-                    if not meeting_entity_ids.intersection(selected_fr_entity_ids):
+                    meeting_entity_ids = [e.get('id', '') for e in m.ris.get('entities', []) if e.get('id')]
+                    matched = False
+                    for mid in meeting_entity_ids:
+                        # Walk up _entity_hierarchy to collect all ancestor IDs
+                        ancestor_ids = set()
+                        cur = mid
+                        seen = set()
+                        while cur and cur not in seen:
+                            seen.add(cur)
+                            e_h = self._entity_hierarchy.get(cur)
+                            if not e_h or not e_h.parent:
+                                break
+                            ancestor_ids.add(e_h.parent)
+                            cur = e_h.parent
+                        for fid in selected_fr_entity_ids:
+                            # Strip trailing * (API uses wildcards, we do prefix match)
+                            fid_clean = fid.rstrip('*')
+                            if mid.startswith(fid_clean) or fid_clean in ancestor_ids:
+                                matched = True
+                                break
+                        if matched:
+                            break
+                    if not matched:
                         continue
             elif geo_mode in ("bbox", "zentrum"):
                 if bbox_bounds is None:
                     pass
-                elif not m.location:
-                    continue
                 else:
                     min_lon, min_lat, max_lon, max_lat = bbox_bounds
-                    lon = m.location.get('lon')
-                    lat = m.location.get('lat')
-                    if lon is None or lat is None:
-                        continue
-                    if not (min_lon <= lon <= max_lon and min_lat <= lat <= max_lat):
-                        continue
+                    lat, lon = None, None
+                    if m.location:
+                        lat = m.location.get('lat')
+                        lon = m.location.get('lon')
+                    # Fall back to entity location from _entity_hierarchy
+                    if (lat is None or lon is None) and m.ris:
+                        for e_dict in m.ris.get('entities', []):
+                            e_obj = self._entity_hierarchy.get(e_dict.get('id', ''))
+                            if e_obj and e_obj.location:
+                                lat = e_obj.location.get('lat')
+                                lon = e_obj.location.get('lon')
+                                if lat is not None and lon is not None:
+                                    break
+                    if lat is not None and lon is not None:
+                        if not (min_lon <= lon <= max_lon and min_lat <= lat <= max_lat):
+                            continue
 
             filtered.append(m)
 

@@ -61,7 +61,7 @@
        <string/>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -708,6 +708,12 @@ zuletzt aktualisiert: 16.05.2025</string>
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
             </property>
             <property name="text">
              <string>Liste aktualisieren</string>
@@ -1802,8 +1808,14 @@ zuletzt aktualisiert: 16.05.2025</string>
           </property>
           <item>
            <widget class="QPushButton" name="watchlistRefButton">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>Aktualisieren</string>
+             <string>Liste aktualisieren</string>
             </property>
             <property name="icon">
              <iconset>
