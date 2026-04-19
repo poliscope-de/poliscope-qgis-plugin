@@ -83,7 +83,7 @@ class PoliscopePlugin:
 
         self.results_count_watchlist = 0
         self._session_unbookmarked = {}
-        self._watchlist_meetings = []
+        self._bookmarked_meetings = []
 
         self.nr = 0
 
@@ -386,6 +386,11 @@ class PoliscopePlugin:
                 self.setDateLastYear_watchlist)
             self.dockwidget.pbThisYear_watchlist.clicked.connect(
                 self.setDateThisYear_watchlist)
+
+            self.cbGespeichert_watchlist = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbGespeichert_watchlist")
+            self.cbNichtgespeichert_watchlist = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbNichtgespeichert_watchlist")
 
             self.cbPlanungsregionen_watchlist = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbPlanungsregionen_watchlist")
@@ -1279,15 +1284,19 @@ class PoliscopePlugin:
         if meetings is None:
             return
 
-        bookmarked_ids = {m.id for m in meetings}
-        unbookmarked = [m for mid, m in self._session_unbookmarked.items()
-                        if mid not in bookmarked_ids]
-        self._watchlist_meetings = meetings + unbookmarked
-
+        self._bookmarked_meetings = meetings
         self._refresh_watchlist_display()
 
     def _refresh_watchlist_display(self):
-        filtered = self._apply_watchlist_filters(self._watchlist_meetings)
+        combined = []
+        if self.cbGespeichert_watchlist.isChecked():
+            combined.extend(self._bookmarked_meetings)
+        if self.cbNichtgespeichert_watchlist.isChecked():
+            bookmarked_ids = {m.id for m in self._bookmarked_meetings}
+            combined.extend(
+                m for mid, m in self._session_unbookmarked.items()
+                if mid not in bookmarked_ids)
+        filtered = self._apply_watchlist_filters(combined)
         sorted_meetings = self._sort_watchlist(filtered)
 
         self.watchlistList.clear()
@@ -1452,9 +1461,14 @@ class PoliscopePlugin:
         if button.isChecked():
             self.api.add_bookmarked_meeting(meeting.id)
             self._session_unbookmarked.pop(meeting.id, None)
+            if not any(m.id == meeting.id for m in self._bookmarked_meetings):
+                self._bookmarked_meetings.append(meeting)
         else:
             self.api.remove_bookmarked_meeting(meeting.id)
             self._session_unbookmarked[meeting.id] = meeting
+            self._bookmarked_meetings = [m for m in self._bookmarked_meetings
+                                         if m.id != meeting.id]
+        self._refresh_watchlist_display()
 
     def _on_geo_radio_toggled_watchlist(self):
         is_fr = self.rbFokusregion_watchlist.isChecked()
@@ -1477,7 +1491,7 @@ class PoliscopePlugin:
             self._watchlist_focusregion_checkboxes.append(cb)
 
     def onSortingChanged_watchlist(self):
-        if not self._watchlist_meetings:
+        if not self._bookmarked_meetings and not self._session_unbookmarked:
             return
         self._refresh_watchlist_display()
 
