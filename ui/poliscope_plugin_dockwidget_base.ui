@@ -61,7 +61,7 @@
        <string/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="iconSize">
        <size>
@@ -144,17 +144,36 @@
                   <property name="bottomMargin">
                    <number>3</number>
                   </property>
-                  <item row="7" column="0">
-                   <widget class="QCheckBox" name="cbNurNeuigkeiten_focusregion">
-                    <property name="text">
-                     <string>Nur Neuigkeiten (seit dem letzten Besuch)</string>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QPushButton" name="pbInKarteZentrieren_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
                     </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                    <property name="text">
+                     <string>In Karte zentrieren</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="1">
+                  <item row="5" column="0">
+                   <widget class="QPushButton" name="pbInSucheOeffnen_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten</string>
+                    </property>
+                    <property name="text">
+                     <string>Suchbegriff öffnen</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1">
                    <widget class="QPushButton" name="pbZentriertInSucheOeffnen_focusregion">
                     <property name="text">
                      <string>Zentriert in Suche öffnen</string>
@@ -178,6 +197,16 @@ zuletzt aktualisiert: 01.04.2026</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="8" column="0">
+                   <widget class="QCheckBox" name="cbNurNeuigkeiten_focusregion">
+                    <property name="text">
+                     <string>Nur Neuigkeiten (seit dem letzten Besuch)</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="1">
                    <widget class="QRadioButton" name="rbExample_1_focusregion_2">
                     <property name="font">
@@ -189,35 +218,6 @@ zuletzt aktualisiert: 01.04.2026</string>
                     <property name="text">
                      <string>LK Leer (neu: 23) 
 zuletzt aktualisiert: 16.05.2025</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="QPushButton" name="pbInSucheOeffnen_focusregion">
-                    <property name="font">
-                     <font>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="toolTip">
-                     <string>Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten</string>
-                    </property>
-                    <property name="text">
-                     <string>Suchbegriff öffnen</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0" colspan="2">
-                   <widget class="QPushButton" name="pbInKarteZentrieren_focusregion">
-                    <property name="font">
-                     <font>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>In Karte zentrieren</string>
                     </property>
                    </widget>
                   </item>
@@ -1532,7 +1532,7 @@ zuletzt aktualisiert: 16.05.2025</string>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_10">
                  <item>
-                  <widget class="QGroupBox" name="gbQuellen_watchlist">
+                  <widget class="QGroupBox" name="gbStatus_watchlist">
                    <property name="font">
                     <font>
                      <weight>75</weight>
@@ -1540,73 +1540,74 @@ zuletzt aktualisiert: 16.05.2025</string>
                     </font>
                    </property>
                    <property name="title">
-                    <string>Quellen</string>
+                    <string>Status</string>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_14">
-                    <item row="1" column="0">
-                     <widget class="QCheckBox" name="cbTOPBeschreibungen_watchlist">
-                      <property name="toolTip">
-                       <string>Tagesordnungspunkte Beschreibungen</string>
-                      </property>
+                    <item row="2" column="0">
+                     <widget class="QRadioButton" name="rbMitBeschluss_watchlist">
                       <property name="text">
-                       <string>TOP Beschreibungen</string>
-                      </property>
-                      <property name="checked">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="0">
-                     <widget class="QCheckBox" name="cbVorlagenBeschreibungen_watchlist">
-                      <property name="toolTip">
-                       <string>Beschlussvorlagen Beschreibungen</string>
-                      </property>
-                      <property name="text">
-                       <string>Vorlagen Beschreibungen</string>
-                      </property>
-                      <property name="checked">
-                       <bool>true</bool>
+                       <string>Mit Beschluss</string>
                       </property>
                      </widget>
                     </item>
                     <item row="0" column="0">
-                     <widget class="QCheckBox" name="cbTOPs_watchlist">
-                      <property name="toolTip">
-                       <string>Tagesordnungspunkte</string>
-                      </property>
+                     <widget class="QRadioButton" name="rbAlleSitzungen_watchlist">
                       <property name="text">
-                       <string>TOPs</string>
+                       <string>Alle Sitzungen</string>
                       </property>
                       <property name="checked">
                        <bool>true</bool>
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="0">
-                     <widget class="QCheckBox" name="cbVorlagen_watchlist">
-                      <property name="toolTip">
-                       <string>Beschlussvorlagen</string>
-                      </property>
+                    <item row="1" column="0">
+                     <widget class="QRadioButton" name="rbMitBeschlussvorlage_watchlist">
                       <property name="text">
-                       <string>Vorlagen</string>
+                       <string>Mit Beschlussvorlage</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QGroupBox" name="gbSpeicher_watchlist">
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="title">
+                    <string>Speicher</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_8">
+                    <item>
+                     <widget class="QCheckBox" name="cbGespeichert_watchlist">
+                      <property name="text">
+                       <string>Gespeichert</string>
                       </property>
                       <property name="checked">
                        <bool>true</bool>
                       </property>
                      </widget>
                     </item>
-                    <item row="4" column="0">
-                     <widget class="QCheckBox" name="cbDokumente_watchlist">
-                      <property name="enabled">
+                    <item>
+                     <widget class="QCheckBox" name="cbNichtgespeichert_watchlist">
+                      <property name="text">
+                       <string>Nicht gespeichert</string>
+                      </property>
+                      <property name="checked">
                        <bool>false</bool>
                       </property>
-                      <property name="toolTip">
-                       <string>Angehängte Dokumente</string>
-                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="cbVersteckteSitzungen_watchlist">
                       <property name="text">
-                       <string>Dokumente</string>
+                       <string>Versteckte Sitzungen</string>
                       </property>
-                      <property name="checkable">
+                      <property name="checked">
                        <bool>false</bool>
                       </property>
                      </widget>
@@ -1629,10 +1630,10 @@ zuletzt aktualisiert: 16.05.2025</string>
                     <string>Verwaltungsebene</string>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_15">
-                    <item row="2" column="0">
-                     <widget class="QCheckBox" name="cbGemeindeverbaende_watchlist">
+                    <item row="0" column="0">
+                     <widget class="QCheckBox" name="cbPlanungsregionen_watchlist">
                       <property name="text">
-                       <string>Gemeindeverbände und Gemeinden</string>
+                       <string>Planungsregionen</string>
                       </property>
                       <property name="checked">
                        <bool>true</bool>
@@ -1649,28 +1650,15 @@ zuletzt aktualisiert: 16.05.2025</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="0" column="0">
-                     <widget class="QCheckBox" name="cbPlanungsregionen_watchlist">
+                    <item row="2" column="0">
+                     <widget class="QCheckBox" name="cbGemeindeverbaende_watchlist">
                       <property name="text">
-                       <string>Planungsregionen</string>
+                       <string>Gemeindeverbände und Gemeinden</string>
                       </property>
                       <property name="checked">
                        <bool>true</bool>
                       </property>
                      </widget>
-                    </item>
-                    <item row="3" column="0">
-                     <spacer name="verticalSpacer_3">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
                     </item>
                    </layout>
                   </widget>
@@ -1754,7 +1742,7 @@ zuletzt aktualisiert: 16.05.2025</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="cbxSortierung_watchlist_2">
+                  <widget class="QComboBox" name="cbxSortierung_watchlist">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -1861,17 +1849,11 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Zur Nutzung des Poliscope Plugins benötigst Du einen API-Key. Dieser dient als Schlüssel und identifiziert Dich auf den Poliscope-Servern.&lt;/span&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Um einen API-Key zu erstellen, besuche die Seite &lt;/span&gt;&lt;a href=&quot;https://poliscope.de/app/gis-plugin&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;GIS-Plugin&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon). Der Schlüssel ist sofort aktiv.&lt;/span&gt;  &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Um einen API-Key zu erstellen, besuche die Seite &lt;/span&gt;&lt;a href=&quot;https://poliscope.de/app/gis-plugin&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;GIS-Plugin&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon).Anschließend musst Du QGIS neu starten.&lt;/span&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Fokusregionen&lt;/span&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Wähle eine Fokusregion aus der Liste. Klicke auf &amp;quot;Liste aktualisieren&amp;quot;, um Ergebnisse zu laden – das Datum wird dabei automatisch auf den Zeitraum der gefundenen Sitzungen gesetzt. Fokusregionen können im Browser verwaltet werden: &lt;/span&gt;&lt;a href=&quot;https://poliscope.de/app/focusregions&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;poliscope.de/app/focusregions&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;.&lt;/span&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Mit &amp;quot;Nur Neuigkeiten&amp;quot; siehst Du nur Inhalte, die seit Deinem letzten Besuch neu indexiert wurden. Ohne diesen Haken werden alle Ergebnisse im eingestellten Zeitraum angezeigt.&lt;/span&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Mit den Filtern kannst Du die Anzeige nach Quellen (TOPs, Vorlagen, Dokumenten) und nach Verwaltungsebene einschränken.&lt;/span&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;In Karte zentrieren&lt;/span&gt; zoomt die Karte auf alle Orte der Fokusregion. &lt;span style=&quot; font-weight:600;&quot;&gt;Suchbegriff öffnen&lt;/span&gt; kopiert den Suchbegriff in den Suche-Tab. &lt;span style=&quot; font-weight:600;&quot;&gt;Zentriert in Suche öffnen&lt;/span&gt; zentriert zusätzlich die Karte und öffnet den Suchbegriff im Suche-Tab.&lt;/span&gt;  &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Hier siehst Du neue Ergebnisse aus Deinen Fokusregionen – also alles, was seit Deinem letzten Besuch neu hinzugekommen ist. Fokusregionen kannst Du &lt;/span&gt;&lt;a href=&quot;https://poliscope.de/app/search&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;hier &lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;erstellen. Mit den Filtern kannst Du die Anzeige nach Quellen (TOPs, Vorlagen, Dokumenten) und nach Verwaltungsebene einschränken. Vergiss nicht, auf  &amp;quot;Aktualisieren&amp;quot; zu drücken, sobald Du Deine Filter fertig eingestellt hast.&lt;/span&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Tipp: Klappe auf kleinen Bildschirmen die Filter wieder zu, um einen besseren Überblick über die Ergebnisse zu erhalten.&lt;/span&gt;  &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  &lt;/p&gt;

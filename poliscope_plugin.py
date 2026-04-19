@@ -82,6 +82,8 @@ class PoliscopePlugin:
         self.displayedCount_search = 0
 
         self.results_count_watchlist = 0
+        self._session_unbookmarked = {}
+        self._watchlist_meetings = []
 
         self.nr = 0
 
@@ -121,6 +123,7 @@ class PoliscopePlugin:
         self.run()
 
     def onClosePlugin(self):
+        self._session_unbookmarked.clear()
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
         self.pluginIsActive = False
 
@@ -359,15 +362,69 @@ class PoliscopePlugin:
                 QtWidgets.QPushButton, "pbOptions_search")
             self.pbOptions_search.clicked.connect(self.openOptions)
 
+            #########################
             # Tab Merkliste
+
             self.watchlistList = self.dockwidget.findChild(
                 QtWidgets.QListWidget, "watchlistList")
             self.pbOptions_watchlist = self.dockwidget.findChild(
                 QtWidgets.QPushButton, "pbOptions_watchlist")
             self.pbOptions_watchlist.clicked.connect(self.openOptions)
 
-            # Enable/disable search buttons depending on API key
+            self.cgbWatchlist = self.dockwidget.findChild(
+                QgsCollapsibleGroupBox, "cgbWatchlist")
+            self.dateBegin_watchlist = self.dockwidget.findChild(
+                QtWidgets.QDateTimeEdit, "mteBegin_watchlist")
+            self.dateEnd_watchlist = self.dockwidget.findChild(
+                QtWidgets.QDateTimeEdit, "mteEnd_watchlist")
+
+            self.dockwidget.pbLast30Days_watchlist.clicked.connect(
+                self.setDateLast30Days_watchlist)
+            self.dockwidget.pbNext30Days_watchlist.clicked.connect(
+                self.setDateNext30Days_watchlist)
+            self.dockwidget.pbLastYear_watchlist.clicked.connect(
+                self.setDateLastYear_watchlist)
+            self.dockwidget.pbThisYear_watchlist.clicked.connect(
+                self.setDateThisYear_watchlist)
+
+            self.cbPlanungsregionen_watchlist = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbPlanungsregionen_watchlist")
+            self.cbLandkreise_watchlist = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbLandkreise_watchlist")
+            self.cbGemeindeverbaende_watchlist = self.dockwidget.findChild(
+                QtWidgets.QCheckBox, "cbGemeindeverbaende_watchlist")
+
+            self.rbAlleAnzeigen_watchlist = self.dockwidget.findChild(
+                QtWidgets.QRadioButton, "rbAlleAnzeigen_watchlist")
+            self.rbBbox_watchlist = self.dockwidget.findChild(
+                QtWidgets.QRadioButton, "rbBbox_watchlist")
+            self.rbZentrum_watchlist = self.dockwidget.findChild(
+                QtWidgets.QRadioButton, "rbZentrum_watchlist")
+            self.rbFokusregion_watchlist = self.dockwidget.findChild(
+                QtWidgets.QRadioButton, "rbFokusregion_watchlist")
+
+            self.wFokusregionen_watchlist = self.dockwidget.findChild(
+                QtWidgets.QWidget, "wFokusregionen_watchlist")
+            self.wFokusregionen_watchlist.setVisible(False)
+            self._watchlist_focusregion_checkboxes = []
+
+            self.rbFokusregion_watchlist.toggled.connect(
+                self._on_geo_radio_toggled_watchlist)
+
+            self.cbxSortierung_watchlist = self.dockwidget.findChild(
+                QtWidgets.QComboBox, "cbxSortierung_watchlist")
+            self.cbxSortierung_watchlist.currentIndexChanged.connect(
+                self.onSortingChanged_watchlist)
+
+            self.lMeetingCount_watchlist = self.dockwidget.findChild(
+                QtWidgets.QLabel, "lMeetingCount_watchlist")
+            self.watchlistRefButton = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "watchlistRefButton")
+            self.watchlistRefButton.clicked.connect(self.btnHandlerRefresh_watchlist)
+
+            # Enable/disable buttons depending on API key
             has_api = self.api is not None
+            self.watchlistRefButton.setEnabled(has_api)
             self.searchBbSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
             self.searchCenterSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
 
@@ -390,6 +447,22 @@ class PoliscopePlugin:
                     self.searchList,
                     "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken."
                 )
+                self._show_list_hint(
+                    self.watchlistList,
+                    "Auf <b>Aktualisieren</b> klicken, um die Merkliste zu laden."
+                )
+
+            # Startdatum Merkliste: letztes Jahr bis heute + 2 Monate
+            today_wl = date.today()
+            today_wl_last_year = today_wl - relativedelta(years=1)
+            today_wl_plus_two = today_wl + relativedelta(months=2)
+            self.dateBegin_watchlist.setDate(
+                QDate(today_wl_last_year.year, today_wl_last_year.month, today_wl_last_year.day))
+            self.dateEnd_watchlist.setDate(
+                QDate(today_wl_plus_two.year, today_wl_plus_two.month, today_wl_plus_two.day))
+            self.setCgbTitleWatchlist(
+                today_wl_last_year.strftime("%d.%m.%y") + " - " +
+                today_wl_plus_two.strftime("%d.%m.%y"))
 
             # Startdatum: letztes Jahr bis heute + 2 Monate
             today = date.today()
@@ -1187,4 +1260,245 @@ class PoliscopePlugin:
 
     def showDetailDialog(self, result_group):
         dialog = DetailDialog(result_group, self.api)
+        dialog.exec_()
+
+    # Merkliste methods
+
+    def btnHandlerRefresh_watchlist(self):
+        if not self.api:
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.watchlistRefButton.setEnabled(False)
+        try:
+            meetings, _ = self.api.get_bookmarked_meetings(limit=500, detail="standard")
+        finally:
+            QApplication.restoreOverrideCursor()
+            self.watchlistRefButton.setEnabled(True)
+
+        if meetings is None:
+            return
+
+        bookmarked_ids = {m.id for m in meetings}
+        unbookmarked = [m for mid, m in self._session_unbookmarked.items()
+                        if mid not in bookmarked_ids]
+        self._watchlist_meetings = meetings + unbookmarked
+
+        self._refresh_watchlist_display()
+
+    def _refresh_watchlist_display(self):
+        filtered = self._apply_watchlist_filters(self._watchlist_meetings)
+        sorted_meetings = self._sort_watchlist(filtered)
+
+        self.watchlistList.clear()
+        self.setMeetingsToList_watchlist(sorted_meetings)
+
+        total = len(sorted_meetings)
+        if total == 0:
+            self.lMeetingCount_watchlist.setText("Keine Sitzungen gefunden")
+        elif total == 1:
+            self.lMeetingCount_watchlist.setText("1 Sitzung gefunden")
+        else:
+            self.lMeetingCount_watchlist.setText(f"{total} Sitzungen gefunden")
+
+    def _apply_watchlist_filters(self, meetings):
+        date_from = self.dateBegin_watchlist.date().toString("yyyy-MM-dd")
+        date_to = self.dateEnd_watchlist.date().toString("yyyy-MM-dd")
+
+        level_map = {
+            self.cbPlanungsregionen_watchlist: ["pr"],
+            self.cbLandkreise_watchlist: ["40"],
+            self.cbGemeindeverbaende_watchlist: ["50", "60"],
+        }
+        selected_levels = []
+        for cb, levels in level_map.items():
+            if cb.isChecked():
+                selected_levels.extend(levels)
+
+        geo_mode = None
+        if self.rbBbox_watchlist.isChecked():
+            geo_mode = "bbox"
+        elif self.rbZentrum_watchlist.isChecked():
+            geo_mode = "zentrum"
+        elif self.rbFokusregion_watchlist.isChecked():
+            geo_mode = "fokusregion"
+
+        selected_fr_entity_ids = None
+        if geo_mode == "fokusregion":
+            selected_fr_entity_ids = set()
+            for cb in self._watchlist_focusregion_checkboxes:
+                if cb.isChecked():
+                    fr_id = cb.property("focusregion_id")
+                    fr = next((f for f in (self._focusregions or []) if f.id == fr_id), None)
+                    if fr and fr.entity_ids:
+                        selected_fr_entity_ids.update(fr.entity_ids)
+
+        bbox_bounds = None
+        if geo_mode in ("bbox", "zentrum"):
+            if geo_mode == "bbox":
+                pts = Utils.get_current_canvas_bbox_polygon_epsg4326(self.iface)
+            else:
+                pts = Utils.get_current_canvas_bbox_center_epsg4326(self.iface)
+            if pts:
+                lons = [p[0] for p in pts]
+                lats = [p[1] for p in pts]
+                bbox_bounds = (min(lons), min(lats), max(lons), max(lats))
+
+        filtered = []
+        for m in meetings:
+            if m.date and (m.date[:10] < date_from or m.date[:10] > date_to):
+                continue
+
+            if selected_levels:
+                entity_levels = [e.get('level', '') for e in m.ris.get('entities', [])]
+                if not any(lvl in selected_levels for lvl in entity_levels):
+                    continue
+
+            if geo_mode == "fokusregion":
+                if selected_fr_entity_ids:
+                    meeting_entity_ids = {e.get('id', '') for e in m.ris.get('entities', [])}
+                    if not meeting_entity_ids.intersection(selected_fr_entity_ids):
+                        continue
+            elif geo_mode in ("bbox", "zentrum"):
+                if bbox_bounds is None:
+                    pass
+                elif not m.location:
+                    continue
+                else:
+                    min_lon, min_lat, max_lon, max_lat = bbox_bounds
+                    lon = m.location.get('lon')
+                    lat = m.location.get('lat')
+                    if lon is None or lat is None:
+                        continue
+                    if not (min_lon <= lon <= max_lon and min_lat <= lat <= max_lat):
+                        continue
+
+            filtered.append(m)
+
+        return filtered
+
+    def _sort_watchlist(self, meetings):
+        sort_text = self.cbxSortierung_watchlist.currentText()
+        if sort_text == "Datum (neueste zuerst)":
+            return sorted(meetings, key=lambda m: m.date or "", reverse=True)
+        elif sort_text == "Datum (älteste zuerst)":
+            return sorted(meetings, key=lambda m: m.date or "")
+        return meetings
+
+    def setMeetingsToList_watchlist(self, meetings):
+        nr = 0
+        for meeting in meetings:
+            item_widget = ListItemWidget()
+            item_widget.lLastStatusUpdate.setVisible(False)
+            item_widget.lScore.setVisible(False)
+            item_widget.lChunkType.setVisible(False)
+            item_widget.lHitsPreview.setVisible(False)
+
+            item_widget.lTitle.setText(meeting.title or meeting.id)
+            if meeting.date:
+                d = (meeting.date + 'T00:00:00')[:19]
+                item_widget.lDate.setText(Utils.format_date(d))
+
+            entities = meeting.ris.get('entities', [])
+            breadcrumb = " > ".join(e.get('name', '') for e in entities if e.get('name'))
+            item_widget.lRISBreadcrumbs.setText(breadcrumb)
+
+            if meeting.location:
+                item_widget.lLocation.setText(
+                    Utils.getLocationString(
+                        f"{meeting.location['lat']}, {meeting.location['lon']}"))
+
+            is_bookmarked = meeting.id not in self._session_unbookmarked
+            item_widget.pbBookmark.setChecked(is_bookmarked)
+            item_widget.pbBookmark.clicked.connect(
+                lambda checked=False, m=meeting, btn=item_widget.pbBookmark:
+                    self.bookmarkButtonPressed_watchlist(m, btn))
+
+            item_widget.pbDetails.clicked.connect(
+                lambda checked=False, m=meeting: self.showDetailDialog_watchlist(m))
+
+            entity_id = entities[0].get('id') if entities else None
+            if entity_id:
+                web_url = f"https://poliscope.de/app/entity/{entity_id}/meeting/{meeting.id}"
+                item_widget.pbWeb.clicked.connect(
+                    lambda checked=False, url=web_url: webbrowser.open(url))
+            else:
+                item_widget.pbWeb.setEnabled(False)
+
+            ris_url = meeting.ris.get('url')
+            if ris_url:
+                item_widget.pbOpenRIS.clicked.connect(
+                    lambda checked=False, url=ris_url: webbrowser.open(url))
+            else:
+                item_widget.pbOpenRIS.setEnabled(False)
+
+            container = QtWidgets.QWidget()
+            container.setObjectName("container")
+            layout = QtWidgets.QVBoxLayout(container)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(item_widget)
+            if nr % 2 == 0:
+                container.setStyleSheet("background-color: #ffffff;")
+            else:
+                container.setStyleSheet("background-color: #eeeeee;")
+
+            item = QtWidgets.QListWidgetItem()
+            item.setSizeHint(container.sizeHint())
+            self.watchlistList.addItem(item)
+            self.watchlistList.setItemWidget(item, container)
+            nr += 1
+
+    def bookmarkButtonPressed_watchlist(self, meeting, button):
+        if button.isChecked():
+            self.api.add_bookmarked_meeting(meeting.id)
+            self._session_unbookmarked.pop(meeting.id, None)
+        else:
+            self.api.remove_bookmarked_meeting(meeting.id)
+            self._session_unbookmarked[meeting.id] = meeting
+
+    def _on_geo_radio_toggled_watchlist(self):
+        is_fr = self.rbFokusregion_watchlist.isChecked()
+        self.wFokusregionen_watchlist.setVisible(is_fr)
+        if is_fr and not self._watchlist_focusregion_checkboxes:
+            self._populate_focusregion_checkboxes_watchlist()
+
+    def _populate_focusregion_checkboxes_watchlist(self):
+        layout = self.wFokusregionen_watchlist.layout()
+        if layout is None:
+            layout = QtWidgets.QVBoxLayout(self.wFokusregionen_watchlist)
+            layout.setContentsMargins(0, 0, 0, 0)
+
+        self._watchlist_focusregion_checkboxes = []
+        for fr in (self._focusregions or []):
+            cb = QCheckBox(fr.name or fr.id, self.wFokusregionen_watchlist)
+            cb.setProperty("focusregion_id", fr.id)
+            cb.setChecked(True)
+            layout.addWidget(cb)
+            self._watchlist_focusregion_checkboxes.append(cb)
+
+    def onSortingChanged_watchlist(self):
+        if not self._watchlist_meetings:
+            return
+        self._refresh_watchlist_display()
+
+    def showDetailDialog_watchlist(self, meeting):
+        dialog = DetailDialog(api=self.api)
+        entities = meeting.ris.get('entities', [])
+        breadcrumb = " > ".join(e.get('name', '') for e in entities if e.get('name'))
+        dialog.lRISBreadcrumbs.setText(breadcrumb)
+        dialog.lLocation.setText(Utils.getLocationString(
+            entities[0].get('name', '') if entities else ''))
+        if meeting.date:
+            d = (meeting.date + 'T00:00:00')[:19]
+            dialog.lDate.setText(Utils.format_date(d))
+        else:
+            dialog.lDate.hide()
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            full_meeting = self.api.get_meeting(meeting.id, detail="full")
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        dialog._populate_meeting(full_meeting if full_meeting else meeting)
         dialog.exec_()
