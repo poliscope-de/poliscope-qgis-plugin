@@ -165,9 +165,6 @@
                       <bold>false</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Öffnet den Suche-Tab mit allen Inhalten dieser Fokusregion – nicht nur die Neuigkeiten</string>
-                    </property>
                     <property name="text">
                      <string>Suchbegriff öffnen</string>
                     </property>

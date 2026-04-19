@@ -1022,7 +1022,7 @@ class PoliscopePlugin:
                     f"Den Haken bei <b>Nur Neuigkeiten</b> entfernen, "
                     f"um alle Ergebnisse im ausgewählten Zeitraum zu sehen.<br><br>"
                     f"Mit <b>Suchbegriff öffnen</b> den Suchbegriff der Fokusregion "
-                    f"in der Suche öffnen und erweiterte Einstellungen nutzen."
+                    f"in der Suche öffnen um erweiterte Einstellungen nutzen."
                 )
                 self.lMeetingCount_focusregion.setText("")
                 self.lblResultCount_focusregion.setText("")
@@ -1203,7 +1203,7 @@ class PoliscopePlugin:
         fr = self._get_selected_focusregion()
         if not fr or not fr.entity_ids:
             return
-        ids_param = ",".join(fr.entity_ids)
+        ids_param = ",".join(eid.rstrip('*') for eid in fr.entity_ids)
         entities, _ = self.api.list_entities(ids=ids_param, detail="standard")
         if not entities:
             return
@@ -1420,15 +1420,38 @@ class PoliscopePlugin:
                         selected_fr_entity_ids.update(fr.entity_ids)
 
         bbox_bounds = None
-        if geo_mode in ("bbox", "zentrum"):
-            if geo_mode == "bbox":
-                pts = Utils.get_current_canvas_bbox_polygon_epsg4326(self.iface)
-            else:
-                pts = Utils.get_current_canvas_bbox_center_epsg4326(self.iface)
+        if geo_mode == "bbox":
+            pts = Utils.get_current_canvas_bbox_polygon_epsg4326(self.iface)
             if pts:
                 lons = [p[0] for p in pts]
                 lats = [p[1] for p in pts]
                 bbox_bounds = (min(lons), min(lats), max(lons), max(lats))
+
+        zentrum_entity_id = None
+        if geo_mode == "zentrum":
+            canvas = self.iface.mapCanvas()
+            if canvas and canvas.extent():
+                src_crs = canvas.mapSettings().destinationCrs()
+                tgt_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+                transform = QgsCoordinateTransform(src_crs, tgt_crs, QgsProject.instance())
+                t = transform.transformBoundingBox(canvas.extent())
+                cx = (t.xMinimum() + t.xMaximum()) / 2
+                cy = (t.yMinimum() + t.yMaximum()) / 2
+                level_prio = {"40": 0, "50": 1, "60": 2, "pr": 3, "10": 4}
+                best_e, best_score = None, None
+                for e in self._entity_hierarchy.values():
+                    if not e.location:
+                        continue
+                    elat = e.location.get('lat')
+                    elon = e.location.get('lon')
+                    if elat is None or elon is None:
+                        continue
+                    dist2 = (elon - cx) ** 2 + (elat - cy) ** 2
+                    score = (level_prio.get(e.level, 5), dist2)
+                    if best_score is None or score < best_score:
+                        best_score = score
+                        best_e = e
+                zentrum_entity_id = best_e.id if best_e else None
 
         filtered = []
         for m in meetings:
@@ -1441,6 +1464,8 @@ class PoliscopePlugin:
                     continue
 
             if geo_mode == "fokusregion":
+                if not selected_fr_entity_ids:
+                    continue
                 if selected_fr_entity_ids:
                     meeting_entity_ids = [e.get('id', '') for e in m.ris.get('entities', []) if e.get('id')]
                     matched = False
@@ -1466,16 +1491,13 @@ class PoliscopePlugin:
                             break
                     if not matched:
                         continue
-            elif geo_mode in ("bbox", "zentrum"):
-                if bbox_bounds is None:
-                    pass
-                else:
+            elif geo_mode == "bbox":
+                if bbox_bounds is not None:
                     min_lon, min_lat, max_lon, max_lat = bbox_bounds
                     lat, lon = None, None
                     if m.location:
                         lat = m.location.get('lat')
                         lon = m.location.get('lon')
-                    # Fall back to entity location from _entity_hierarchy
                     if (lat is None or lon is None) and m.ris:
                         for e_dict in m.ris.get('entities', []):
                             e_obj = self._entity_hierarchy.get(e_dict.get('id', ''))
@@ -1487,6 +1509,14 @@ class PoliscopePlugin:
                     if lat is not None and lon is not None:
                         if not (min_lon <= lon <= max_lon and min_lat <= lat <= max_lat):
                             continue
+            elif geo_mode == "zentrum":
+                if zentrum_entity_id:
+                    meeting_entity_ids = [e.get('id', '') for e in m.ris.get('entities', []) if e.get('id')]
+                    if not any(
+                        mid.startswith(zentrum_entity_id) or zentrum_entity_id.startswith(mid)
+                        for mid in meeting_entity_ids
+                    ):
+                        continue
 
             filtered.append(m)
 
