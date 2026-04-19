@@ -687,7 +687,7 @@ class PoliscopeAPI:
         return None
 
     
-    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, ids=None, limit=None, offset=None, detail=None):
+    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, ids=None, limit=None, offset=None, detail=None, silent=False):
         """
         List administrative entities with optional filtering and pagination.
         Returns a tuple (list[Entity], meta) where meta contains pagination info,
@@ -723,10 +723,12 @@ class PoliscopeAPI:
                 meta = data["meta"]
                 return entities, meta
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                if not silent:
+                    print(f"[Fehler] Status {response.status_code}: {response.text}")
                 return (None, None)
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Verwaltungseinheiten: {e}")
+            if not silent:
+                print(f"[Exception] Fehler beim Abrufen der Verwaltungseinheiten: {e}")
         return (None, None)
 
     def get_entity(self, id: str, detail=None):

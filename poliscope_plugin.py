@@ -84,6 +84,7 @@ class PoliscopePlugin:
         self.results_count_watchlist = 0
         self._session_unbookmarked = {}
         self._bookmarked_meetings = []
+        self._entity_hierarchy = {}
 
         self.nr = 0
 
@@ -837,8 +838,15 @@ class PoliscopePlugin:
             item_widget.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(result_group.context))
             if result_group.context.location:
                 loc = result_group.context.location
+                lat, lon = loc['lat'], loc['lon']
+                loc_html = Utils.getLocationString(f"{lat}, {lon}")
                 item_widget.lLocation.setText(
-                    Utils.getLocationString(f"{loc['lat']}, {loc['lon']}"))
+                    f"<a href='geo:{lat},{lon}' style='color:inherit;text-decoration:none;'>"
+                    f"{loc_html}</a>")
+                item_widget.lLocation.setOpenExternalLinks(False)
+                item_widget.lLocation.linkActivated.connect(
+                    lambda href, _lat=lat, _lon=lon:
+                        self._zoom_to_point(_lat, _lon))
             item_widget.lScore.setText(Utils.format_score(result_group.score))
             item_widget.lChunkType.setText(
                 type_map.get(result_group.group_type, result_group.group_type))
@@ -1267,6 +1275,52 @@ class PoliscopePlugin:
         dialog = DetailDialog(result_group, self.api)
         dialog.exec_()
 
+    def _zoom_to_point(self, lat, lon):
+        target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        canvas = self.iface.mapCanvas()
+        transform = QgsCoordinateTransform(
+            target_crs, canvas.mapSettings().destinationCrs(), QgsProject.instance())
+        extent = QgsRectangle(lon - 0.2, lat - 0.2, lon + 0.2, lat + 0.2)
+        transformed = transform.transformBoundingBox(extent)
+        canvas.setExtent(transformed)
+        canvas.refresh()
+
+    def _fetch_entity_hierarchy(self, entity_ids):
+        lookup = {}
+        ids_to_fetch = set(entity_ids)
+        while ids_to_fetch:
+            ids_param = ",".join(ids_to_fetch)
+            entities, _ = self.api.list_entities(ids=ids_param, detail="full", silent=True)
+            if not entities:
+                break
+            next_ids = set()
+            for e in entities:
+                lookup[e.id] = e
+                if e.parent and e.parent not in lookup:
+                    next_ids.add(e.parent)
+            ids_to_fetch = next_ids
+        return lookup
+
+    def _build_meeting_breadcrumb(self, entities):
+        if not entities:
+            return ""
+        entity_id = entities[0].get('id', '')
+        e = self._entity_hierarchy.get(entity_id)
+        # Start from the entity's parent — same as context.parents in search results
+        current_id = (e.parent or '') if e else ''
+        parts = []
+        visited = set()
+        while current_id and current_id not in visited:
+            visited.add(current_id)
+            parent_e = self._entity_hierarchy.get(current_id)
+            if parent_e:
+                prefix = Utils.convertRSTypes(parent_e.level)
+                parts.append(f"{prefix}: {parent_e.name}" if prefix else parent_e.name)
+                current_id = parent_e.parent or ''
+            else:
+                break
+        return " > ".join(parts)
+
     # Merkliste methods
 
     def btnHandlerRefresh_watchlist(self):
@@ -1285,6 +1339,14 @@ class PoliscopePlugin:
             return
 
         self._bookmarked_meetings = meetings
+
+        entity_ids = {
+            e.get('id') for m in meetings
+            for e in m.ris.get('entities', [])
+            if e.get('id')
+        }
+        self._entity_hierarchy = self._fetch_entity_hierarchy(entity_ids)
+
         self._refresh_watchlist_display()
 
     def _refresh_watchlist_display(self):
@@ -1401,21 +1463,28 @@ class PoliscopePlugin:
             item_widget.lLastStatusUpdate.setVisible(False)
             item_widget.lScore.setVisible(False)
             item_widget.lChunkType.setVisible(False)
-            item_widget.lHitsPreview.setVisible(False)
 
-            item_widget.lTitle.setText(meeting.title or meeting.id)
+            entities = meeting.ris.get('entities', [])
+            item_widget.lRISBreadcrumbs.setText(self._build_meeting_breadcrumb(entities))
+
             if meeting.date:
                 d = (meeting.date + 'T00:00:00')[:19]
                 item_widget.lDate.setText(Utils.format_date(d))
 
-            entities = meeting.ris.get('entities', [])
-            breadcrumb = " > ".join(e.get('name', '') for e in entities if e.get('name'))
-            item_widget.lRISBreadcrumbs.setText(breadcrumb)
+            item_widget.lTitle.setText(entities[0].get('name', '') if entities else '')
+            item_widget.lHitsPreview.setText(meeting.title or meeting.id)
 
             if meeting.location:
+                lat = meeting.location['lat']
+                lon = meeting.location['lon']
+                loc_html = Utils.getLocationString(f"{lat}, {lon}")
                 item_widget.lLocation.setText(
-                    Utils.getLocationString(
-                        f"{meeting.location['lat']}, {meeting.location['lon']}"))
+                    f"<a href='geo:{lat},{lon}' style='color:inherit;text-decoration:none;'>"
+                    f"{loc_html}</a>")
+                item_widget.lLocation.setOpenExternalLinks(False)
+                item_widget.lLocation.linkActivated.connect(
+                    lambda href, _lat=lat, _lon=lon:
+                        self._zoom_to_point(_lat, _lon))
 
             is_bookmarked = meeting.id not in self._session_unbookmarked
             item_widget.pbBookmark.setChecked(is_bookmarked)
@@ -1498,8 +1567,7 @@ class PoliscopePlugin:
     def showDetailDialog_watchlist(self, meeting):
         dialog = DetailDialog(api=self.api)
         entities = meeting.ris.get('entities', [])
-        breadcrumb = " > ".join(e.get('name', '') for e in entities if e.get('name'))
-        dialog.lRISBreadcrumbs.setText(breadcrumb)
+        dialog.lRISBreadcrumbs.setText(self._build_meeting_breadcrumb(entities))
         dialog.lLocation.setText(Utils.getLocationString(
             entities[0].get('name', '') if entities else ''))
         if meeting.date:
