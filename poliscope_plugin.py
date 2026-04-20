@@ -129,7 +129,6 @@ class PoliscopePlugin:
         icon_path = os.path.join(os.path.dirname(__file__), 'logo.png')
         self.add_action(icon_path, text=self.tr(u'Poliscope Plugin'),
                         callback=self.run, parent=self.iface.mainWindow())
-        self.run()
 
     def onClosePlugin(self):
         self._session_unbookmarked.clear()
@@ -141,6 +140,10 @@ class PoliscopePlugin:
             self.iface.removePluginMenu(self.tr(u'&Poliscope Plugin'), action)
             self.iface.removeToolBarIcon(action)
         del self.toolbar
+        if self.dockwidget is not None:
+            self.iface.removeDockWidget(self.dockwidget)
+            self.dockwidget.deleteLater()
+            self.dockwidget = None
 
     def run(self):
         if not self.pluginIsActive:
