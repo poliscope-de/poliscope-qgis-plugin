@@ -665,9 +665,8 @@ class PoliscopeAPI:
     TIMEOUT = 60
 
     def __init__(self, api_key: str):
-        self.headers = {
-            "Authorization": f"Bearer {api_key}"
-        }
+        self.session = requests.Session()
+        self.session.headers.update({"Authorization": f"Bearer {api_key}"})
 
     def get_qgis_plugin_version(self) -> Optional[str]:
         """
@@ -676,7 +675,7 @@ class PoliscopeAPI:
         Returns the version string (e.g. "2.1.0") or None on error.
         """
         try:    
-            response = requests.get(f"{self.BASE_URL}/health", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/health", timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return data.get("version")
@@ -717,7 +716,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/entities", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/entities", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 entities = [Entity.from_dict(item) for item in data["data"]]
@@ -746,7 +745,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/entities/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/entities/{id}", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Entity.from_dict(data["data"])
@@ -766,7 +765,7 @@ class PoliscopeAPI:
             id — unique file identifier. Required.
         """
         try:
-            response = requests.get(f"{self.BASE_URL}/files/{id}", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/files/{id}", timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return FileSummary.from_dict(data["data"])
@@ -786,7 +785,7 @@ class PoliscopeAPI:
             id — unique file identifier. Required.
         """
         try:
-            response = requests.get(f"{self.BASE_URL}/files/{id}/content", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/files/{id}/content", timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return FileContent.from_dict(data["data"])
@@ -817,7 +816,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/focusregions", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 focusregions = [Focusregion.from_dict(item) for item in data["data"]]
@@ -830,25 +829,6 @@ class PoliscopeAPI:
             print(f"[Exception] Fehler beim Abrufen der Fokusregionen: {e}")
         return (None, None)
 
-    def get_focusregion_counts(self):
-        """
-        Fetch the number of new search results per focus region for the authenticated user.
-        Counts are based on each focus region's saved query and the user's last visit timestamp.
-        Returns a dict mapping focus region ID to count (e.g. {"7adfa2c6-...": 5}),
-        or None on error.
-        """
-        try:
-            response = requests.get(f"{self.BASE_URL}/focusregions/counts", headers=self.headers, timeout=self.TIMEOUT)
-            if response.status_code == 200:
-                data = response.json()
-                return data["data"]
-            else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
-                return None
-        except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Fokusregionanzahl: {e}")
-        return None
-    
     def get_focusregion(self, id: str, detail=None):
         """
         Fetch a single focus region by ID.
@@ -865,7 +845,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/focusregions/{id}", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Focusregion.from_dict(data["data"])
@@ -887,7 +867,7 @@ class PoliscopeAPI:
             id — focus region ID. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/visit", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.post(f"{self.BASE_URL}/focusregions/{id}/visit", timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -908,7 +888,7 @@ class PoliscopeAPI:
             id — focus region ID. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/pause", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.post(f"{self.BASE_URL}/focusregions/{id}/pause", timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -928,7 +908,7 @@ class PoliscopeAPI:
             id — focus region ID. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/unpause", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.post(f"{self.BASE_URL}/focusregions/{id}/unpause", timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -954,7 +934,7 @@ class PoliscopeAPI:
             params["newSince"] = new_since
 
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions/{id}/results", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/focusregions/{id}/results", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 result_groups = [ResultGroup.from_dict(r) for r in data["data"]]
@@ -995,7 +975,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/meetings", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/meetings", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 meetings = [Meeting.from_dict(item) for item in data["data"]]
@@ -1028,7 +1008,7 @@ class PoliscopeAPI:
         params = {k: v for k,v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/meetings/bookmarked", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/meetings/bookmarked", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 bookmarked_meetings = [Meeting.from_dict(item) for item in data["data"]]
@@ -1051,7 +1031,7 @@ class PoliscopeAPI:
             id — unique meeting identifier. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.post(f"{self.BASE_URL}/meetings/{id}/bookmark", timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -1070,7 +1050,7 @@ class PoliscopeAPI:
             id — unique meeting identifier. Required.
         """
         try:
-            response = requests.delete(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers, timeout=self.TIMEOUT)
+            response = self.session.delete(f"{self.BASE_URL}/meetings/{id}/bookmark", timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -1095,7 +1075,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/meetings/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/meetings/{id}", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Meeting.from_dict(data["data"])
@@ -1121,7 +1101,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/proposals/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/proposals/{id}", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Proposal.from_dict(data["data"])
@@ -1171,7 +1151,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/search", headers=self.headers, params=params, timeout=self.TIMEOUT)
+            response = self.session.get(f"{self.BASE_URL}/search", params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 result_groups = [ResultGroup.from_dict(item) for item in data["data"]]

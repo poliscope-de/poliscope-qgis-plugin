@@ -981,9 +981,8 @@ class PoliscopePlugin:
 
     def _load_focusregion_radio_buttons(self):
         focusregions, _ = self.api.get_focusregions(limit=500, detail="standard")
-        counts = self.api.get_focusregion_counts() or {}
         if focusregions:
-            self._populate_focusregion_radio_buttons(focusregions, counts)
+            self._populate_focusregion_radio_buttons(focusregions)
             self._focusregions = self._deduped_focusregions
 
     def btnHandlerRefresh_focusregion(self, force=False):
@@ -995,10 +994,9 @@ class PoliscopePlugin:
             # Load focusregions if not yet cached
             if self._focusregions is None:
                 focusregions, _ = self.api.get_focusregions(limit=500, detail="standard")
-                counts = self.api.get_focusregion_counts() or {}
                 if not focusregions:
                     return
-                self._populate_focusregion_radio_buttons(focusregions, counts)
+                self._populate_focusregion_radio_buttons(focusregions)
                 self._focusregions = self._deduped_focusregions
 
             # Get selected focusregion
@@ -1080,7 +1078,7 @@ class PoliscopePlugin:
         else:
             self.pbMehrLaden_focusregion.setVisible(False)
 
-    def _populate_focusregion_radio_buttons(self, focusregions, counts):
+    def _populate_focusregion_radio_buttons(self, focusregions):
         gb = self.gbFocusregions_focusregion
         layout = gb.layout()
 
@@ -1120,7 +1118,7 @@ class PoliscopePlugin:
         for i, fr in enumerate(focusregions):
             row = i // 2
             col = i % 2
-            new_count = counts.get(fr.id, 0)
+            new_count = next((m.get('newResultsCount') or 0 for m in (fr.team or [])), 0)
             label = fr.name or fr.id
             label = f"{label} (neu: {new_count})"
             # Add last-visit date from the first team member that has one
