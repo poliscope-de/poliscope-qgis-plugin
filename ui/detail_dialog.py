@@ -6,8 +6,36 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QGroupBox,
 from qgis.PyQt.QtGui import QFont
 from qgis.gui import QgsCollapsibleGroupBox
 import os
+import re
+from functools import cmp_to_key
 
 from ..utils.utils import Utils
+
+
+def _compare_agenda_number(a_num, b_num):
+    a = a_num or ""
+    b = b_num or ""
+
+    am = re.match(r'^([^\d]+)', a)
+    bm = re.match(r'^([^\d]+)', b)
+    a_prefix = am.group(0) if am else ""
+    b_prefix = bm.group(0) if bm else ""
+
+    if a_prefix != b_prefix:
+        a_s = a_prefix.rstrip().upper()
+        b_s = b_prefix.rstrip().upper()
+        if a_s == "N" and b_s == "Ö":
+            return 1
+        if a_s == "Ö" and b_s == "N":
+            return -1
+        return (a_prefix > b_prefix) - (a_prefix < b_prefix)
+
+    a_nums = [int(x) for x in re.findall(r'\d+', a)]
+    b_nums = [int(x) for x in re.findall(r'\d+', b)]
+    for ai, bi in zip(a_nums, b_nums):
+        if ai != bi:
+            return ai - bi
+    return len(a_nums) - len(b_nums)
 
 
 class DetailDialog(QDialog):
@@ -149,6 +177,7 @@ class DetailDialog(QDialog):
         layout.addStretch()
 
     def _generate_agenda_html(self, agenda_items):
+        agenda_items = sorted(agenda_items, key=cmp_to_key(lambda a, b: _compare_agenda_number(a.number, b.number)))
         documents_present = any(
             item.documents and any(d.file for d in item.documents)
             for item in agenda_items
@@ -204,3 +233,4 @@ class DetailDialog(QDialog):
     def _adjust_text_browser_height(self, textBrowser):
         doc_height = textBrowser.document().size().height()
         textBrowser.setFixedHeight(int(doc_height) + 5)
+        self.adjustSize()
