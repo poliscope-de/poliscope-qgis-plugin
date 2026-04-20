@@ -126,7 +126,7 @@ class PoliscopePlugin:
         return action
 
     def initGui(self):
-        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+        icon_path = os.path.join(os.path.dirname(__file__), 'logo.png')
         self.add_action(icon_path, text=self.tr(u'Poliscope Plugin'),
                         callback=self.run, parent=self.iface.mainWindow())
         self.run()
@@ -150,7 +150,7 @@ class PoliscopePlugin:
 
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
-            self.dockwidget.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.png')))
+            self.dockwidget.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'logo.png')))
 
             self.tabWidget = self.dockwidget.findChild(QTabWidget, "tabWidget")
 
