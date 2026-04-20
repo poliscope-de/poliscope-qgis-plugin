@@ -287,5 +287,7 @@ class DetailDialog(QDialog):
 
     def _adjust_text_browser_height(self, textBrowser):
         doc_height = textBrowser.document().size().height()
-        textBrowser.setFixedHeight(int(doc_height) + 5)
+        screen_h = QApplication.primaryScreen().availableGeometry().height()
+        max_h = int(screen_h * 0.4)
+        textBrowser.setFixedHeight(min(int(doc_height) + 5, max_h))
         self.adjustSize()
