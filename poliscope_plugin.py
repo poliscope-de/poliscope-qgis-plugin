@@ -89,10 +89,8 @@ class PoliscopePlugin:
         self.results_search = []
         self.displayedCount_search = 0
 
-        self.results_count_watchlist = 0
         self._session_unbookmarked = {}
         self._bookmarked_meetings = []
-        self._entity_hierarchy = {}
 
         # Shared alternating-row counter for setResultsToList; reset to 0 before each render
         self.nr = 0
@@ -1316,40 +1314,14 @@ class PoliscopePlugin:
         canvas.setExtent(transformed)
         canvas.refresh()
 
-    def _fetch_entity_hierarchy(self, entity_ids):
-        lookup = {}
-        ids_to_fetch = set(entity_ids)
-        while ids_to_fetch:
-            ids_param = ",".join(ids_to_fetch)
-            entities, _ = self.api.list_entities(ids=ids_param, detail="full", silent=True)
-            if not entities:
-                break
-            next_ids = set()
-            for e in entities:
-                lookup[e.id] = e
-                if e.parent and e.parent not in lookup:
-                    next_ids.add(e.parent)
-            ids_to_fetch = next_ids
-        return lookup
-
     def _build_meeting_breadcrumb(self, entities):
         if not entities:
             return ""
-        entity_id = entities[0].get('id', '')
-        e = self._entity_hierarchy.get(entity_id)
-        # Start from the entity's parent — same as context.parents in search results
-        current_id = (e.parent or '') if e else ''
         parts = []
-        visited = set()
-        while current_id and current_id not in visited:
-            visited.add(current_id)
-            parent_e = self._entity_hierarchy.get(current_id)
-            if parent_e:
-                prefix = Utils.convertRSTypes(parent_e.level)
-                parts.append(f"{prefix}: {parent_e.name}" if prefix else parent_e.name)
-                current_id = parent_e.parent or ''
-            else:
-                break
+        for p in entities[0].get('parents', []):
+            prefix = Utils.convertRSTypes(p.get('level', ''))
+            name = p.get('name', '')
+            parts.append(f"{prefix}: {name}" if prefix else name)
         return " > ".join(parts)
 
     # Merkliste methods
@@ -1370,14 +1342,6 @@ class PoliscopePlugin:
             return
 
         self._bookmarked_meetings = meetings
-
-        entity_ids = {
-            e.get('id') for m in meetings
-            for e in m.ris.get('entities', [])
-            if e.get('id')
-        }
-        self._entity_hierarchy = self._fetch_entity_hierarchy(entity_ids)
-
         self._refresh_watchlist_display()
 
     def _refresh_watchlist_display(self):
@@ -1467,19 +1431,21 @@ class PoliscopePlugin:
                 cy = (t.yMinimum() + t.yMaximum()) / 2
                 level_prio = {"40": 0, "50": 1, "60": 2, "pr": 3, "10": 4}
                 best_e, best_score = None, None
-                for e in self._entity_hierarchy.values():
-                    if not e.location:
-                        continue
-                    elat = e.location.get('lat')
-                    elon = e.location.get('lon')
-                    if elat is None or elon is None:
-                        continue
-                    dist2 = (elon - cx) ** 2 + (elat - cy) ** 2
-                    score = (level_prio.get(e.level, 5), dist2)
-                    if best_score is None or score < best_score:
-                        best_score = score
-                        best_e = e
-                zentrum_entity_id = best_e.id if best_e else None
+                for m in meetings:
+                    for e in m.ris.get('entities', []):
+                        loc = e.get('location')
+                        if not loc:
+                            continue
+                        elat = loc.get('lat')
+                        elon = loc.get('lon')
+                        if elat is None or elon is None:
+                            continue
+                        dist2 = (elon - cx) ** 2 + (elat - cy) ** 2
+                        score = (level_prio.get(e.get('level', ''), 5), dist2)
+                        if best_score is None or score < best_score:
+                            best_score = score
+                            best_e = e
+                zentrum_entity_id = best_e.get('id') if best_e else None
 
         filtered = []
         for m in meetings:
@@ -1494,22 +1460,13 @@ class PoliscopePlugin:
             if geo_mode == "fokusregion":
                 if not selected_fr_entity_ids:
                     continue
-                meeting_entity_ids = [e.get('id', '') for e in m.ris.get('entities', []) if e.get('id')]
                 matched = False
-                for mid in meeting_entity_ids:
-                    # Walk up _entity_hierarchy to collect all ancestor IDs
-                    ancestor_ids = set()
-                    cur = mid
-                    seen = set()
-                    while cur and cur not in seen:
-                        seen.add(cur)
-                        e_h = self._entity_hierarchy.get(cur)
-                        if not e_h or not e_h.parent:
-                            break
-                        ancestor_ids.add(e_h.parent)
-                        cur = e_h.parent
+                for e_dict in m.ris.get('entities', []):
+                    mid = e_dict.get('id', '')
+                    if not mid:
+                        continue
+                    ancestor_ids = {p.get('id', '') for p in e_dict.get('parents', [])}
                     for fid in selected_fr_entity_ids:
-                        # Strip trailing * (API uses wildcards, we do prefix match)
                         fid_clean = fid.rstrip('*')
                         if mid.startswith(fid_clean) or fid_clean in ancestor_ids:
                             matched = True
@@ -1527,10 +1484,10 @@ class PoliscopePlugin:
                         lon = m.location.get('lon')
                     if (lat is None or lon is None) and m.ris:
                         for e_dict in m.ris.get('entities', []):
-                            e_obj = self._entity_hierarchy.get(e_dict.get('id', ''))
-                            if e_obj and e_obj.location:
-                                lat = e_obj.location.get('lat')
-                                lon = e_obj.location.get('lon')
+                            loc = e_dict.get('location')
+                            if loc:
+                                lat = loc.get('lat')
+                                lon = loc.get('lon')
                                 if lat is not None and lon is not None:
                                     break
                     if lat is not None and lon is not None:
@@ -1604,7 +1561,8 @@ class PoliscopePlugin:
             else:
                 item_widget.pbWeb.setEnabled(False)
 
-            ris_url = meeting.ris.get('url')
+            ris_urls = meeting.ris.get('urls') or []
+            ris_url = ris_urls[0] if ris_urls else None
             if ris_url:
                 item_widget.pbOpenRIS.clicked.connect(
                     lambda checked=False, url=ris_url: webbrowser.open(url))
