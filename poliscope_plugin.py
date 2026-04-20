@@ -500,6 +500,17 @@ class PoliscopePlugin:
             self.setCgbTitleSearch(
                 today_last_year.strftime("%d.%m.%y") + " - " + today_plus_two_months.strftime("%d.%m.%y"))
 
+            # Restore last active tab, or open Hilfe tab on first use
+            settings = QSettings()
+            settings.beginGroup("PoliscopePlugin")
+            last_tab = settings.value("last_tab", None)
+            settings.endGroup()
+            if last_tab is None:
+                self.tabWidget.setCurrentIndex(3)
+            else:
+                self.tabWidget.setCurrentIndex(int(last_tab))
+            self.tabWidget.currentChanged.connect(self._onTabChanged)
+
             self.pluginIsActive = True
 
     # BBox / Zentrum Suche
@@ -512,6 +523,12 @@ class PoliscopePlugin:
         self.CenterSearchClicked = True
         self.BBoxSearchClicked = False
         self.btnHandlerRefresh_search()
+
+    def _onTabChanged(self, index):
+        settings = QSettings()
+        settings.beginGroup("PoliscopePlugin")
+        settings.setValue("last_tab", index)
+        settings.endGroup()
 
     # Options-Dialog (API-Key eingeben)
     def openOptions(self):
