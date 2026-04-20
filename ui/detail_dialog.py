@@ -2,7 +2,7 @@ from PyQt5 import uic
 from qgis.PyQt.QtCore import Qt
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QGroupBox,
-                              QSizePolicy, QApplication)
+                              QApplication)
 from qgis.PyQt.QtGui import QFont
 from qgis.gui import QgsCollapsibleGroupBox
 import os
@@ -81,12 +81,10 @@ class DetailDialog(QDialog):
         self.lTitle.setWordWrap(True)
 
         if meeting.description:
-            self.lDescription.setText(meeting.description)
-            self.lDescription.setWordWrap(True)
-            self.lDescription.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-            self.lDescription.adjustSize()
+            self.tbDescription.setPlainText(meeting.description)
+            self.tbDescription.show()
         else:
-            self.lDescription.hide()
+            self.tbDescription.hide()
 
         self._set_document_boxes(meeting.documents)
 
@@ -102,12 +100,10 @@ class DetailDialog(QDialog):
         self.lTitle.setWordWrap(True)
 
         if proposal.description:
-            self.lDescription.setText(proposal.description)
-            self.lDescription.setWordWrap(True)
-            self.lDescription.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-            self.lDescription.adjustSize()
+            self.tbDescription.setPlainText(proposal.description)
+            self.tbDescription.show()
         else:
-            self.lDescription.hide()
+            self.tbDescription.hide()
 
         self._set_document_boxes(proposal.documents)
 
