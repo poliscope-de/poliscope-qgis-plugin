@@ -887,14 +887,13 @@ class PoliscopePlugin:
         }
         for result_group in results:
             item_widget = ListItemWidget()
-            item_widget.lLastStatusUpdate.setVisible(False)
             item_widget.lTitle.setText(result_group.context.entity_name)
             item_widget.lDate.setText(Utils.format_date(result_group.context.date))
             item_widget.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(result_group.context))
             if result_group.context.location:
                 loc = result_group.context.location
                 lat, lon = loc['lat'], loc['lon']
-                loc_html = Utils.getLocationString(f"{lat}, {lon}")
+                loc_html = Utils.getLocationString(f"{round(lat, 4)}, {round(lon, 4)}")
                 item_widget.lLocation.setText(
                     f"<a href='geo:{lat},{lon}' style='color:inherit;text-decoration:none;'>"
                     f"{loc_html}</a>")
@@ -1322,7 +1321,7 @@ class PoliscopePlugin:
             prefix = Utils.convertRSTypes(p.get('level', ''))
             name = p.get('name', '')
             parts.append(f"{prefix}: {name}" if prefix else name)
-        return " > ".join(parts)
+        return " > ".join(reversed(parts))
 
     # Merkliste methods
 
@@ -1518,7 +1517,6 @@ class PoliscopePlugin:
         nr = 0
         for meeting in meetings:
             item_widget = ListItemWidget()
-            item_widget.lLastStatusUpdate.setVisible(False)
             item_widget.lScore.setVisible(False)
             item_widget.lChunkType.setVisible(False)
 
@@ -1535,7 +1533,7 @@ class PoliscopePlugin:
             if meeting.location:
                 lat = meeting.location['lat']
                 lon = meeting.location['lon']
-                loc_html = Utils.getLocationString(f"{lat}, {lon}")
+                loc_html = Utils.getLocationString(f"{round(lat, 4)}, {round(lon, 4)}")
                 item_widget.lLocation.setText(
                     f"<a href='geo:{lat},{lon}' style='color:inherit;text-decoration:none;'>"
                     f"{loc_html}</a>")

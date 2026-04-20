@@ -82,7 +82,7 @@ class Utils:
         for parent in context.parents:
             if parent["level"] != "0":
                 breadcrumbs.append(Utils.convertRSTypes(parent["level"]) + ": " + parent["name"])
-        return " > ".join(breadcrumbs)
+        return " > ".join(reversed(breadcrumbs))
 
     @staticmethod
     def convertRSTypes(rs_type):
@@ -102,10 +102,17 @@ class Utils:
             return ""
 
     @staticmethod
-    def build_highlighted_text(text: str, highlights, max_chars: int = 200) -> str:
-        snippet = text[:max_chars]
+    def build_highlighted_text(text: str, highlights, max_chars: int = 400) -> str:
+        truncated = len(text) > max_chars
+        snippet = text[:max_chars] if truncated else text
+        if truncated:
+            last_space = snippet.rfind(' ')
+            if last_space > max_chars // 2:
+                snippet = snippet[:last_space]
+        suffix = '…' if truncated else ''
+
         if not highlights:
-            return snippet
+            return snippet + suffix
         result = []
         pos = 0
         for h in sorted(highlights, key=lambda x: x[0]):
@@ -123,6 +130,7 @@ class Utils:
         if pos < len(snippet):
             result.append(snippet[pos:]
                 .replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+        result.append(suffix)
         return ''.join(result)
 
     @staticmethod

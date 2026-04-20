@@ -17,9 +17,6 @@ class DetailDialog(QDialog):
         ui_path = os.path.join(self.plugin_dir, "detail_dialog.ui")
         uic.loadUi(ui_path, self)
 
-        self.lLastStatusUpdate.hide()
-        self.lLine.hide()
-
         if result_group is not None and api is not None:
             self.populate(result_group, api)
 
