@@ -135,6 +135,8 @@ class PoliscopePlugin:
         self._session_unbookmarked.clear()
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
         self.pluginIsActive = False
+        self.dockwidget.deleteLater()
+        self.dockwidget = None
 
     def unload(self):
         for action in self.actions:
@@ -189,6 +191,7 @@ class PoliscopePlugin:
             self.pbMehrLaden_focusregion.clicked.connect(self.loadMore_focusregion)
             self.pbMehrLaden_focusregion.setVisible(False)
             self.lblResultCount_focusregion.setText("")
+            self.lMeetingCount_focusregion.setText("")
 
             self.cbxSortierung_focusregion = self.dockwidget.findChild(
                 QtWidgets.QComboBox, "cbxSortierung_focusregion")
@@ -561,6 +564,23 @@ class PoliscopePlugin:
             self.watchlistRefButton.setEnabled(True)
             self.searchBbSearchButton.setEnabled(True)
             self.searchCenterSearchButton.setEnabled(True)
+            for lst in [self.focusregionList, self.searchList, self.watchlistList]:
+                lst.clear()
+            self._load_focusregion_radio_buttons()
+            self._show_list_hint(
+                self.focusregionList,
+                "Fokusregion auswählen und <b>Liste aktualisieren</b> klicken, "
+                "um Ergebnisse zu laden.<br><br>"
+                "Fokusregionen können nur im Browser verwaltet werden: "
+                "<a href='https://poliscope.de/app/focusregions'>"
+                "poliscope.de/app/focusregions</a>"
+            )
+            self._show_list_hint(
+                self.searchList,
+                "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken.")
+            self._show_list_hint(
+                self.watchlistList,
+                "Auf <b>Liste aktualisieren</b> klicken, um die Merkliste zu laden.")
             QMessageBox.information(
                 None, "Erfolg", "API-Key wurde gespeichert und ist gültig!")
         elif new_key:

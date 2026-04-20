@@ -186,23 +186,6 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QRadioButton" name="rbExample_1_focusregion">
-                    <property name="font">
-                     <font>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Emsland (neu: 16) 
-zuletzt aktualisiert: 01.04.2026</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="8" column="0">
                    <widget class="QCheckBox" name="cbNurNeuigkeiten_focusregion">
                     <property name="text">
@@ -210,20 +193,6 @@ zuletzt aktualisiert: 01.04.2026</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QRadioButton" name="rbExample_1_focusregion_2">
-                    <property name="font">
-                     <font>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>LK Leer (neu: 23) 
-zuletzt aktualisiert: 16.05.2025</string>
                     </property>
                    </widget>
                   </item>
