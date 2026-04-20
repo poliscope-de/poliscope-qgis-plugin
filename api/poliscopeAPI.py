@@ -662,6 +662,7 @@ class PoliscopeAPI:
         results = api.search("Windpark")
     """
     BASE_URL = "https://api.poliscope.de/v2"
+    TIMEOUT = 60
 
     def __init__(self, api_key: str):
         self.headers = {
@@ -675,7 +676,7 @@ class PoliscopeAPI:
         Returns the version string (e.g. "2.1.0") or None on error.
         """
         try:    
-            response = requests.get(f"{self.BASE_URL}/health", headers=self.headers)
+            response = requests.get(f"{self.BASE_URL}/health", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return data.get("version")
@@ -716,7 +717,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/entities", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/entities", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 entities = [Entity.from_dict(item) for item in data["data"]]
@@ -745,7 +746,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/entities/{id}", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/entities/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Entity.from_dict(data["data"])
@@ -765,7 +766,7 @@ class PoliscopeAPI:
             id — unique file identifier. Required.
         """
         try:
-            response = requests.get(f"{self.BASE_URL}/files/{id}", headers=self.headers)
+            response = requests.get(f"{self.BASE_URL}/files/{id}", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return FileSummary.from_dict(data["data"])
@@ -785,7 +786,7 @@ class PoliscopeAPI:
             id — unique file identifier. Required.
         """
         try:
-            response = requests.get(f"{self.BASE_URL}/files/{id}/content", headers=self.headers)
+            response = requests.get(f"{self.BASE_URL}/files/{id}/content", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return FileContent.from_dict(data["data"])
@@ -816,7 +817,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/focusregions", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 focusregions = [Focusregion.from_dict(item) for item in data["data"]]
@@ -837,7 +838,7 @@ class PoliscopeAPI:
         or None on error.
         """
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions/counts", headers=self.headers)
+            response = requests.get(f"{self.BASE_URL}/focusregions/counts", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return data["data"]
@@ -864,7 +865,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions/{id}", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/focusregions/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Focusregion.from_dict(data["data"])
@@ -886,7 +887,7 @@ class PoliscopeAPI:
             id — focus region ID. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/visit", headers=self.headers)
+            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/visit", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -907,7 +908,7 @@ class PoliscopeAPI:
             id — focus region ID. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/pause", headers=self.headers)
+            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/pause", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -927,7 +928,7 @@ class PoliscopeAPI:
             id — focus region ID. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/unpause", headers=self.headers)
+            response = requests.post(f"{self.BASE_URL}/focusregions/{id}/unpause", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -953,7 +954,7 @@ class PoliscopeAPI:
             params["newSince"] = new_since
 
         try:
-            response = requests.get(f"{self.BASE_URL}/focusregions/{id}/results", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/focusregions/{id}/results", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 result_groups = [ResultGroup.from_dict(r) for r in data["data"]]
@@ -994,7 +995,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/meetings", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/meetings", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 meetings = [Meeting.from_dict(item) for item in data["data"]]
@@ -1027,7 +1028,7 @@ class PoliscopeAPI:
         params = {k: v for k,v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/meetings/bookmarked", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/meetings/bookmarked", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 bookmarked_meetings = [Meeting.from_dict(item) for item in data["data"]]
@@ -1050,7 +1051,7 @@ class PoliscopeAPI:
             id — unique meeting identifier. Required.
         """
         try:
-            response = requests.post(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers)
+            response = requests.post(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -1069,7 +1070,7 @@ class PoliscopeAPI:
             id — unique meeting identifier. Required.
         """
         try:
-            response = requests.delete(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers)
+            response = requests.delete(f"{self.BASE_URL}/meetings/{id}/bookmark", headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code == 204:
                 return True
             else:
@@ -1094,7 +1095,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/meetings/{id}", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/meetings/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Meeting.from_dict(data["data"])
@@ -1120,7 +1121,7 @@ class PoliscopeAPI:
             params["detail"] = detail
 
         try:
-            response = requests.get(f"{self.BASE_URL}/proposals/{id}", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/proposals/{id}", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 return Proposal.from_dict(data["data"])
@@ -1170,7 +1171,7 @@ class PoliscopeAPI:
         params = {k: v for k, v in params.items() if v is not None}
 
         try:
-            response = requests.get(f"{self.BASE_URL}/search", headers=self.headers, params=params)
+            response = requests.get(f"{self.BASE_URL}/search", headers=self.headers, params=params, timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
                 result_groups = [ResultGroup.from_dict(item) for item in data["data"]]
