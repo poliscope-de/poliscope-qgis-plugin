@@ -1024,6 +1024,17 @@ class PoliscopePlugin:
         if result_groups is None:
             return
 
+        if force:
+            self.api.mark_focusregion_visited(fr.id)
+            now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+            if fr.team:
+                fr.team[0]['lastVisit'] = now_iso
+            checked_rb = self._focusregion_button_group.checkedButton() if self._focusregion_button_group else None
+            if checked_rb:
+                today = date.today().strftime('%d.%m.%Y')
+                name = fr.name or fr.id
+                checked_rb.setText(f"{name} (neu: 0)\nzuletzt aktualisiert: {today}")
+
         # Client-side filter + sort
         self._update_focusregion_title()
         filtered = self._filter_focusregion_results(result_groups)

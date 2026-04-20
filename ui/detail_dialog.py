@@ -129,7 +129,7 @@ class DetailDialog(QDialog):
         self.tbDescription.setTextCursor(cursor)
         self.tbDescription.ensureCursorVisible()
         sb = self.tbDescription.verticalScrollBar()
-        sb.setValue(sb.value() + self.tbDescription.viewport().height() * 2 // 3)
+        sb.setValue(sb.value() + self.tbDescription.viewport().height() * 5 // 6)
 
     def _build_description_html(self, description, hits):
         if not description or not hits:
