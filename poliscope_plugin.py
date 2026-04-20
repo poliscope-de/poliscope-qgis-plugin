@@ -410,11 +410,6 @@ class PoliscopePlugin:
             self.dockwidget.pbThisYear_watchlist.clicked.connect(
                 self.setDateThisYear_watchlist)
 
-            self.cbGespeichert_watchlist = self.dockwidget.findChild(
-                QtWidgets.QCheckBox, "cbGespeichert_watchlist")
-            self.cbNichtgespeichert_watchlist = self.dockwidget.findChild(
-                QtWidgets.QCheckBox, "cbNichtgespeichert_watchlist")
-
             self.cbPlanungsregionen_watchlist = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbPlanungsregionen_watchlist")
             self.cbLandkreise_watchlist = self.dockwidget.findChild(
@@ -474,7 +469,7 @@ class PoliscopePlugin:
                 )
                 self._show_list_hint(
                     self.searchList,
-                    "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken."
+                    "Suchbegriff eingeben und <b>Kartenausschnitt Suche</b> oder <b>Kartenzentrum Suche</b> klicken."
                 )
                 self._show_list_hint(
                     self.watchlistList,
@@ -577,7 +572,7 @@ class PoliscopePlugin:
             )
             self._show_list_hint(
                 self.searchList,
-                "Suchbegriff eingeben und <b>BBox Suche</b> oder <b>Zentrum Suche</b> klicken.")
+                "Suchbegriff eingeben und <b>Kartenausschnitt Suche</b> oder <b>Kartenzentrum Suche</b> klicken.")
             self._show_list_hint(
                 self.watchlistList,
                 "Auf <b>Liste aktualisieren</b> klicken, um die Merkliste zu laden.")
@@ -766,14 +761,25 @@ class PoliscopePlugin:
     def setCgbTitleFocusregion(self, dateString):
         self.cgbSucheFiltern_focusregion.setTitle(f"Suche filtern ({dateString})")
 
+    def _update_focusregion_title(self):
+        fr = self._get_selected_focusregion()
+        fr_name = (fr.name or fr.id) if fr else None
+        if self.cbNurNeuigkeiten_focusregion.isChecked():
+            detail = "Neuigkeiten"
+        else:
+            date_from = self.dateBegin_focusregion.date().toString("dd.MM.yy")
+            date_to = self.dateEnd_focusregion.date().toString("dd.MM.yy")
+            detail = f"{date_from} - {date_to}"
+        label = f"{fr_name} | {detail}" if fr_name else detail
+        self.setCgbTitleFocusregion(label)
+
     def setDateLast30Days_focusregion(self):
         today = date.today()
         last_30_days = today - timedelta(days=30)
         self.dateBegin_focusregion.setDate(
             QDate(last_30_days.year, last_30_days.month, last_30_days.day))
         self.dateEnd_focusregion.setDate(QDate(today.year, today.month, today.day))
-        self.setCgbTitleFocusregion(
-            last_30_days.strftime("%d.%m.%y") + " - " + today.strftime("%d.%m.%y"))
+        self._update_focusregion_title()
 
     def setDateNext30Days_focusregion(self):
         today = date.today()
@@ -781,25 +787,20 @@ class PoliscopePlugin:
         self.dateBegin_focusregion.setDate(QDate(today.year, today.month, today.day))
         self.dateEnd_focusregion.setDate(
             QDate(next_30_days.year, next_30_days.month, next_30_days.day))
-        self.setCgbTitleFocusregion(
-            today.strftime("%d.%m.%y") + " - " + next_30_days.strftime("%d.%m.%y"))
+        self._update_focusregion_title()
 
     def setDateThisYear_focusregion(self):
         today = date.today()
         self.dateBegin_focusregion.setDate(QDate(today.year, 1, 1))
         self.dateEnd_focusregion.setDate(QDate(today.year, 12, 31))
-        self.setCgbTitleFocusregion(
-            date(today.year, 1, 1).strftime("%d.%m.%y") + " - " +
-            date(today.year, 12, 31).strftime("%d.%m.%y"))
+        self._update_focusregion_title()
 
     def setDateLastYear_focusregion(self):
         today = date.today()
         last_year = today.year - 1
         self.dateBegin_focusregion.setDate(QDate(last_year, 1, 1))
         self.dateEnd_focusregion.setDate(QDate(last_year, 12, 31))
-        self.setCgbTitleFocusregion(
-            date(last_year, 1, 1).strftime("%d.%m.%y") + " - " +
-            date(last_year, 12, 31).strftime("%d.%m.%y"))
+        self._update_focusregion_title()
 
     # Datumsfunktionen für die Suche
     def setCgbTitleSearch(self, dateString):
@@ -1027,6 +1028,7 @@ class PoliscopePlugin:
             return
 
         # Client-side filter + sort
+        self._update_focusregion_title()
         filtered = self._filter_focusregion_results(result_groups)
         self.results_focusregion = filtered
         self.displayedCount_focusregion = 0
@@ -1226,12 +1228,7 @@ class PoliscopePlugin:
         self.dockwidget.pbNext30Days_focusregion.setEnabled(enabled)
         self.dockwidget.pbLastYear_focusregion.setEnabled(enabled)
         self.dockwidget.pbThisYear_focusregion.setEnabled(enabled)
-        if enabled:
-            date_from = self.dateBegin_focusregion.date().toString("dd.MM.yy")
-            date_to = self.dateEnd_focusregion.date().toString("dd.MM.yy")
-            self.setCgbTitleFocusregion(f"{date_from} - {date_to}")
-        else:
-            self.cgbSucheFiltern_focusregion.setTitle("Suche filtern")
+        self._update_focusregion_title()
 
     def onInKarteZentrieren_focusregion(self):
         fr = self._get_selected_focusregion()
@@ -1384,14 +1381,11 @@ class PoliscopePlugin:
         self._refresh_watchlist_display()
 
     def _refresh_watchlist_display(self):
-        combined = []
-        if self.cbGespeichert_watchlist.isChecked():
-            combined.extend(self._bookmarked_meetings)
-        if self.cbNichtgespeichert_watchlist.isChecked():
-            bookmarked_ids = {m.id for m in self._bookmarked_meetings}
-            combined.extend(
-                m for mid, m in self._session_unbookmarked.items()
-                if mid not in bookmarked_ids)
+        combined = list(self._bookmarked_meetings)
+        bookmarked_ids = {m.id for m in self._bookmarked_meetings}
+        combined.extend(
+            m for mid, m in self._session_unbookmarked.items()
+            if mid not in bookmarked_ids)
         filtered = self._apply_watchlist_filters(combined)
         sorted_meetings = self._sort_watchlist(filtered)
 
