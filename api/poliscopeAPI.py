@@ -148,7 +148,7 @@ class FileSummary:
             id = data.get('id', ""),
             file_name = data.get('fileName'),
             mime_type = data.get('mimeType'),
-            download_url= data.get("downloadUrl", "")
+            download_url= "https://api.poliscope.de" + data.get("downloadUrl", "") if data.get("downloadUrl", "").startswith("/") else data.get("downloadUrl", "")
         )
 
 @dataclass

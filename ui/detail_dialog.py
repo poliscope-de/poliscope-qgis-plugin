@@ -176,9 +176,13 @@ class DetailDialog(QDialog):
             "other":      ("Sonstiges",   []),
         }
 
+        seen_ids = set()
         for doc in (documents or []):
             if not doc.file or doc.file.mime_type != "application/pdf":
                 continue
+            if doc.file.id in seen_ids:
+                continue
+            seen_ids.add(doc.file.id)
             key = (doc.type or "").lower()
             if key not in categories:
                 key = "other"
