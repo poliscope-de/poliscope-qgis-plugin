@@ -94,6 +94,7 @@ class PoliscopePlugin:
         self._bookmarked_meetings = []
         self._entity_hierarchy = {}
 
+        # Shared alternating-row counter for setResultsToList; reset to 0 before each render
         self.nr = 0
 
         self.entityRSCodes_focusregion = []
@@ -543,22 +544,21 @@ class PoliscopePlugin:
         if not ok:
             return
 
-        api_is_working = True
-        try:
-            PoliscopeAPI(api_key=new_key)
-        except Exception:
-            api_is_working = False
-
         settings = QSettings()
         settings.beginGroup("PoliscopePlugin")
-        if new_key:
-            settings.setValue("api_key", new_key)
-        else:
-            settings.setValue("api_key", "")
+        settings.setValue("api_key", new_key)
         settings.endGroup()
+
+        if new_key:
+            test_api = PoliscopeAPI(api_key=new_key)
+            api_is_working = test_api.get_qgis_plugin_version() is not None
+        else:
+            api_is_working = False
 
         if new_key and api_is_working:
             self.api = PoliscopeAPI(api_key=new_key)
+            self.focusregionRefButton.setEnabled(True)
+            self.watchlistRefButton.setEnabled(True)
             self.searchBbSearchButton.setEnabled(True)
             self.searchCenterSearchButton.setEnabled(True)
             QMessageBox.information(
@@ -974,7 +974,7 @@ class PoliscopePlugin:
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
-            # First press: load focusregions and their counts
+            # Load focusregions if not yet cached
             if self._focusregions is None:
                 focusregions, _ = self.api.get_focusregions(limit=500, detail="standard")
                 counts = self.api.get_focusregion_counts() or {}
@@ -1502,31 +1502,30 @@ class PoliscopePlugin:
             if geo_mode == "fokusregion":
                 if not selected_fr_entity_ids:
                     continue
-                if selected_fr_entity_ids:
-                    meeting_entity_ids = [e.get('id', '') for e in m.ris.get('entities', []) if e.get('id')]
-                    matched = False
-                    for mid in meeting_entity_ids:
-                        # Walk up _entity_hierarchy to collect all ancestor IDs
-                        ancestor_ids = set()
-                        cur = mid
-                        seen = set()
-                        while cur and cur not in seen:
-                            seen.add(cur)
-                            e_h = self._entity_hierarchy.get(cur)
-                            if not e_h or not e_h.parent:
-                                break
-                            ancestor_ids.add(e_h.parent)
-                            cur = e_h.parent
-                        for fid in selected_fr_entity_ids:
-                            # Strip trailing * (API uses wildcards, we do prefix match)
-                            fid_clean = fid.rstrip('*')
-                            if mid.startswith(fid_clean) or fid_clean in ancestor_ids:
-                                matched = True
-                                break
-                        if matched:
+                meeting_entity_ids = [e.get('id', '') for e in m.ris.get('entities', []) if e.get('id')]
+                matched = False
+                for mid in meeting_entity_ids:
+                    # Walk up _entity_hierarchy to collect all ancestor IDs
+                    ancestor_ids = set()
+                    cur = mid
+                    seen = set()
+                    while cur and cur not in seen:
+                        seen.add(cur)
+                        e_h = self._entity_hierarchy.get(cur)
+                        if not e_h or not e_h.parent:
                             break
-                    if not matched:
-                        continue
+                        ancestor_ids.add(e_h.parent)
+                        cur = e_h.parent
+                    for fid in selected_fr_entity_ids:
+                        # Strip trailing * (API uses wildcards, we do prefix match)
+                        fid_clean = fid.rstrip('*')
+                        if mid.startswith(fid_clean) or fid_clean in ancestor_ids:
+                            matched = True
+                            break
+                    if matched:
+                        break
+                if not matched:
+                    continue
             elif geo_mode == "bbox":
                 if bbox_bounds is not None:
                     min_lon, min_lat, max_lon, max_lat = bbox_bounds

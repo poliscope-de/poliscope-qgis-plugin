@@ -59,7 +59,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#c0392b;&quot;&gt;Kein API-Key hinterlegt.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Um einen API-Key zu erstellen, besuche &lt;a href=&quot;https://poliscope.de/app/gis-plugin&quot;&gt;GIS-Plugin&lt;/a&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon unten rechts). Anschließend musst Du QGIS neu starten.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#c0392b;&quot;&gt;Kein API-Key hinterlegt.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Um einen API-Key zu erstellen, besuche &lt;a href=&quot;https://poliscope.de/app/gis-plugin&quot;&gt;GIS-Plugin&lt;/a&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon unten rechts).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
