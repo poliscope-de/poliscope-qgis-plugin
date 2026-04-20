@@ -1,8 +1,7 @@
 from PyQt5 import uic
 from qgis.PyQt.QtCore import Qt
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QGroupBox,
-                              QApplication)
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QApplication)
 from qgis.PyQt.QtGui import QFont
 from qgis.gui import QgsCollapsibleGroupBox
 import os
@@ -67,21 +66,26 @@ class DetailDialog(QDialog):
                 meeting_id = result_group.group_key.split(":", 1)[1]
                 meeting = api.get_meeting(meeting_id, detail="full")
                 if meeting:
-                    self._populate_meeting(meeting, hit_ids)
+                    self._populate_meeting(meeting, hit_ids, result_group.hits)
             elif result_group.group_type == "proposal":
                 proposal_id = result_group.group_key.split(":", 1)[1]
                 proposal = api.get_proposal(proposal_id, detail="full")
                 if proposal:
-                    self._populate_proposal(proposal, hit_ids)
+                    self._populate_proposal(proposal, hit_ids, result_group.hits)
         finally:
             QApplication.restoreOverrideCursor()
 
-    def _populate_meeting(self, meeting, hit_ids=None):
+    def _populate_meeting(self, meeting, hit_ids=None, hits=None):
         self.lTitle.setText(meeting.title or "")
         self.lTitle.setWordWrap(True)
 
         if meeting.description:
-            self.tbDescription.setPlainText(meeting.description)
+            html, first_pos = self._build_description_html(meeting.description, hits)
+            if html:
+                self.tbDescription.setHtml(html)
+                QTimer.singleShot(0, lambda p=first_pos: self._scroll_description_to(p))
+            else:
+                self.tbDescription.setPlainText(meeting.description)
             self.tbDescription.show()
         else:
             self.tbDescription.hide()
@@ -95,12 +99,17 @@ class DetailDialog(QDialog):
         self.tbAgendaItems.document().adjustSize()
         QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbAgendaItems))
 
-    def _populate_proposal(self, proposal, hit_ids=None):
+    def _populate_proposal(self, proposal, hit_ids=None, hits=None):
         self.lTitle.setText(proposal.title or "")
         self.lTitle.setWordWrap(True)
 
         if proposal.description:
-            self.tbDescription.setPlainText(proposal.description)
+            html, first_pos = self._build_description_html(proposal.description, hits)
+            if html:
+                self.tbDescription.setHtml(html)
+                QTimer.singleShot(0, lambda p=first_pos: self._scroll_description_to(p))
+            else:
+                self.tbDescription.setPlainText(proposal.description)
             self.tbDescription.show()
         else:
             self.tbDescription.hide()
@@ -113,6 +122,50 @@ class DetailDialog(QDialog):
         self.tbAgendaItems.setHtml(html)
         self.tbAgendaItems.document().adjustSize()
         QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbAgendaItems))
+
+    def _scroll_description_to(self, pos):
+        cursor = self.tbDescription.textCursor()
+        cursor.setPosition(pos)
+        self.tbDescription.setTextCursor(cursor)
+        self.tbDescription.ensureCursorVisible()
+        sb = self.tbDescription.verticalScrollBar()
+        sb.setValue(sb.value() + self.tbDescription.viewport().height() * 2 // 3)
+
+    def _build_description_html(self, description, hits):
+        if not description or not hits:
+            return None, 0
+        ranges = []
+        for hit in hits:
+            if not hit.text:
+                continue
+            offset = description.find(hit.text)
+            if offset == -1:
+                continue
+            ranges.append([offset, offset + len(hit.text)])
+        if not ranges:
+            return None, 0
+        ranges.sort()
+        merged = []
+        for start, end in ranges:
+            if merged and start <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], end)
+            else:
+                merged.append([start, end])
+        def esc(s):
+            return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br/>')
+        first_pos = merged[0][0]
+        result = []
+        pos = 0
+        for start, end in merged:
+            if pos < start:
+                result.append(esc(description[pos:start]))
+            result.append('<span style="background-color:#fff9c4;">')
+            result.append(esc(description[start:end]))
+            result.append('</span>')
+            pos = end
+        if pos < len(description):
+            result.append(esc(description[pos:]))
+        return ''.join(result), first_pos
 
     def _set_document_boxes(self, documents):
         parent_gb = self.gbDocuments
