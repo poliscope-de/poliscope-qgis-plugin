@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>300</width>
-    <height>100</height>
+    <height>140</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -38,28 +38,31 @@
    <bool>true</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">QWidget { background-color: #fde8e8; border-left: 4px solid #c0392b; border-radius: 4px; }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>0</number>
+    <number>4</number>
    </property>
    <property name="leftMargin">
-    <number>9</number>
+    <number>12</number>
    </property>
    <property name="topMargin">
-    <number>3</number>
+    <number>10</number>
    </property>
    <property name="rightMargin">
-    <number>9</number>
+    <number>12</number>
    </property>
    <property name="bottomMargin">
-    <number>3</number>
+    <number>10</number>
    </property>
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;API-Fehler!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Der API-Key ist nicht vorhanden, fehlerhaft oder die API ist zurzeit nicht erreichbar. Bitte prüfen Sie, ob ein gültiger API-Key hinterlegt wurde. &lt;/p&gt;&lt;p&gt;Der API-Key kann über das Zahnradsymbol unten rechts im Plugin-Fenster eingegeben werden. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#c0392b;&quot;&gt;Kein API-Key hinterlegt.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Um einen API-Key zu erstellen, besuche &lt;a href=&quot;https://poliscope.de/app/gis-plugin&quot;&gt;GIS-Plugin&lt;/a&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon unten rechts). Anschließend musst Du QGIS neu starten.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

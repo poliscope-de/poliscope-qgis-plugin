@@ -9,3 +9,4 @@ class ListMissingApiKeyErrorWidget(QtWidgets.QWidget):
         ui_path = os.path.join(
             self.plugin_dir, "list_missing_api_key_error_widget.ui")
         uic.loadUi(ui_path, self)
+        self.label.setOpenExternalLinks(True)

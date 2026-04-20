@@ -161,10 +161,9 @@ class PoliscopePlugin:
             settings.beginGroup("PoliscopePlugin")
             api_key = settings.value("api_key", "", type=str)
             settings.endGroup()
-            try:
+            if api_key:
                 self.api = PoliscopeAPI(api_key=api_key)
-            except Exception as e:
-                print(f"Fehler beim Initialisieren der API: {e}")
+            else:
                 self.api = None
 
             #########################
@@ -449,6 +448,7 @@ class PoliscopePlugin:
 
             # Enable/disable buttons depending on API key
             has_api = self.api is not None
+            self.focusregionRefButton.setEnabled(has_api)
             self.watchlistRefButton.setEnabled(has_api)
             self.searchBbSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
             self.searchCenterSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
