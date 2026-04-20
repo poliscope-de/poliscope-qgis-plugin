@@ -253,8 +253,10 @@ class PoliscopePlugin:
 
             self.cbNurNeuigkeiten_focusregion = self.dockwidget.findChild(
                 QtWidgets.QCheckBox, "cbNurNeuigkeiten_focusregion")
+            self.cbNurNeuigkeiten_focusregion.toggled.connect(
+                self._update_date_widgets_focusregion)
 
-            # Startdatum: letztes Jahr bis heute + 2 Monate
+            # Default date range (used when "Nur Neuigkeiten" is unchecked)
             today_fr = date.today()
             today_fr_last_year = today_fr - relativedelta(years=1)
             today_fr_plus_two = today_fr + relativedelta(months=2)
@@ -262,9 +264,7 @@ class PoliscopePlugin:
                 QDate(today_fr_last_year.year, today_fr_last_year.month, today_fr_last_year.day))
             self.dateEnd_focusregion.setDate(
                 QDate(today_fr_plus_two.year, today_fr_plus_two.month, today_fr_plus_two.day))
-            self.setCgbTitleFocusregion(
-                today_fr_last_year.strftime("%d.%m.%y") + " - " +
-                today_fr_plus_two.strftime("%d.%m.%y"))
+            self._update_date_widgets_focusregion(self.cbNurNeuigkeiten_focusregion.isChecked())
 
             #########################
             # Tab Suche
@@ -985,8 +985,6 @@ class PoliscopePlugin:
         if focusregions:
             self._populate_focusregion_radio_buttons(focusregions, counts)
             self._focusregions = self._deduped_focusregions
-            if self._focusregions:
-                self.onFocusregionSelected(self._focusregions[0].id)
 
     def btnHandlerRefresh_focusregion(self, force=False):
         if not self.api:
@@ -1002,8 +1000,6 @@ class PoliscopePlugin:
                     return
                 self._populate_focusregion_radio_buttons(focusregions, counts)
                 self._focusregions = self._deduped_focusregions
-                if self._focusregions:
-                    self.onFocusregionSelected(self._focusregions[0].id)
 
             # Get selected focusregion
             fr = self._get_selected_focusregion()
@@ -1031,21 +1027,6 @@ class PoliscopePlugin:
 
         if result_groups is None:
             return
-
-        # Auto-set date range from the (already filtered) result list
-        dates = [rg.context.date[:10] for rg in result_groups if rg.context.date]
-        if dates:
-            d_from = datetime.strptime(min(dates), '%Y-%m-%d')
-            d_to = datetime.strptime(max(dates), '%Y-%m-%d')
-        else:
-            d_from = d_to = None
-
-        if d_from and d_to:
-            self.dateBegin_focusregion.setDate(QDate(d_from.year, d_from.month, d_from.day))
-            self.dateEnd_focusregion.setDate(QDate(d_to.year, d_to.month, d_to.day))
-            fr_name = fr.name or fr.id
-            self.setCgbTitleFocusregion(
-                f"{fr_name} | " + d_from.strftime("%d.%m.%y") + " - " + d_to.strftime("%d.%m.%y"))
 
         # Client-side filter + sort
         filtered = self._filter_focusregion_results(result_groups)
@@ -1152,8 +1133,6 @@ class PoliscopePlugin:
                     pass
             rb = QRadioButton(label, gb)
             rb.setProperty("focusregion_id", fr.id)
-            rb.toggled.connect(
-                lambda checked, _id=fr.id: self.onFocusregionSelected(_id) if checked else None)
             self._focusregion_button_group.addButton(rb, i)
             layout.addWidget(rb, row, col)
             if i == 0:
@@ -1179,8 +1158,10 @@ class PoliscopePlugin:
         return None
 
     def _filter_focusregion_results(self, result_groups):
-        date_from = self.dateBegin_focusregion.date().toString("yyyy-MM-dd")
-        date_to = self.dateEnd_focusregion.date().toString("yyyy-MM-dd")
+        nur_neuigkeiten = self.cbNurNeuigkeiten_focusregion.isChecked()
+        if not nur_neuigkeiten:
+            date_from = self.dateBegin_focusregion.date().toString("yyyy-MM-dd")
+            date_to = self.dateEnd_focusregion.date().toString("yyyy-MM-dd")
 
         type_map = {
             self.cbTOPs_focusregion: "agendaItemTitle",
@@ -1203,7 +1184,7 @@ class PoliscopePlugin:
 
         filtered = []
         for rg in result_groups:
-            if rg.context.date:
+            if not nur_neuigkeiten and rg.context.date:
                 item_date = rg.context.date[:10]
                 if item_date < date_from or item_date > date_to:
                     continue
@@ -1239,21 +1220,20 @@ class PoliscopePlugin:
         if self.displayedCount_focusregion >= total:
             self.pbMehrLaden_focusregion.setVisible(False)
 
-    def onFocusregionSelected(self, focusregion_id):
-        if not self._focusregions:
-            return
-        if (focusregion_id, False) not in self._focusregion_cache:
-            result_groups, _, _ = self.api.get_focusregion_results(focusregion_id)
-            if result_groups is None:
-                return
-            self._focusregion_cache[(focusregion_id, False)] = result_groups
-        result_groups = self._focusregion_cache[(focusregion_id, False)]
-        dates = [rg.context.date[:10] for rg in result_groups if rg.context.date]
-        if dates:
-            d_from = datetime.strptime(min(dates), '%Y-%m-%d')
-            d_to = datetime.strptime(max(dates), '%Y-%m-%d')
-            self.dateBegin_focusregion.setDate(QDate(d_from.year, d_from.month, d_from.day))
-            self.dateEnd_focusregion.setDate(QDate(d_to.year, d_to.month, d_to.day))
+    def _update_date_widgets_focusregion(self, nur_neuigkeiten_checked):
+        enabled = not nur_neuigkeiten_checked
+        self.dateBegin_focusregion.setEnabled(enabled)
+        self.dateEnd_focusregion.setEnabled(enabled)
+        self.dockwidget.pbLast30Days_focusregion.setEnabled(enabled)
+        self.dockwidget.pbNext30Days_focusregion.setEnabled(enabled)
+        self.dockwidget.pbLastYear_focusregion.setEnabled(enabled)
+        self.dockwidget.pbThisYear_focusregion.setEnabled(enabled)
+        if enabled:
+            date_from = self.dateBegin_focusregion.date().toString("dd.MM.yy")
+            date_to = self.dateEnd_focusregion.date().toString("dd.MM.yy")
+            self.setCgbTitleFocusregion(f"{date_from} - {date_to}")
+        else:
+            self.cgbSucheFiltern_focusregion.setTitle("Suche filtern")
 
     def onInKarteZentrieren_focusregion(self):
         fr = self._get_selected_focusregion()
