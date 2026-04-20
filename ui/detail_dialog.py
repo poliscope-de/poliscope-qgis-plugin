@@ -59,22 +59,24 @@ class DetailDialog(QDialog):
         else:
             self.lDate.hide()
 
+        hit_ids = {h.agenda_item_id for h in result_group.hits if h.agenda_item_id}
+
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
             if result_group.group_type == "meeting":
                 meeting_id = result_group.group_key.split(":", 1)[1]
                 meeting = api.get_meeting(meeting_id, detail="full")
                 if meeting:
-                    self._populate_meeting(meeting)
+                    self._populate_meeting(meeting, hit_ids)
             elif result_group.group_type == "proposal":
                 proposal_id = result_group.group_key.split(":", 1)[1]
                 proposal = api.get_proposal(proposal_id, detail="full")
                 if proposal:
-                    self._populate_proposal(proposal)
+                    self._populate_proposal(proposal, hit_ids)
         finally:
             QApplication.restoreOverrideCursor()
 
-    def _populate_meeting(self, meeting):
+    def _populate_meeting(self, meeting, hit_ids=None):
         self.lTitle.setText(meeting.title or "")
         self.lTitle.setWordWrap(True)
 
@@ -90,12 +92,12 @@ class DetailDialog(QDialog):
 
         self.tbAgendaItems.setOpenExternalLinks(True)
         self.tbAgendaItems.setTextInteractionFlags(Qt.TextBrowserInteraction)
-        html = self._generate_agenda_html(meeting.agenda_items)
+        html = self._generate_agenda_html(meeting.agenda_items, hit_ids or set())
         self.tbAgendaItems.setHtml(html)
         self.tbAgendaItems.document().adjustSize()
         QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbAgendaItems))
 
-    def _populate_proposal(self, proposal):
+    def _populate_proposal(self, proposal, hit_ids=None):
         self.lTitle.setText(proposal.title or "")
         self.lTitle.setWordWrap(True)
 
@@ -111,7 +113,7 @@ class DetailDialog(QDialog):
 
         self.tbAgendaItems.setOpenExternalLinks(True)
         self.tbAgendaItems.setTextInteractionFlags(Qt.TextBrowserInteraction)
-        html = self._generate_agenda_html(proposal.agenda_items)
+        html = self._generate_agenda_html(proposal.agenda_items, hit_ids or set())
         self.tbAgendaItems.setHtml(html)
         self.tbAgendaItems.document().adjustSize()
         QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbAgendaItems))
@@ -176,8 +178,9 @@ class DetailDialog(QDialog):
 
         layout.addStretch()
 
-    def _generate_agenda_html(self, agenda_items):
+    def _generate_agenda_html(self, agenda_items, hit_ids=None):
         agenda_items = sorted(agenda_items, key=cmp_to_key(lambda a, b: _compare_agenda_number(a.number, b.number)))
+        hit_ids = hit_ids or set()
         documents_present = any(
             item.documents and any(d.file for d in item.documents)
             for item in agenda_items
@@ -202,6 +205,9 @@ class DetailDialog(QDialog):
         for item in agenda_items:
             number = item.number or ''
             title = (item.title or '').replace('\n', '<br />')
+            is_hit = item.id in hit_ids
+            row_bg = ' bgcolor="#eef6ee"' if is_hit else ''
+            weight = 'font-weight:600; ' if is_hit else ''
 
             valid_docs = []
             for doc in item.documents:
@@ -213,11 +219,11 @@ class DetailDialog(QDialog):
                     f'<a href="{url}"><span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#4E607A;">{file_name}</span></a>'
                 )
 
-            html += f'''<tr>
+            html += f'''<tr{row_bg}>
     <td style=" padding:3;">
-    <p style=" margin:0px; text-align:center;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt;">{number}</span></p></td>
+    <p style=" margin:0px; text-align:center;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt; {weight}">{number}</span></p></td>
     <td style=" padding:3;">
-    <p style=" margin:0px;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt;">{title}</span></p></td>'''
+    <p style=" margin:0px;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt; {weight}">{title}</span></p></td>'''
 
             if documents_present:
                 doc_html = "<br />".join(valid_docs) if valid_docs else '&nbsp;'
