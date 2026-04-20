@@ -1096,9 +1096,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                         <layout class="QGridLayout" name="gridLayout_6">
                          <item row="2" column="0">
                           <widget class="QRadioButton" name="rbKeyword_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Keyword</string>
                            </property>
@@ -1106,9 +1103,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                          </item>
                          <item row="1" column="0">
                           <widget class="QRadioButton" name="rbSemantisch_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Semantisch</string>
                            </property>
@@ -1155,9 +1149,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                         <layout class="QGridLayout" name="gridLayout_7">
                          <item row="2" column="0">
                           <widget class="QRadioButton" name="rbUmfassend_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Umfassend</string>
                            </property>
@@ -1165,9 +1156,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                          </item>
                          <item row="1" column="0">
                           <widget class="QRadioButton" name="rbTiefenrecherche_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Tiefenrecherche</string>
                            </property>
@@ -1175,9 +1163,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                          </item>
                          <item row="0" column="0">
                           <widget class="QRadioButton" name="rbSchnellsuche_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Schnellsuche</string>
                            </property>
@@ -1210,9 +1195,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                         <layout class="QGridLayout" name="gridLayout_8">
                          <item row="0" column="0">
                           <widget class="QRadioButton" name="rbPraezise_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Präzise (0.50)</string>
                            </property>
@@ -1220,9 +1202,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                          </item>
                          <item row="1" column="0">
                           <widget class="QRadioButton" name="rbAusgewogen_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Ausgewogen (0.35)</string>
                            </property>
@@ -1233,9 +1212,6 @@ zuletzt aktualisiert: 16.05.2025</string>
                          </item>
                          <item row="2" column="0">
                           <widget class="QRadioButton" name="rbBreit_search">
-                           <property name="toolTip">
-                            <string/>
-                           </property>
                            <property name="text">
                             <string>Breit (0.20)</string>
                            </property>

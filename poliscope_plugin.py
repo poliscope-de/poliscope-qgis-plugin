@@ -23,7 +23,7 @@ from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QSettings, QDate, QSize
+from PyQt5.QtCore import QSettings, QDate, QSize, QObject, QEvent
 from PyQt5.QtWidgets import (
     QTabWidget, QInputDialog, QMessageBox, QLabel,
     QGroupBox, QCheckBox, QButtonGroup, QRadioButton
@@ -46,6 +46,14 @@ from .ui.list_item_widget import ListItemWidget
 from .ui.detail_dialog import DetailDialog
 from .utils.utils import Utils
 from .api.poliscopeAPI import PoliscopeAPI, ResultGroup
+
+class _ToolTipBlocker(QObject):
+    """Consumes QEvent.ToolTip so child widgets don't inherit parent tooltips."""
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.ToolTip:
+            return True
+        return super().eventFilter(obj, event)
+
 
 class PoliscopePlugin:
     "QGis Plugin Implementation"
@@ -328,6 +336,14 @@ class PoliscopePlugin:
                 QtWidgets.QRadioButton, "rbAusgewogen_search")
             self.rbBreit_search = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbBreit_search")
+
+            self._tooltip_blocker = _ToolTipBlocker(self.dockwidget)
+            for _rb in [
+                self.rbSemantisch_search, self.rbKeyword_search,
+                self.rbSchnellsuche_search, self.rbTiefenrecherche_search, self.rbUmfassend_search,
+                self.rbPraezise_search, self.rbAusgewogen_search, self.rbBreit_search,
+            ]:
+                _rb.installEventFilter(self._tooltip_blocker)
 
             # Sortierung
             self.cbxSortierung_search = self.dockwidget.findChild(
