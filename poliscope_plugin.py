@@ -443,10 +443,14 @@ class PoliscopePlugin:
                 QtWidgets.QPushButton, "watchlistRefButton")
             self.watchlistRefButton.clicked.connect(self.btnHandlerRefresh_watchlist)
 
-            # Enable/disable buttons depending on API key
+            # Enable/disable buttons depending on API key and plugin version
             has_api = self.api is not None
-            self.focusregionRefButton.setEnabled(has_api)
-            self.watchlistRefButton.setEnabled(has_api)
+            if has_api:
+                required = self.api.get_qgis_plugin_version()
+                local = Utils.get_plugin_version()
+                self.QGIS_PLUGIN_VERSION_UP2DATE = self._is_version_sufficient(local, required)
+            self.focusregionRefButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
+            self.watchlistRefButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
             self.searchBbSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
             self.searchCenterSearchButton.setEnabled(has_api and self.QGIS_PLUGIN_VERSION_UP2DATE)
 
@@ -454,6 +458,10 @@ class PoliscopePlugin:
                 self._show_missing_api_key(self.focusregionList)
                 self._show_missing_api_key(self.searchList)
                 self._show_missing_api_key(self.watchlistList)
+            elif not self.QGIS_PLUGIN_VERSION_UP2DATE:
+                self._show_wrong_plugin_version(self.focusregionList)
+                self._show_wrong_plugin_version(self.searchList)
+                self._show_wrong_plugin_version(self.watchlistList)
             else:
                 self._load_focusregion_radio_buttons()
 
@@ -1067,8 +1075,6 @@ class PoliscopePlugin:
                     f"in <b>{fr_name}</b>.<br><br>"
                     f"Den Haken bei <b>Nur Neuigkeiten</b> entfernen, "
                     f"um alle Ergebnisse im ausgewählten Zeitraum zu sehen.<br><br>"
-                    f"Mit <b>Suchbegriff öffnen</b> den Suchbegriff der Fokusregion "
-                    f"in der Suche öffnen um erweiterte Einstellungen nutzen."
                 )
                 self.lMeetingCount_focusregion.setText("")
                 self.lblResultCount_focusregion.setText("")
@@ -1290,6 +1296,24 @@ class PoliscopePlugin:
         sorted_results = self.sortResults_focusregion(self.results_focusregion)
         first_batch = sorted_results[:self.displayedCount_focusregion or 50]
         self.setResultsToList(first_batch, self.focusregionList)
+
+    def _is_version_sufficient(self, local: str, required) -> bool:
+        if not required:
+            return True
+        try:
+            local_parts = tuple(int(x) for x in local.split("."))
+            req_parts = tuple(int(x) for x in required.split("."))
+            return local_parts >= req_parts
+        except (ValueError, AttributeError):
+            return True
+
+    def _show_wrong_plugin_version(self, list_widget):
+        item_widget = ListWrongPluginVersionErrorWidget()
+        item = QtWidgets.QListWidgetItem()
+        item.setFlags(Qt.NoItemFlags)
+        item.setSizeHint(item_widget.sizeHint())
+        list_widget.addItem(item)
+        list_widget.setItemWidget(item, item_widget)
 
     def _show_missing_api_key(self, list_widget):
         item_widget = ListMissingApiKeyErrorWidget()
