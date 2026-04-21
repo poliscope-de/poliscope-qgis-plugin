@@ -888,7 +888,8 @@ class PoliscopePlugin:
         for result_group in results:
             item_widget = ListItemWidget()
             item_widget.lTitle.setText(result_group.context.entity_name)
-            item_widget.lDate.setText(Utils.format_date(result_group.context.date))
+            if result_group.context.date:
+                item_widget.lDate.setText(Utils.format_date(result_group.context.date))
             item_widget.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(result_group.context))
             if result_group.context.location:
                 loc = result_group.context.location

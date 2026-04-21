@@ -1,15 +1,10 @@
 import os
 from datetime import datetime
-from PyQt5 import QtGui
 from qgis.utils import iface
 from qgis.core import QgsCoordinateTransform, QgsProject, QgsCoordinateReferenceSystem
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtSvg import QSvgRenderer
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QFrame, QLabel, QPushButton
-from PyQt5.QtWidgets import QLayout
-import re
-import unicodedata
 from pathlib import Path
 import math
 
@@ -44,21 +39,6 @@ class Utils:
         jahr = dt.year
         image = '<img src="data:image/png;base64,{PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgd2lkdGg9IjI0IgogICBoZWlnaHQ9IjI0IgogICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgIGZpbGw9Im5vbmUiCiAgIHN0cm9rZT0iY3VycmVudENvbG9yIgogICBzdHJva2Utd2lkdGg9IjIiCiAgIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICAgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIKICAgY2xhc3M9ImZlYXRoZXIgZmVhdGhlci1jbG9jayIKICAgdmVyc2lvbj0iMS4xIgogICBpZD0ic3ZnNDU5MSIKICAgc29kaXBvZGk6ZG9jbmFtZT0iY2xvY2suc3ZnIgogICBpbmtzY2FwZTp2ZXJzaW9uPSIwLjkyLjUgKDIwNjBlYzFmOWYsIDIwMjAtMDQtMDgpIj4KICA8bWV0YWRhdGEKICAgICBpZD0ibWV0YWRhdGE0NTk3Ij4KICAgIDxyZGY6UkRGPgogICAgICA8Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+CiAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICAgICAgPGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPgogICAgICA8L2NjOldvcms+CiAgICA8L3JkZjpSREY+CiAgPC9tZXRhZGF0YT4KICA8ZGVmcwogICAgIGlkPSJkZWZzNDU5NSIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIgogICAgIGJvcmRlcmNvbG9yPSIjNjY2NjY2IgogICAgIGJvcmRlcm9wYWNpdHk9IjEiCiAgICAgb2JqZWN0dG9sZXJhbmNlPSIxMCIKICAgICBncmlkdG9sZXJhbmNlPSIxMCIKICAgICBndWlkZXRvbGVyYW5jZT0iMTAiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9Ijc4MCIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSI0ODAiCiAgICAgaWQ9Im5hbWVkdmlldzQ1OTMiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGlua3NjYXBlOnpvb209IjkuODMzMzMzMyIKICAgICBpbmtzY2FwZTpjeD0iMTIiCiAgICAgaW5rc2NhcGU6Y3k9IjEyIgogICAgIGlua3NjYXBlOndpbmRvdy14PSIwIgogICAgIGlua3NjYXBlOndpbmRvdy15PSIwIgogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjAiCiAgICAgaW5rc2NhcGU6Y3VycmVudC1sYXllcj0ic3ZnNDU5MSIgLz4KICA8Y2lyY2xlCiAgICAgY3g9IjEyIgogICAgIGN5PSIxMiIKICAgICByPSIxMCIKICAgICBpZD0iY2lyY2xlNDU4NyIKICAgICBzdHlsZT0ic3Ryb2tlOiM3MzdmOTU7c3Ryb2tlLW9wYWNpdHk6MSIgLz4KICA8cG9seWxpbmUKICAgICBwb2ludHM9IjEyIDYgMTIgMTIgMTYgMTQiCiAgICAgaWQ9InBvbHlsaW5lNDU4OSIKICAgICBzdHlsZT0ic3Ryb2tlOiM3MzdmOTU7c3Ryb2tlLW9wYWNpdHk6MSIgLz4KPC9zdmc+Cg==\}" width="12" height="12">'
         return f"{image} {wochentag}, {tag}. {monat} {jahr}"
-
-    @staticmethod
-    def format_last_status_update(date_str: str) -> str:
-        wochentage = ['Montag', 'Dienstag', 'Mittwoch',
-                      'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-        monate = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-                  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
-
-        dt = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
-        wochentag = wochentage[dt.weekday()]
-        tag = dt.day
-        monat = monate[dt.month - 1]
-        jahr = dt.year
-        image = '<img src="data:image/png;base64,{PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgd2lkdGg9IjI0IgogICBoZWlnaHQ9IjI0IgogICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgIGZpbGw9Im5vbmUiCiAgIHN0cm9rZT0iY3VycmVudENvbG9yIgogICBzdHJva2Utd2lkdGg9IjIiCiAgIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICAgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIKICAgY2xhc3M9ImZlYXRoZXIgZmVhdGhlci1hY3Rpdml0eSIKICAgdmVyc2lvbj0iMS4xIgogICBpZD0ic3ZnMzc2MiIKICAgc29kaXBvZGk6ZG9jbmFtZT0iYWN0aXZpdHkuc3ZnIgogICBpbmtzY2FwZTp2ZXJzaW9uPSIwLjkyLjUgKDIwNjBlYzFmOWYsIDIwMjAtMDQtMDgpIj4KICA8bWV0YWRhdGEKICAgICBpZD0ibWV0YWRhdGEzNzY4Ij4KICAgIDxyZGY6UkRGPgogICAgICA8Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+CiAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICAgICAgPGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPgogICAgICA8L2NjOldvcms+CiAgICA8L3JkZjpSREY+CiAgPC9tZXRhZGF0YT4KICA8ZGVmcwogICAgIGlkPSJkZWZzMzc2NiIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIgogICAgIGJvcmRlcmNvbG9yPSIjNjY2NjY2IgogICAgIGJvcmRlcm9wYWNpdHk9IjEiCiAgICAgb2JqZWN0dG9sZXJhbmNlPSIxMCIKICAgICBncmlkdG9sZXJhbmNlPSIxMCIKICAgICBndWlkZXRvbGVyYW5jZT0iMTAiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9IjM0NDAiCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTM1MSIKICAgICBpZD0ibmFtZWR2aWV3Mzc2NCIKICAgICBzaG93Z3JpZD0iZmFsc2UiCiAgICAgaW5rc2NhcGU6em9vbT0iOS44MzMzMzMzIgogICAgIGlua3NjYXBlOmN4PSItMjMuNDkxNTI1IgogICAgIGlua3NjYXBlOmN5PSIxMiIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iLTkiCiAgICAgaW5rc2NhcGU6d2luZG93LXk9Ii05IgogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjEiCiAgICAgaW5rc2NhcGU6Y3VycmVudC1sYXllcj0ic3ZnMzc2MiIgLz4KICA8cG9seWxpbmUKICAgICBwb2ludHM9IjIyIDEyIDE4IDEyIDE1IDIxIDkgMyA2IDEyIDIgMTIiCiAgICAgaWQ9InBvbHlsaW5lMzc2MCIKICAgICBzdHlsZT0ic3Ryb2tlOiM3MzdmOTU7c3Ryb2tlLW9wYWNpdHk6MSIgLz4KPC9zdmc+Cg==}" width="12" height="12">'
-        return f"{image} Aktualisiert am {wochentag}, {tag}. {monat} {jahr}"
 
     @staticmethod
     def getLocationString(location: str) -> str:
@@ -136,99 +116,63 @@ class Utils:
     @staticmethod
     def format_score(score: float) -> str:
         return f"{round(score * 100)}%"
-    @staticmethod
-    def format_bytes(bytes_value: int) -> str:
-        if bytes_value < 1024:
-            return f"{bytes_value} B"
-        elif bytes_value < 1024 ** 2:
-            kb = bytes_value // 1024
-            return f"{kb} KB"
-        else:
-            mb = bytes_value // (1024 ** 2)
-            return f"{mb} MB"
-
-    @staticmethod
-    def slugify(text: str) -> str:
-        # Unicode normalisieren (z.B. ä → ä)
-        text = unicodedata.normalize("NFKD", text)
-        # Diakritische Zeichen entfernen (z.B. ä → a)
-        text = text.encode("ascii", "ignore").decode("ascii")
-        # Nur alphanumerische Zeichen und Leerzeichen zulassen
-        text = re.sub(r"[^a-zA-Z0-9\s-]", "", text)
-        # Leerzeichen und Doppelte Bindestriche durch einen Bindestrich ersetzen
-        text = re.sub(r"[\s-]+", "-", text)
-        # Alles kleinschreiben
-        return text.strip("-").lower()
 
     @staticmethod
     def get_current_canvas_bbox_polygon_epsg4326(iface):
-        # 1. Karte prüfen
         canvas = iface.mapCanvas()
         if not canvas or not canvas.extent():
-            print("Keine Karte sichtbar.")
             return None
 
-        # 2. Aktuellen Extent und CRS holen
         extent = canvas.extent()
         source_crs = canvas.mapSettings().destinationCrs()
         target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
         transform = QgsCoordinateTransform(
             source_crs, target_crs, QgsProject.instance())
 
-        # 3. BoundingBox transformieren
         transformed = transform.transformBoundingBox(extent)
 
-        # 4. Eckpunkte des Rechtecks berechnen
         xmin, ymin = transformed.xMinimum(), transformed.yMinimum()
         xmax, ymax = transformed.xMaximum(), transformed.yMaximum()
 
-        # 5. Polygon als Liste von Punkten (gegen den Uhrzeigersinn + geschlossen)
         polygon = [
-            [round(xmin, 2), round(ymin, 2)],  # unten links
-            [round(xmin, 2), round(ymax, 2)],  # oben links
-            [round(xmax, 2), round(ymax, 2)],  # oben rechts
-            [round(xmax, 2), round(ymin, 2)],  # unten rechts
-            [round(xmin, 2), round(ymin, 2)]   # zurück zu unten links
+            [round(xmin, 2), round(ymin, 2)],
+            [round(xmin, 2), round(ymax, 2)],
+            [round(xmax, 2), round(ymax, 2)],
+            [round(xmax, 2), round(ymin, 2)],
+            [round(xmin, 2), round(ymin, 2)]
         ]
-        # Prüfen auf Default BBox
         if polygon == [[-3.5, -1.0], [-3.5, 1.0], [3.5, 1.0], [3.5, -1.0], [-3.5, -1.0]]:
             return None
 
         return polygon
-    
+
     @staticmethod
     def get_current_canvas_bbox_center_epsg4326(iface):
-        # 1. Karte prüfen
         canvas = iface.mapCanvas()
         if not canvas or not canvas.extent():
-            print("Keine Karte sichtbar.")
             return None
 
-        # 2. Extent und Transformation vorbereiten
         extent = canvas.extent()
         source_crs = canvas.mapSettings().destinationCrs()
         target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
         transform = QgsCoordinateTransform(source_crs, target_crs, QgsProject.instance())
         transformed = transform.transformBoundingBox(extent)
 
-        # 3. Mittelpunkt berechnen
         center_lon = (transformed.xMinimum() + transformed.xMaximum()) / 2
         center_lat = (transformed.yMinimum() + transformed.yMaximum()) / 2
 
-        # 4. Umrechnen von ~1m in Grad
-        meter_in_deg_lat = 1 / 111320  # ca. 1m in Breitengrad
-        meter_in_deg_lon = 1 / (111320 * math.cos(math.radians(center_lat)))  # ca. 1m in Längengrad
+        meter_in_deg_lat = 1 / 111320
+        meter_in_deg_lon = 1 / (111320 * math.cos(math.radians(center_lat)))
 
-        # 5. Rechteck um Mittelpunkt bauen (~1m² Fläche)
         dx = meter_in_deg_lon / 2
         dy = meter_in_deg_lat / 2
 
         polygon = [
-            [round(center_lon - dx, 8), round(center_lat - dy, 8)],  # unten links
-            [round(center_lon - dx, 8), round(center_lat + dy, 8)],  # oben links
-            [round(center_lon + dx, 8), round(center_lat + dy, 8)],  # oben rechts
-            [round(center_lon + dx, 8), round(center_lat - dy, 8)],  # unten rechts
-            [round(center_lon - dx, 8), round(center_lat - dy, 8)]   # zurück zu unten links
+            [round(center_lon - dx, 8), round(center_lat - dy, 8)],
+            [round(center_lon - dx, 8), round(center_lat + dy, 8)],
+            [round(center_lon + dx, 8), round(center_lat + dy, 8)],
+            [round(center_lon + dx, 8), round(center_lat - dy, 8)],
+            [round(center_lon - dx, 8), round(center_lat - dy, 8)]
         ]
 
         return polygon
@@ -236,7 +180,6 @@ class Utils:
     @staticmethod
     def get_plugin_version():
         plugin_dir = str(Path(__file__).parent.parent)
-        print("Plugin Directory: ", plugin_dir)
         metadata_path = os.path.join(plugin_dir, "metadata.txt")
 
         if not os.path.exists(metadata_path):
