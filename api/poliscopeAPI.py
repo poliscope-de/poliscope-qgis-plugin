@@ -15,6 +15,7 @@ Usage:
 from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict, Any
 import requests
+from qgis.core import QgsMessageLog, Qgis
 
 # ---------------------------------------------------------------------------
 # DATA MODELS
@@ -680,10 +681,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return data.get("version")
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Plugin-Version: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Plugin-Version: {e}", level=Qgis.Warning)
         return None
 
     
@@ -724,11 +725,11 @@ class PoliscopeAPI:
                 return entities, meta
             else:
                 if not silent:
-                    print(f"[Fehler] Status {response.status_code}: {response.text}")
+                    QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return (None, None)
         except Exception as e:
             if not silent:
-                print(f"[Exception] Fehler beim Abrufen der Verwaltungseinheiten: {e}")
+                QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Verwaltungseinheiten: {e}", level=Qgis.Warning)
         return (None, None)
 
     def get_entity(self, id: str, detail=None):
@@ -750,10 +751,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return Entity.from_dict(data["data"])
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Verwaltungseinheit: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Verwaltungseinheit: {e}", level=Qgis.Warning)
         return None
     
     def get_file(self, id: str):
@@ -770,10 +771,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return FileSummary.from_dict(data["data"])
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Datei: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Datei: {e}", level=Qgis.Warning)
         return None
     
     def get_file_content(self, id: str):
@@ -790,10 +791,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return FileContent.from_dict(data["data"])
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen des Dateiinhalts: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen des Dateiinhalts: {e}", level=Qgis.Warning)
         return None
     
     def get_focusregions(self, limit=None, offset=None, detail=None):
@@ -823,10 +824,10 @@ class PoliscopeAPI:
                 meta = data["meta"]
                 return focusregions, meta
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return (None, None)
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Fokusregionen: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Fokusregionen: {e}", level=Qgis.Warning)
         return (None, None)
 
     def get_focusregion(self, id: str, detail=None):
@@ -850,10 +851,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return Focusregion.from_dict(data["data"])
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Fokusregion (ID: {id}): {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Fokusregion (ID: {id}): {e}", level=Qgis.Warning)
         return None
 
     def mark_focusregion_visited(self, id: str):
@@ -871,10 +872,10 @@ class PoliscopeAPI:
             if response.status_code == 204:
                 return True
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return False
         except Exception as e:
-            print(f"[Exception] Fehler beim Aktualisieren des Zeitstempels: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Aktualisieren des Zeitstempels: {e}", level=Qgis.Warning)
         return False
     
     def pause_focusregion(self, id: str):
@@ -892,10 +893,10 @@ class PoliscopeAPI:
             if response.status_code == 204:
                 return True
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return False
         except Exception as e:
-            print(f"[Exception] Fehler beim Pausieren der Fokusregion: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Pausieren der Fokusregion: {e}", level=Qgis.Warning)
         return False    
     
     def unpause_focusregion(self, id: str):
@@ -912,10 +913,10 @@ class PoliscopeAPI:
             if response.status_code == 204:
                 return True
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return False
         except Exception as e:
-            print(f"[Exception] Fehler beim Aufheben der Pausierung der Fokusregion: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Aufheben der Pausierung der Fokusregion: {e}", level=Qgis.Warning)
         return False
 
     def get_focusregion_results(self, id: str, new_since=None):
@@ -942,10 +943,10 @@ class PoliscopeAPI:
                 meta = data["meta"]
                 return result_groups, map_points, meta
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None, None, None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Fokusregionergebnisse: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Fokusregionergebnisse: {e}", level=Qgis.Warning)
         return None, None, None
     
     def list_meetings(self, limit=None, offset=None, detail=None, entity_ids=None, from_date=None, to_date=None):
@@ -982,10 +983,10 @@ class PoliscopeAPI:
                 meta = data["meta"]
                 return meetings, meta
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return (None, None)
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Sitzungsliste: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Sitzungsliste: {e}", level=Qgis.Warning)
         return (None, None)
 
     def get_bookmarked_meetings(self, limit=None, offset=None, detail=None):
@@ -1015,10 +1016,10 @@ class PoliscopeAPI:
                 meta = data["meta"]
                 return bookmarked_meetings, meta
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return (None, None)
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Merkliste: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Merkliste: {e}", level=Qgis.Warning)
         return (None, None)
 
     def add_bookmarked_meeting(self, id: str):
@@ -1035,10 +1036,10 @@ class PoliscopeAPI:
             if response.status_code == 204:
                 return True
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return False
         except Exception as e:
-            print(f"[Exception] Fehler beim Hinzufügen zur Merkliste: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Hinzufügen zur Merkliste: {e}", level=Qgis.Warning)
         return False
     
     def remove_bookmarked_meeting(self, id: str):
@@ -1054,10 +1055,10 @@ class PoliscopeAPI:
             if response.status_code == 204:
                 return True
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return False
         except Exception as e:
-            print(f"[Exception] Fehler beim Entfernen von der Merkliste: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Entfernen von der Merkliste: {e}", level=Qgis.Warning)
         return False
 
     def get_meeting(self, id: str, detail=None):
@@ -1080,10 +1081,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return Meeting.from_dict(data["data"])
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Sitzung: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Sitzung: {e}", level=Qgis.Warning)
         return None
 
     def get_proposal(self, id: str, detail=None):
@@ -1106,10 +1107,10 @@ class PoliscopeAPI:
                 data = response.json()
                 return Proposal.from_dict(data["data"])
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Vorlage: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Vorlage: {e}", level=Qgis.Warning)
         return None
     
     def search(self, q: str, mode=None, types=None, entity_ids=None, bbox=None, levels=None, date_from=None, date_to=None, new_since=None, limit=None, score_threshold=None):
@@ -1159,10 +1160,10 @@ class PoliscopeAPI:
                 meta = data["meta"]
                 return result_groups, map_points, meta
             else:
-                print(f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return (None, None, None)
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Suche: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Suche: {e}", level=Qgis.Warning)
         return (None, None, None)
 
 

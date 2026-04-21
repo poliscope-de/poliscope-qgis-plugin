@@ -555,7 +555,8 @@ class PoliscopePlugin:
 
         if new_key:
             test_api = PoliscopeAPI(api_key=new_key)
-            api_is_working = test_api.get_qgis_plugin_version() is not None
+            focusregions, _ = test_api.get_focusregions()
+            api_is_working = focusregions is not None
         else:
             api_is_working = False
 
@@ -585,6 +586,14 @@ class PoliscopePlugin:
             QMessageBox.information(
                 None, "Erfolg", "API-Key wurde gespeichert und ist gültig!")
         elif new_key:
+            self.api = None
+            self.focusregionRefButton.setEnabled(False)
+            self.watchlistRefButton.setEnabled(False)
+            self.searchBbSearchButton.setEnabled(False)
+            self.searchCenterSearchButton.setEnabled(False)
+            self._show_missing_api_key(self.focusregionList)
+            self._show_missing_api_key(self.searchList)
+            self._show_missing_api_key(self.watchlistList)
             QMessageBox.warning(
                 None, "Warnung", "API-Key wurde gespeichert, ist aber nicht gültig. Bitte gültigen API-Key eingeben.")
         else:
