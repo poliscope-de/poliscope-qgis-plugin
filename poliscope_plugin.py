@@ -28,8 +28,9 @@ from PyQt5.QtWidgets import (
     QTabWidget, QInputDialog, QMessageBox, QLabel,
     QGroupBox, QCheckBox, QButtonGroup, QRadioButton
 )
-
-from qgis.core import QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
+# old from qgis.core import QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject  
+from qgis.core import (QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinateTransform,
+                       QgsProject, QgsTask, QgsApplication, QgsMessageLog, Qgis)
 from qgis.utils import iface
 
 from qgis.PyQt.QtCore import QSettings as QgisQSettings, QTranslator, QCoreApplication, Qt
@@ -391,6 +392,10 @@ class PoliscopePlugin:
             self.pbOptions_watchlist = self.dockwidget.findChild(
                 QtWidgets.QPushButton, "pbOptions_watchlist")
             self.pbOptions_watchlist.clicked.connect(self.openOptions)
+
+            self.pbOptions_help = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbOptions_help")
+            self.pbOptions_help.clicked.connect(self.openOptions)
 
             self.cgbWatchlist = self.dockwidget.findChild(
                 QgsCollapsibleGroupBox, "cgbWatchlist")

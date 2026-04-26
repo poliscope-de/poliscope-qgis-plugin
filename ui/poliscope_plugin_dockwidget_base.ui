@@ -1908,7 +1908,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Unter &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Sucheinstellungen&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; findest Du weitere Optionen: &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Semantisch&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; findet Ergebnisse nach inhaltlicher Bedeutung, auch ohne genaue Worttreffer. &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Keyword&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; sucht nur nach exakten Begriffen – schneller, aber weniger flexibel. Die &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Suchtiefe&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; bestimmt, wie viele Ergebnisse intern durchsucht werden; höhere Werte erhöhen die Ladezeit. Der &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Score&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; (nur semantisch) steuert die Relevanzschwelle: Präzise (0,50), Ausgewogen (0,35), Breit (0,20).&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Hinweis: Die meisten Gemeindesitzungen werden im Ratsinformationssystem der übergeordneten Verwaltungseinheit veröffentlicht, sodass auch Sitzungen von umliegenden Verwaltungseinheiten in Deiner Suche auftauchen können.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Hinweis: Die meisten Gemeindesitzungen werden im Ratsinformationssystem der übergeordneten Gemeindeverband veröffentlicht, sodass auch Sitzungen von umliegenden Gemeinden in Deiner Suche auftauchen können.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Merkliste&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
@@ -1935,6 +1935,50 @@ p, li { white-space: pre-wrap; }
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_help">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer_help">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbOptions_help">
+            <property name="maximumSize">
+             <size>
+              <width>26</width>
+              <height>26</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">    border: none;
+    background: transparent;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../resources/icons/settings.svg</normaloff>../resources/icons/settings.svg</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

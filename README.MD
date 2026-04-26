@@ -96,4 +96,4 @@ Dieses Plugin steht unter der [GPL-2.0 license](LICENSE).
 
 ---
 
-**Poliscope GmbH** | Katzenstr. 1a, 21335 Lüneburg | [www.poliscope.de](https://www.poliscope.de)
+**Poliscope GmbH** | Große Bäckerstraße 10, 21335 Lüneburg | [www.poliscope.de](https://www.poliscope.de)
