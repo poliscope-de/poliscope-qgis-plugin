@@ -78,6 +78,10 @@ Poliscope revolutioniert die Informations- und Datenbeschaffung für Projektentw
 
 💡 **Automatische Updates**: Konfigurieren Sie Fokusregionen für relevante Gebiete und prüfen Sie den Neuigkeitenzähler
 
+## Bekannte Einschränkungen
+
+- **WSL (Windows Subsystem for Linux)**: Das Plugin wird unter WSL nicht vollständig unterstützt. Links lassen sich nicht öffnen und Fehlermeldungen werden möglicherweise nicht korrekt angezeigt. Bitte natives QGIS unter Windows oder Linux verwenden.
+
 ## Support & Feedback
 
 - **🐛 Bugs & Features**: [GitHub Issues](https://github.com/poliscope-de/poliscope-qgis-plugin/issues)

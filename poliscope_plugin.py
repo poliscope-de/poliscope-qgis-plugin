@@ -164,7 +164,12 @@ class PoliscopePlugin:
             api_key = settings.value("api_key", "", type=str)
             settings.endGroup()
             if api_key:
-                self.api = PoliscopeAPI(api_key=api_key)
+                test_api = PoliscopeAPI(api_key=api_key)
+                result, _ = test_api.get_focusregions(limit=1)
+                if result is not None:
+                    self.api = test_api
+                else:
+                    self.api = None
             else:
                 self.api = None
 
