@@ -26,7 +26,8 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QSettings, QDate, QSize, QObject, QEvent
 from PyQt5.QtWidgets import (
     QTabWidget, QInputDialog, QMessageBox, QLabel,
-    QGroupBox, QCheckBox, QButtonGroup, QRadioButton
+    QGroupBox, QCheckBox, QButtonGroup, QRadioButton,
+    QWidget
 )
 # old from qgis.core import QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject  
 from qgis.core import (QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinateTransform,
@@ -34,7 +35,7 @@ from qgis.core import (QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinate
 from qgis.utils import iface
 
 from qgis.PyQt.QtCore import QSettings as QgisQSettings, QTranslator, QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtGui import QIcon, QFont
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from qgis.gui import QgsCollapsibleGroupBox
@@ -1115,18 +1116,13 @@ class PoliscopePlugin:
             self.pbMehrLaden_focusregion.setVisible(False)
 
     def _populate_focusregion_radio_buttons(self, focusregions):
-        gb = self.gbFocusregions_focusregion
-        layout = gb.layout()
+        contents = self.dockwidget.findChild(QWidget, "saFocusregionsContents_focusregion")
+        layout = contents.layout()
 
-        # Remove existing radio buttons, keep push buttons
-        for rb in gb.findChildren(QRadioButton):
+        # Remove existing radio buttons
+        for rb in contents.findChildren(QRadioButton):
             layout.removeWidget(rb)
             rb.deleteLater()
-
-        # Temporarily remove push buttons so we can re-add them at the right row
-        layout.removeWidget(self.pbInKarteZentrieren_focusregion)
-        layout.removeWidget(self.pbInSucheOeffnen_focusregion)
-        layout.removeWidget(self.pbZentriertInSucheOeffnen_focusregion)
 
         # Deduplicate by name, keeping the entry with the most recent lastVisit
         def _last_visit(fr):
@@ -1147,17 +1143,17 @@ class PoliscopePlugin:
                 idx = seen[name]
                 if _last_visit(fr) > _last_visit(deduped[idx]):
                     deduped[idx] = fr
+        deduped.sort(key=lambda fr: (fr.name or fr.id).lower())
         focusregions = deduped
         self._deduped_focusregions = deduped
 
-        self._focusregion_button_group = QButtonGroup(gb)
+        self._focusregion_button_group = QButtonGroup(contents)
         for i, fr in enumerate(focusregions):
             row = i // 2
             col = i % 2
             new_count = next((m.get('newResultsCount') or 0 for m in (fr.team or [])), 0)
-            label = fr.name or fr.id
-            label = f"{label} (neu: {new_count})"
-            # Add last-visit date from the first team member that has one
+            name = fr.name or fr.id
+            label = f"{name} (neu: {new_count})" if new_count > 0 else name
             last_visit_str = _last_visit(fr)
             if last_visit_str:
                 try:
@@ -1165,19 +1161,16 @@ class PoliscopePlugin:
                     label += f"\nzuletzt aktualisiert: {lv_dt.strftime('%d.%m.%Y')}"
                 except Exception:
                     pass
-            rb = QRadioButton(label, gb)
+            rb = QRadioButton(label, contents)
+            if new_count > 0:
+                font = rb.font()
+                font.setBold(True)
+                rb.setFont(font)
             rb.setProperty("focusregion_id", fr.id)
             self._focusregion_button_group.addButton(rb, i)
             layout.addWidget(rb, row, col)
             if i == 0:
                 rb.setChecked(True)
-
-        # Re-add push buttons at the row after the last radio row
-        last_radio_row = max(0, (len(focusregions) - 1) // 2)
-        button_row = last_radio_row + 1
-        layout.addWidget(self.pbInKarteZentrieren_focusregion, button_row, 0, 1, 2)
-        layout.addWidget(self.pbInSucheOeffnen_focusregion, button_row + 1, 0)
-        layout.addWidget(self.pbZentriertInSucheOeffnen_focusregion, button_row + 1, 1)
 
     def _get_selected_focusregion(self):
         if not self._focusregion_button_group or not self._focusregions:
