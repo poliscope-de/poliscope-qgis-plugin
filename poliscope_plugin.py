@@ -1266,7 +1266,16 @@ class PoliscopePlugin:
 
     def onInKarteZentrieren_focusregion(self):
         fr = self._get_selected_focusregion()
-        if not fr or not fr.entity_ids:
+        if not fr:
+            return
+        if not fr.entity_ids:
+            target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+            canvas = self.iface.mapCanvas()
+            transform = QgsCoordinateTransform(
+                target_crs, canvas.mapSettings().destinationCrs(), QgsProject.instance())
+            extent = QgsRectangle(5.866, 47.270, 15.042, 55.059)
+            canvas.setExtent(transform.transformBoundingBox(extent))
+            canvas.refresh()
             return
         ids_param = ",".join(eid.rstrip('*') for eid in fr.entity_ids)
         entities, _ = self.api.list_entities(ids=ids_param, detail="standard")
