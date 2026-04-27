@@ -145,11 +145,18 @@
                    <number>3</number>
                   </property>
                   <item row="0" column="0" colspan="2">
+                   <widget class="QLineEdit" name="leFocusregionFilter_focusregion">
+                    <property name="placeholderText">
+                     <string>Fokusregion suchen...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
                    <widget class="QScrollArea" name="saFocusregions_focusregion">
                     <property name="minimumSize">
                      <size>
                       <width>0</width>
-                      <height>200</height>
+                      <height>150</height>
                      </size>
                     </property>
                     <property name="maximumSize">
@@ -190,7 +197,7 @@
                     </widget>
                    </widget>
                   </item>
-                  <item row="1" column="0" colspan="2">
+                  <item row="2" column="0" colspan="2">
                    <widget class="QPushButton" name="pbInKarteZentrieren_focusregion">
                     <property name="font">
                      <font>
@@ -206,7 +213,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0">
+                  <item row="3" column="0">
                    <widget class="QPushButton" name="pbInSucheOeffnen_focusregion">
                     <property name="font">
                      <font>
@@ -222,7 +229,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="1">
+                  <item row="3" column="1">
                    <widget class="QPushButton" name="pbZentriertInSucheOeffnen_focusregion">
                     <property name="font">
                      <font>
@@ -238,7 +245,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="3" column="0">
+                  <item row="4" column="0">
                    <widget class="QCheckBox" name="cbNurNeuigkeiten_focusregion">
                     <property name="font">
                      <font>
@@ -1793,6 +1800,13 @@
                   </widget>
                  </item>
                 </layout>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="leFokusregionFilter_watchlist">
+                 <property name="placeholderText">
+                  <string>Fokusregion suchen...</string>
+                 </property>
+                </widget>
                </item>
                <item>
                 <widget class="QScrollArea" name="saFokusregionen_watchlist">

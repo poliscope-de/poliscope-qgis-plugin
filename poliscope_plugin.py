@@ -236,6 +236,10 @@ class PoliscopePlugin:
 
             self.gbFocusregions_focusregion = self.dockwidget.findChild(
                 QGroupBox, "gbFocusregions_focusregion")
+            self.leFocusregionFilter_focusregion = self.dockwidget.findChild(
+                QtWidgets.QLineEdit, "leFocusregionFilter_focusregion")
+            self.leFocusregionFilter_focusregion.textChanged.connect(
+                self._filter_focusregion_radio_buttons)
             self.cgbSucheFiltern_focusregion = self.dockwidget.findChild(
                 QgsCollapsibleGroupBox, "cgbSucheFiltern_focusregion")
 
@@ -442,6 +446,12 @@ class PoliscopePlugin:
             self.saFokusregionen_watchlist.setVisible(False)
             self._watchlist_focusregion_checkboxes = []
 
+            self.leFokusregionFilter_watchlist = self.dockwidget.findChild(
+                QtWidgets.QLineEdit, "leFokusregionFilter_watchlist")
+            self.leFokusregionFilter_watchlist.setVisible(False)
+            self.leFokusregionFilter_watchlist.textChanged.connect(
+                self._filter_focusregion_checkboxes_watchlist)
+
             self.pbAlleAnwaehlen_watchlist = self.dockwidget.findChild(
                 QtWidgets.QPushButton, "pbAlleAnwaehlen_watchlist")
             self.pbAlleAbwaehlen_watchlist = self.dockwidget.findChild(
@@ -449,9 +459,9 @@ class PoliscopePlugin:
             self.pbAlleAnwaehlen_watchlist.setVisible(False)
             self.pbAlleAbwaehlen_watchlist.setVisible(False)
             self.pbAlleAnwaehlen_watchlist.clicked.connect(
-                lambda: [cb.setChecked(True) for cb in self._watchlist_focusregion_checkboxes])
+                lambda: [cb.setChecked(True) for cb in self._watchlist_focusregion_checkboxes if cb.isVisible()])
             self.pbAlleAbwaehlen_watchlist.clicked.connect(
-                lambda: [cb.setChecked(False) for cb in self._watchlist_focusregion_checkboxes])
+                lambda: [cb.setChecked(False) for cb in self._watchlist_focusregion_checkboxes if cb.isVisible()])
 
             self.rbFokusregion_watchlist.toggled.connect(
                 self._on_geo_radio_toggled_watchlist)
@@ -1182,6 +1192,13 @@ class PoliscopePlugin:
             if i == 0:
                 rb.setChecked(True)
 
+    def _filter_focusregion_radio_buttons(self, text):
+        text = text.lower()
+        if not self._focusregion_button_group:
+            return
+        for rb in self._focusregion_button_group.buttons():
+            rb.setVisible(text in rb.text().lower())
+
     def _get_selected_focusregion(self):
         if not self._focusregion_button_group or not self._focusregions:
             return None
@@ -1662,9 +1679,12 @@ class PoliscopePlugin:
 
     def _on_geo_radio_toggled_watchlist(self):
         is_fr = self.rbFokusregion_watchlist.isChecked()
+        self.leFokusregionFilter_watchlist.setVisible(is_fr)
         self.saFokusregionen_watchlist.setVisible(is_fr)
         self.pbAlleAnwaehlen_watchlist.setVisible(is_fr)
         self.pbAlleAbwaehlen_watchlist.setVisible(is_fr)
+        if not is_fr:
+            self.leFokusregionFilter_watchlist.clear()
         if is_fr and not self._watchlist_focusregion_checkboxes:
             self._populate_focusregion_checkboxes_watchlist()
 
@@ -1679,6 +1699,11 @@ class PoliscopePlugin:
             cb.setChecked(True)
             layout.addWidget(cb, i // 2, i % 2)
             self._watchlist_focusregion_checkboxes.append(cb)
+
+    def _filter_focusregion_checkboxes_watchlist(self, text):
+        text = text.lower()
+        for cb in self._watchlist_focusregion_checkboxes:
+            cb.setVisible(text in cb.text().lower())
 
     def onSortingChanged_watchlist(self):
         if not self._bookmarked_meetings and not self._session_unbookmarked:
