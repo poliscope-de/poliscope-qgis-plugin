@@ -435,10 +435,23 @@ class PoliscopePlugin:
             self.rbFokusregion_watchlist = self.dockwidget.findChild(
                 QtWidgets.QRadioButton, "rbFokusregion_watchlist")
 
+            self.saFokusregionen_watchlist = self.dockwidget.findChild(
+                QtWidgets.QScrollArea, "saFokusregionen_watchlist")
             self.wFokusregionen_watchlist = self.dockwidget.findChild(
-                QtWidgets.QWidget, "wFokusregionen_watchlist")
-            self.wFokusregionen_watchlist.setVisible(False)
+                QtWidgets.QWidget, "saFokusregionenContents_watchlist")
+            self.saFokusregionen_watchlist.setVisible(False)
             self._watchlist_focusregion_checkboxes = []
+
+            self.pbAlleAnwaehlen_watchlist = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbAlleAnwaehlen_watchlist")
+            self.pbAlleAbwaehlen_watchlist = self.dockwidget.findChild(
+                QtWidgets.QPushButton, "pbAlleAbwaehlen_watchlist")
+            self.pbAlleAnwaehlen_watchlist.setVisible(False)
+            self.pbAlleAbwaehlen_watchlist.setVisible(False)
+            self.pbAlleAnwaehlen_watchlist.clicked.connect(
+                lambda: [cb.setChecked(True) for cb in self._watchlist_focusregion_checkboxes])
+            self.pbAlleAbwaehlen_watchlist.clicked.connect(
+                lambda: [cb.setChecked(False) for cb in self._watchlist_focusregion_checkboxes])
 
             self.rbFokusregion_watchlist.toggled.connect(
                 self._on_geo_radio_toggled_watchlist)
@@ -1447,13 +1460,18 @@ class PoliscopePlugin:
 
         selected_fr_entity_ids = None
         if geo_mode == "fokusregion":
-            selected_fr_entity_ids = set()
+            entity_id_set = set()
+            no_restriction = False
             for cb in self._watchlist_focusregion_checkboxes:
                 if cb.isChecked():
                     fr_id = cb.property("focusregion_id")
                     fr = next((f for f in (self._focusregions or []) if f.id == fr_id), None)
-                    if fr and fr.entity_ids:
-                        selected_fr_entity_ids.update(fr.entity_ids)
+                    if fr:
+                        if not fr.entity_ids:
+                            no_restriction = True
+                            break
+                        entity_id_set.update(fr.entity_ids)
+            selected_fr_entity_ids = None if no_restriction else entity_id_set
 
         bbox_bounds = None
         if geo_mode == "bbox":
@@ -1502,23 +1520,24 @@ class PoliscopePlugin:
                     continue
 
             if geo_mode == "fokusregion":
-                if not selected_fr_entity_ids:
-                    continue
-                matched = False
-                for e_dict in m.ris.get('entities', []):
-                    mid = e_dict.get('id', '')
-                    if not mid:
+                if selected_fr_entity_ids is not None:
+                    if not selected_fr_entity_ids:
                         continue
-                    ancestor_ids = {p.get('id', '') for p in e_dict.get('parents', [])}
-                    for fid in selected_fr_entity_ids:
-                        fid_clean = fid.rstrip('*')
-                        if mid.startswith(fid_clean) or fid_clean in ancestor_ids:
-                            matched = True
+                    matched = False
+                    for e_dict in m.ris.get('entities', []):
+                        mid = e_dict.get('id', '')
+                        if not mid:
+                            continue
+                        ancestor_ids = {p.get('id', '') for p in e_dict.get('parents', [])}
+                        for fid in selected_fr_entity_ids:
+                            fid_clean = fid.rstrip('*')
+                            if mid.startswith(fid_clean) or fid_clean in ancestor_ids:
+                                matched = True
+                                break
+                        if matched:
                             break
-                    if matched:
-                        break
-                if not matched:
-                    continue
+                    if not matched:
+                        continue
             elif geo_mode == "bbox":
                 if bbox_bounds is not None:
                     min_lon, min_lat, max_lon, max_lat = bbox_bounds
@@ -1643,22 +1662,22 @@ class PoliscopePlugin:
 
     def _on_geo_radio_toggled_watchlist(self):
         is_fr = self.rbFokusregion_watchlist.isChecked()
-        self.wFokusregionen_watchlist.setVisible(is_fr)
+        self.saFokusregionen_watchlist.setVisible(is_fr)
+        self.pbAlleAnwaehlen_watchlist.setVisible(is_fr)
+        self.pbAlleAbwaehlen_watchlist.setVisible(is_fr)
         if is_fr and not self._watchlist_focusregion_checkboxes:
             self._populate_focusregion_checkboxes_watchlist()
 
     def _populate_focusregion_checkboxes_watchlist(self):
-        layout = self.wFokusregionen_watchlist.layout()
-        if layout is None:
-            layout = QtWidgets.QVBoxLayout(self.wFokusregionen_watchlist)
-            layout.setContentsMargins(0, 0, 0, 0)
+        contents = self.wFokusregionen_watchlist
+        layout = contents.layout()
 
         self._watchlist_focusregion_checkboxes = []
-        for fr in (self._focusregions or []):
-            cb = QCheckBox(fr.name or fr.id, self.wFokusregionen_watchlist)
+        for i, fr in enumerate(self._focusregions or []):
+            cb = QCheckBox(fr.name or fr.id, contents)
             cb.setProperty("focusregion_id", fr.id)
             cb.setChecked(True)
-            layout.addWidget(cb)
+            layout.addWidget(cb, i // 2, i % 2)
             self._watchlist_focusregion_checkboxes.append(cb)
 
     def onSortingChanged_watchlist(self):
