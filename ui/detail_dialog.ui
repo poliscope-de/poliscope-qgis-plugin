@@ -169,6 +169,23 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QPushButton" name="pbImWebOeffnen_detailDialog">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:#03373A</string>
+       </property>
+       <property name="text">
+        <string> Im Web öffnen</string>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>../resources/icons/globe.svg</normaloff>../resources/icons/globe.svg</iconset>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -215,7 +232,7 @@
    <item>
     <widget class="QTextBrowser" name="tbDescription">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -223,7 +240,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>200</height>
+       <height>0</height>
       </size>
      </property>
      <property name="maximumSize">

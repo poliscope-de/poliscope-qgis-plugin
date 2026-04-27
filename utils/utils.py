@@ -178,6 +178,19 @@ class Utils:
         return polygon
 
     @staticmethod
+    def build_web_url(result_group) -> str:
+        entity_id = result_group.context.entity_id
+        item_id = result_group.group_key.split(":", 1)[1] if ":" in result_group.group_key else ""
+        if result_group.group_type == "meeting" and entity_id and item_id:
+            url = f"https://poliscope.de/app/entity/{entity_id}/meeting/{item_id}"
+            if result_group.hits and result_group.hits[0].agenda_item_id:
+                url += f"/agenda-item/{result_group.hits[0].agenda_item_id}"
+            return url
+        elif result_group.group_type == "proposal" and entity_id and item_id:
+            return f"https://poliscope.de/app/entity/{entity_id}/proposal/{item_id}"
+        return None
+
+    @staticmethod
     def zoom_to_point(lat, lon):
         canvas = iface.mapCanvas()
         target_crs = QgsCoordinateReferenceSystem("EPSG:4326")

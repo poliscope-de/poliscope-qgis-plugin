@@ -6,6 +6,7 @@ from qgis.PyQt.QtGui import QFont
 from qgis.gui import QgsCollapsibleGroupBox
 import os
 import re
+import webbrowser
 from functools import cmp_to_key
 
 from ..utils.utils import Utils
@@ -67,6 +68,13 @@ class DetailDialog(QDialog):
         else:
             self.lDate.hide()
 
+        web_url = Utils.build_web_url(result_group)
+        if web_url:
+            self.pbImWebOeffnen_detailDialog.clicked.connect(
+                lambda checked=False, url=web_url: webbrowser.open(url))
+        else:
+            self.pbImWebOeffnen_detailDialog.setEnabled(False)
+
         hit_ids = {h.agenda_item_id for h in result_group.hits if h.agenda_item_id}
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -96,6 +104,7 @@ class DetailDialog(QDialog):
             else:
                 self.tbDescription.setPlainText(meeting.description)
             self.tbDescription.show()
+            QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbDescription))
         else:
             self.tbDescription.hide()
 
@@ -120,6 +129,7 @@ class DetailDialog(QDialog):
             else:
                 self.tbDescription.setPlainText(proposal.description)
             self.tbDescription.show()
+            QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbDescription))
         else:
             self.tbDescription.hide()
 
@@ -224,6 +234,7 @@ class DetailDialog(QDialog):
             cgb.setCursor(Qt.PointingHandCursor)
             cgb.setFont(QFont("Lucida Sans", 10))
             cgb.setCollapsed(True)
+            cgb.collapsedStateChanged.connect(lambda _: QTimer.singleShot(0, self.adjustSize))
             inner = QVBoxLayout(cgb)
 
             for doc in items:

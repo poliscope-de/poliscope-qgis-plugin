@@ -958,16 +958,8 @@ class PoliscopePlugin:
                 item_widget.pbOpenRIS.setEnabled(False)
 
             # Poliscope Web-URL
-            entity_id = result_group.context.entity_id
-            item_id = result_group.group_key.split(":", 1)[1] if ":" in result_group.group_key else ""
-            if result_group.group_type == "meeting" and entity_id and item_id:
-                web_url = f"https://poliscope.de/app/entity/{entity_id}/meeting/{item_id}"
-                if result_group.hits and result_group.hits[0].agenda_item_id:
-                    web_url += f"/agenda-item/{result_group.hits[0].agenda_item_id}"
-                item_widget.pbWeb.clicked.connect(
-                    lambda checked=False, url=web_url: webbrowser.open(url))
-            elif result_group.group_type == "proposal" and entity_id and item_id:
-                web_url = f"https://poliscope.de/app/entity/{entity_id}/proposal/{item_id}"
+            web_url = Utils.build_web_url(result_group)
+            if web_url:
                 item_widget.pbWeb.clicked.connect(
                     lambda checked=False, url=web_url: webbrowser.open(url))
             else:
