@@ -1008,6 +1008,7 @@ class PoliscopePlugin:
         if not self.api:
             return
 
+        self.cgbSucheFiltern_focusregion.setCollapsed(True)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
             # Load focusregions if not yet cached
