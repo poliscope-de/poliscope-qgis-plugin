@@ -34,7 +34,7 @@ from qgis.core import (QgsRectangle, QgsCoordinateReferenceSystem, QgsCoordinate
                        QgsProject, QgsTask, QgsApplication, QgsMessageLog, Qgis)
 from qgis.utils import iface
 
-from qgis.PyQt.QtCore import QSettings as QgisQSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtCore import QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon, QFont
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
