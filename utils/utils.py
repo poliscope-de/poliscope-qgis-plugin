@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from qgis.utils import iface
-from qgis.core import QgsCoordinateTransform, QgsProject, QgsCoordinateReferenceSystem
+from qgis.core import QgsCoordinateTransform, QgsProject, QgsCoordinateReferenceSystem, QgsRectangle
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtSvg import QSvgRenderer
 from PyQt5.QtCore import Qt
@@ -176,6 +176,16 @@ class Utils:
         ]
 
         return polygon
+
+    @staticmethod
+    def zoom_to_point(lat, lon):
+        canvas = iface.mapCanvas()
+        target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        transform = QgsCoordinateTransform(
+            target_crs, canvas.mapSettings().destinationCrs(), QgsProject.instance())
+        extent = QgsRectangle(lon - 0.2, lat - 0.2, lon + 0.2, lat + 0.2)
+        canvas.setExtent(transform.transformBoundingBox(extent))
+        canvas.refresh()
 
     @staticmethod
     def get_plugin_version():

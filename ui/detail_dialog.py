@@ -51,7 +51,16 @@ class DetailDialog(QDialog):
         context = result_group.context
 
         self.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(context))
-        self.lLocation.setText(Utils.getLocationString(context.entity_name))
+        loc_text = Utils.getLocationString(context.entity_name)
+        if context.location:
+            lat, lon = context.location['lat'], context.location['lon']
+            loc_text = f'<a href="#" style="text-decoration:none; color:inherit;">{loc_text}</a>'
+            self.lLocation.setTextInteractionFlags(Qt.TextBrowserInteraction)
+            self.lLocation.setOpenExternalLinks(False)
+            self.lLocation.setCursor(Qt.PointingHandCursor)
+            self.lLocation.linkActivated.connect(
+                lambda href, _lat=lat, _lon=lon: Utils.zoom_to_point(_lat, _lon))
+        self.lLocation.setText(loc_text)
 
         if context.date:
             self.lDate.setText(Utils.format_date(context.date))

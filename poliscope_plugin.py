@@ -929,7 +929,7 @@ class PoliscopePlugin:
                 item_widget.lLocation.setOpenExternalLinks(False)
                 item_widget.lLocation.linkActivated.connect(
                     lambda href, _lat=lat, _lon=lon:
-                        self._zoom_to_point(_lat, _lon))
+                        Utils.zoom_to_point(_lat, _lon))
             item_widget.lScore.setText(Utils.format_score(result_group.score))
             item_widget.lChunkType.setText(
                 type_map.get(result_group.group_type, result_group.group_type))
@@ -1360,15 +1360,6 @@ class PoliscopePlugin:
         dialog = DetailDialog(result_group, self.api)
         dialog.exec_()
 
-    def _zoom_to_point(self, lat, lon):
-        target_crs = QgsCoordinateReferenceSystem("EPSG:4326")
-        canvas = self.iface.mapCanvas()
-        transform = QgsCoordinateTransform(
-            target_crs, canvas.mapSettings().destinationCrs(), QgsProject.instance())
-        extent = QgsRectangle(lon - 0.2, lat - 0.2, lon + 0.2, lat + 0.2)
-        transformed = transform.transformBoundingBox(extent)
-        canvas.setExtent(transformed)
-        canvas.refresh()
 
     def _build_meeting_breadcrumb(self, entities):
         if not entities:
@@ -1597,7 +1588,7 @@ class PoliscopePlugin:
                 item_widget.lLocation.setOpenExternalLinks(False)
                 item_widget.lLocation.linkActivated.connect(
                     lambda href, _lat=lat, _lon=lon:
-                        self._zoom_to_point(_lat, _lon))
+                        Utils.zoom_to_point(_lat, _lon))
 
             is_bookmarked = meeting.id not in self._session_unbookmarked
             item_widget.pbBookmark.setChecked(is_bookmarked)
