@@ -1034,7 +1034,6 @@ class PoliscopePlugin:
         focusregions, _ = self.api.get_focusregions(limit=500, detail="standard")
         if focusregions:
             self._populate_focusregion_radio_buttons(focusregions)
-            self._focusregions = self._deduped_focusregions
 
     def btnHandlerRefresh_focusregion(self, force=False):
         if not self.api:
@@ -1049,7 +1048,6 @@ class PoliscopePlugin:
                 if not focusregions:
                     return
                 self._populate_focusregion_radio_buttons(focusregions)
-                self._focusregions = self._deduped_focusregions
 
             # Get selected focusregion
             fr = self._get_selected_focusregion()
@@ -1153,7 +1151,6 @@ class PoliscopePlugin:
             layout.removeWidget(rb)
             rb.deleteLater()
 
-        # Deduplicate by name, keeping the entry with the most recent lastVisit
         def _last_visit(fr):
             for member in (fr.team or []):
                 lv = member.get('lastVisit')
@@ -1161,20 +1158,8 @@ class PoliscopePlugin:
                     return lv
             return ""
 
-        seen = {}
-        deduped = []
-        for fr in focusregions:
-            name = fr.name or fr.id
-            if name not in seen:
-                seen[name] = len(deduped)
-                deduped.append(fr)
-            else:
-                idx = seen[name]
-                if _last_visit(fr) > _last_visit(deduped[idx]):
-                    deduped[idx] = fr
-        deduped.sort(key=lambda fr: (fr.name or fr.id).lower())
-        focusregions = deduped
-        self._deduped_focusregions = deduped
+        focusregions = sorted(focusregions, key=lambda fr: (fr.name or fr.id).lower())
+        self._focusregions = focusregions
 
         self._focusregion_button_group = QButtonGroup(contents)
         for i, fr in enumerate(focusregions):
