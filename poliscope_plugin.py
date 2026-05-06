@@ -102,6 +102,8 @@ class PoliscopePlugin:
         self.BBoxSearchClicked = False
         self.CenterSearchClicked = False
 
+        self._search_in_flight = False
+
     def tr(self, message):
         return QCoreApplication.translate('PoliscopePlugin', message)
 
@@ -643,6 +645,11 @@ class PoliscopePlugin:
         if not self.api:
             return
 
+        # Re-Entrance-Schutz: doppelte Requests verhindern, falls der Handler
+        # während eines laufenden Requests erneut getriggert wird
+        if self._search_in_flight:
+            return
+
         # Query
         q = self.leQuery_search.text().strip()
         if not q:
@@ -715,6 +722,7 @@ class PoliscopePlugin:
                 bbox = f"{min(lons)},{min(lats)},{max(lons)},{max(lats)}"
 
         # Ladeindikator einschalten
+        self._search_in_flight = True
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.searchBbSearchButton.setEnabled(False)
         self.searchCenterSearchButton.setEnabled(False)
@@ -735,6 +743,7 @@ class PoliscopePlugin:
             QApplication.restoreOverrideCursor()
             self.searchBbSearchButton.setEnabled(True)
             self.searchCenterSearchButton.setEnabled(True)
+            self._search_in_flight = False
 
         if result_groups is None:
             return
