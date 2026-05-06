@@ -667,7 +667,10 @@ class PoliscopeAPI:
 
     def __init__(self, api_key: str):
         self.session = requests.Session()
-        self.session.headers.update({"Authorization": f"Bearer {api_key}"})
+        self.session.headers.update({
+            "Authorization": f"Bearer {api_key}",
+            "x-client": "qgis-plugin",
+        })
 
     def get_qgis_plugin_version(self) -> Optional[str]:
         """
