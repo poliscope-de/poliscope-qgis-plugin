@@ -1258,8 +1258,8 @@
                          <string>Bestimmt, wie viele Ergebnisse intern durchsucht werden:
 
 • Schnellsuche: 50 Ergebnisse – schnell, für gängige Themen
-• Tiefenrecherche: 250 Ergebnisse – breiter, etwas langsamer
-• Umfassend: 500 Ergebnisse – vollständig, höchste Ladezeit</string>
+• Tiefenrecherche: 100 Ergebnisse – breiter, etwas langsamer
+• Umfassend: 300 Ergebnisse – vollständig, höchste Ladezeit</string>
                         </property>
                         <property name="title">
                          <string>Suchtiefe</string>

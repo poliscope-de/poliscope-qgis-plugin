@@ -665,9 +665,9 @@ class PoliscopePlugin:
 
         # Suchtiefe → limit
         if self.rbTiefenrecherche_search.isChecked():
-            limit = 250
+            limit = 100
         elif self.rbUmfassend_search.isChecked():
-            limit = 500
+            limit = 300
         else:
             limit = 50
 
