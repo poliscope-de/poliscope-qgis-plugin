@@ -8,9 +8,9 @@
 
 """
 
-__author__ = 's.wiemers@plangis.de'
+__author__ = 'info@poliscope.de'
 __date__ = '2024-10-18'
-__copyright__ = 'Copyright 2024, planGIS GmbH'
+__copyright__ = 'Copyright 2024, Poliscope GmbH'
 
 import unittest
 

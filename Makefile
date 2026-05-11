@@ -5,8 +5,8 @@
 #							 -------------------
 #		begin				: 2024-10-18
 #		git sha				: $Format:%H$
-#		copyright			: (C) 2024 by planGIS GmbH
-#		email				: s.wiemers@plangis.de
+#		copyright			: (C) 2024 Poliscope GmbH
+#		email				: info@poliscope.de
 # ***************************************************************************/
 #
 #/***************************************************************************
@@ -65,7 +65,8 @@ PEP8EXCLUDE=pydev,resources.py,conf.py,third_party,ui
 #	* Windows:
 #	  AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins'
 
-QGISDIR=C:\Users\kolja\AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
+# Set this to your local QGIS plugins directory (see platform paths above)
+QGISDIR=$(USERPROFILE)/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
 
 #################################################
 # Normally you would not need to edit below here

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>522</width>
-    <height>628</height>
+    <width>814</width>
+    <height>857</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,13 +18,13 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>522</width>
-    <height>628</height>
+    <width>614</width>
+    <height>765</height>
    </size>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../../../../../../../../../OneDrive - plan-GIS GmbH/PoliScope/icons/icon.svg</normaloff>../../../../../../../../../OneDrive - plan-GIS GmbH/PoliScope/icons/icon.svg</iconset>
+    <normaloff>../../../../../../OneDrive - plan-GIS GmbH/PoliScope/icons/icon.svg</normaloff>../../../../../../OneDrive - plan-GIS GmbH/PoliScope/icons/icon.svg</iconset>
   </property>
   <property name="windowTitle">
    <string>Poliscope Plugin</string>
@@ -57,8 +57,11 @@
     </property>
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="toolTip">
+       <string/>
+      </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -66,7 +69,7 @@
         <height>16</height>
        </size>
       </property>
-      <widget class="QWidget" name="tab_news">
+      <widget class="QWidget" name="tab_focusregion">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -74,7 +77,7 @@
         </sizepolicy>
        </property>
        <attribute name="title">
-        <string>Neuigkeiten</string>
+        <string>Fokusregionen</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -83,7 +86,7 @@
            <enum>QLayout::SetMaximumSize</enum>
           </property>
           <item>
-           <widget class="QgsCollapsibleGroupBox" name="cgbNews">
+           <widget class="QgsCollapsibleGroupBox" name="cgbSucheFiltern_focusregion">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -97,7 +100,7 @@
              </size>
             </property>
             <property name="title">
-             <string comment="dfgfdg" extracomment="dfgdfgfdg">Neuigkeiten filtern ( 09.03.25 - 09.05.25)</string>
+             <string>Suche filtern</string>
             </property>
             <property name="checkable">
              <bool>false</bool>
@@ -112,12 +115,18 @@
                 <enum>QLayout::SetMaximumSize</enum>
                </property>
                <item>
-                <widget class="QGroupBox" name="gbFocusregions_news">
+                <widget class="QGroupBox" name="gbFocusregions_focusregion">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
                  </property>
                  <property name="title">
                   <string>Fokusregionen</string>
@@ -135,32 +144,117 @@
                   <property name="bottomMargin">
                    <number>3</number>
                   </property>
-                  <item row="0" column="0">
-                   <widget class="QCheckBox" name="checkBox_12">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string>Emsland</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
+                  <item row="0" column="0" colspan="2">
+                   <widget class="QLineEdit" name="leFocusregionFilter_focusregion">
+                    <property name="placeholderText">
+                     <string>Fokusregion suchen...</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="QCheckBox" name="checkBox_13">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QScrollArea" name="saFocusregions_focusregion">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>150</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>300</height>
+                     </size>
+                    </property>
+                    <property name="horizontalScrollBarPolicy">
+                     <enum>Qt::ScrollBarAlwaysOff</enum>
+                    </property>
+                    <property name="widgetResizable">
+                     <bool>true</bool>
+                    </property>
+                    <widget class="QWidget" name="saFocusregionsContents_focusregion">
+                     <property name="geometry">
+                      <rect>
+                       <x>0</x>
+                       <y>0</y>
+                       <width>745</width>
+                       <height>69</height>
+                      </rect>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayoutRadioButtons_focusregion">
+                      <property name="leftMargin">
+                       <number>4</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>4</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>4</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>4</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </widget>
+                  </item>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QPushButton" name="pbInKarteZentrieren_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Zoomt die Karte auf das Gebiet dieser Fokusregion</string>
                     </property>
                     <property name="text">
-                     <string>LK Leer</string>
+                     <string>In Karte zentrieren</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QPushButton" name="pbInSucheOeffnen_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Öffnet den gespeicherten Suchbegriff dieser Fokusregion im Suche-Tab</string>
+                    </property>
+                    <property name="text">
+                     <string>Suchbegriff öffnen</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QPushButton" name="pbZentriertInSucheOeffnen_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Zentriert die Karte auf die Fokusregion und öffnet den Suchbegriff im Suche-Tab</string>
+                    </property>
+                    <property name="text">
+                     <string>Zentriert in Suche öffnen</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QCheckBox" name="cbNurNeuigkeiten_focusregion">
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Nur Neuigkeiten (seit dem letzten Besuch)</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -171,7 +265,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="lDateOfMeeting_news">
+                <widget class="QLabel" name="lDateOfMeeting_focusregion">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                    <horstretch>0</horstretch>
@@ -201,7 +295,7 @@
                   <enum>QLayout::SetMaximumSize</enum>
                  </property>
                  <item>
-                  <widget class="QgsDateTimeEdit" name="mteBegin_news">
+                  <widget class="QgsDateTimeEdit" name="mteBegin_focusregion">
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
@@ -214,7 +308,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QgsDateTimeEdit" name="mteEnd_news">
+                  <widget class="QgsDateTimeEdit" name="mteEnd_focusregion">
                    <property name="dateTime">
                     <datetime>
                      <hour>0</hour>
@@ -242,28 +336,28 @@
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_21">
                  <item>
-                  <widget class="QPushButton" name="pbNext30Days_news">
+                  <widget class="QPushButton" name="pbNext30Days_focusregion">
                    <property name="text">
                     <string>Nächste 30 Tage</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbLast30Days_news">
+                  <widget class="QPushButton" name="pbLast30Days_focusregion">
                    <property name="text">
                     <string>Letzte 30 Tage</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbThisYear_news">
+                  <widget class="QPushButton" name="pbThisYear_focusregion">
                    <property name="text">
                     <string>Dieses Jahr</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbLastYear_news">
+                  <widget class="QPushButton" name="pbLastYear_focusregion">
                    <property name="text">
                     <string>Letztes Jahr</string>
                    </property>
@@ -276,417 +370,108 @@
                  <item>
                   <layout class="QVBoxLayout" name="verticalLayout_21">
                    <item>
-                    <widget class="QLabel" name="label_17">
+                    <widget class="QGroupBox" name="gbQuellen_focusregion">
                      <property name="font">
                       <font>
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
                      </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
+                     <property name="title">
+                      <string>Quellen</string>
                      </property>
-                     <property name="text">
-                      <string>Scores</string>
-                     </property>
+                     <layout class="QGridLayout" name="gridLayout_3">
+                      <item row="2" column="0">
+                       <widget class="QCheckBox" name="cbVorlagen_focusregion">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Beschlussvorlagen</string>
+                        </property>
+                        <property name="text">
+                         <string>Vorlagen</string>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QCheckBox" name="cbTOPs_focusregion">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Tagesordnungspunkte</string>
+                        </property>
+                        <property name="text">
+                         <string>TOPs</string>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QCheckBox" name="cbTOPBeschreibungen_focusregion">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Tagesordnungspunkte Beschreibungen</string>
+                        </property>
+                        <property name="text">
+                         <string>TOP Beschreibungen</string>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QCheckBox" name="cbVorlagenBeschreibungen_focusregion">
+                        <property name="toolTip">
+                         <string>Beschlussvorlagen Beschreibungen</string>
+                        </property>
+                        <property name="text">
+                         <string>Vorlagen Beschreibungen</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="0">
+                       <widget class="QCheckBox" name="cbDokumente_focusregion">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>Angehängte Dokumente</string>
+                        </property>
+                        <property name="text">
+                         <string>Dokumente</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_23">
-                     <property name="spacing">
-                      <number>0</number>
-                     </property>
-                     <property name="sizeConstraint">
-                      <enum>QLayout::SetFixedSize</enum>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="pbDeleteWindScore_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">    border: none;
-    background: transparent;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/x-circle.svg</normaloff>../resources/icons/x-circle.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore1_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind1_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind1_sel.svg</normalon>../resources/icons/Wind/Wind1_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore2_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind2_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind2_sel.svg</normalon>../resources/icons/Wind/Wind2_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoRepeat">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoExclusive">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore3_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>0</width>
-                         <height>0</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind3_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind3_sel.svg</normalon>../resources/icons/Wind/Wind3_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_10">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_24">
-                     <property name="spacing">
-                      <number>0</number>
-                     </property>
-                     <property name="sizeConstraint">
-                      <enum>QLayout::SetFixedSize</enum>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="pbDeletePVScore_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">    border: none;
-    background: transparent;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/x-circle.svg</normaloff>../resources/icons/x-circle.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore1_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV1_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV1_sel.svg</normalon>../resources/icons/PV/PV1_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore2_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV2_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV2_sel.svg</normalon>../resources/icons/PV/PV2_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoRepeat">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoExclusive">
-                        <bool>false</bool>
-                       </property>
-                       <property name="flat">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore3_news">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>0</width>
-                         <height>0</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV3_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV3_sel.svg</normalon>../resources/icons/PV/PV3_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_11">
-                       <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
                    </item>
                    <item>
                     <widget class="QFrame" name="frame_12">
@@ -701,92 +486,108 @@
                   </layout>
                  </item>
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_22">
-                   <item>
-                    <widget class="QLabel" name="label_18">
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                   <item alignment="Qt::AlignTop">
+                    <widget class="QGroupBox" name="gbVerwaltungsebene_focusregion">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="font">
                       <font>
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
                      </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
+                     <property name="contextMenuPolicy">
+                      <enum>Qt::DefaultContextMenu</enum>
                      </property>
-                     <property name="text">
-                      <string>Status</string>
+                     <property name="toolTip">
+                      <string>Schränkt die Suche auf bestimmte Verwaltungsebenen ein. Ohne Auswahl werden alle Ebenen durchsucht.</string>
                      </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusAll_news">
-                     <property name="text">
-                      <string>Alle Sitzungen</string>
+                     <property name="layoutDirection">
+                      <enum>Qt::LeftToRight</enum>
                      </property>
-                     <property name="checked">
-                      <bool>true</bool>
+                     <property name="title">
+                      <string>Verwaltungsebene</string>
                      </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusWithBeschlussVorlage_news">
-                     <property name="text">
-                      <string>Mit Beschlussvorlage</string>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                      </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusWithBeschluss_news">
-                     <property name="text">
-                      <string>Mit Beschluss</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_23">
-                   <item>
-                    <widget class="QLabel" name="label_19">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Speicher</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherSaved_news">
-                     <property name="text">
-                      <string>Gespeichert</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherNotSaved_news">
-                     <property name="text">
-                      <string>Nicht gespeichert</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherHiddenMeetings_news">
-                     <property name="text">
-                      <string>Versteckte Sitzungen</string>
-                     </property>
+                     <layout class="QGridLayout" name="gridLayout_4">
+                      <property name="topMargin">
+                       <number>9</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QCheckBox" name="cbPlanungsregionen_focusregion">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Planungsregionen</string>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QCheckBox" name="cbGemeindeverbaende_focusregion">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Gemeindeverbände und Gemeinden</string>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                        <property name="tristate">
+                         <bool>false</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QCheckBox" name="cbLandkreise_focusregion">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Landkreise</string>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <spacer name="verticalSpacer">
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeType">
+                         <enum>QSizePolicy::Expanding</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>20</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                   </layout>
@@ -798,52 +599,6 @@
                  <property name="sizeConstraint">
                   <enum>QLayout::SetMaximumSize</enum>
                  </property>
-                 <item>
-                  <widget class="QLabel" name="lSortBy_news">
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Sortieren nach</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="cobSortBy_news">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>Zukünftige Sitzungen zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Älteste Sitzung zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Aktuellste Neuigkeiten zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Älteste Neuigkeiten zuerst</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
                 </layout>
                </item>
               </layout>
@@ -852,7 +607,51 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lMeetingCount_news">
+           <widget class="QLabel" name="lSortBy_focusregion">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Sunken</enum>
+            </property>
+            <property name="text">
+             <string>Sortieren nach</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cbxSortierung_focusregion">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Relevanz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Datum (neueste zuerst)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Datum (älteste zuerst)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lMeetingCount_focusregion">
             <property name="styleSheet">
              <string notr="true">color:#718096;</string>
             </property>
@@ -865,7 +664,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="newsList">
+           <widget class="QListWidget" name="focusregionList">
             <property name="autoFillBackground">
              <bool>true</bool>
             </property>
@@ -904,7 +703,74 @@
             </property>
            </widget>
           </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_13">
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item row="0" column="1">
+             <layout class="QVBoxLayout" name="verticalLayout_12">
+              <item>
+               <widget class="QLabel" name="lblResultCount_focusregion">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">color:#718096;</string>
+                </property>
+                <property name="text">
+                 <string>50 von 127 Ergebnissen</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pbMehrLaden_focusregion">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Mehr laden</string>
+                </property>
+                <property name="autoExclusive">
+                 <bool>false</bool>
+                </property>
+                <property name="autoDefault">
+                 <bool>false</bool>
+                </property>
+                <property name="default">
+                 <bool>false</bool>
+                </property>
+                <property name="flat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
          </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
@@ -915,20 +781,26 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QPushButton" name="newsRefButton">
+           <widget class="QPushButton" name="focusregionRefButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>Aktualisieren</string>
+             <string>Liste aktualisieren</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pbOptions_news">
+           <widget class="QPushButton" name="pbOptions_focusregion">
             <property name="maximumSize">
              <size>
               <width>26</width>
@@ -957,6 +829,32 @@
         <string>Suche</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLineEdit" name="leQuery_search">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <italic>false</italic>
+            <bold>false</bold>
+            <underline>false</underline>
+            <kerning>true</kerning>
+           </font>
+          </property>
+          <property name="inputMask">
+           <string/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="placeholderText">
+           <string>Suchbegriff eingeben…</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -989,7 +887,7 @@
                 <enum>QLayout::SetMaximumSize</enum>
                </property>
                <item>
-                <widget class="QLabel" name="label_21">
+                <widget class="QLabel" name="lDateOfMeeting_search">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                    <horstretch>0</horstretch>
@@ -1090,583 +988,414 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_28">
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_26">
-                   <item>
-                    <widget class="QLabel" name="label_22">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Scores</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_29">
-                     <property name="spacing">
-                      <number>0</number>
-                     </property>
-                     <property name="sizeConstraint">
-                      <enum>QLayout::SetFixedSize</enum>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="pbDeleteWindScore_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">    border: none;
-    background: transparent;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/x-circle.svg</normaloff>../resources/icons/x-circle.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore1_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind1_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind1_sel.svg</normalon>../resources/icons/Wind/Wind1_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore2_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind2_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind2_sel.svg</normalon>../resources/icons/Wind/Wind2_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoRepeat">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoExclusive">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore3_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>0</width>
-                         <height>0</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind3_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind3_sel.svg</normalon>../resources/icons/Wind/Wind3_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_13">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_30">
-                     <property name="spacing">
-                      <number>0</number>
-                     </property>
-                     <property name="sizeConstraint">
-                      <enum>QLayout::SetFixedSize</enum>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="pbDeletePVScore_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">    border: none;
-    background: transparent;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/x-circle.svg</normaloff>../resources/icons/x-circle.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore1_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV1_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV1_sel.svg</normalon>../resources/icons/PV/PV1_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore2_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV2_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV2_sel.svg</normalon>../resources/icons/PV/PV2_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoRepeat">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoExclusive">
-                        <bool>false</bool>
-                       </property>
-                       <property name="flat">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore3_search">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>0</width>
-                         <height>0</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV3_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV3_sel.svg</normalon>../resources/icons/PV/PV3_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_14">
-                       <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <widget class="QFrame" name="frame_15">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_27">
-                   <item>
-                    <widget class="QLabel" name="label_23">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Status</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusAll_search">
-                     <property name="text">
-                      <string>Alle Sitzungen</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusWithBeschlussVorlage_search">
-                     <property name="text">
-                      <string>Mit Beschlussvorlage</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusWithBeschluss_search">
-                     <property name="text">
-                      <string>Mit Beschluss</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_28">
-                   <item>
-                    <widget class="QLabel" name="label_24">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Speicher</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherSaved_search">
-                     <property name="text">
-                      <string>Gespeichert</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherNotSaved_search">
-                     <property name="text">
-                      <string>Nicht gespeichert</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherHiddenMeetings_search">
-                     <property name="text">
-                      <string>Versteckte Sitzungen</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QVBoxLayout" name="verticalLayout_29">
-                 <property name="sizeConstraint">
-                  <enum>QLayout::SetMaximumSize</enum>
-                 </property>
-                 <item>
-                  <widget class="QLabel" name="label_25">
+                  <widget class="QGroupBox" name="gbQuellen_search">
                    <property name="font">
                     <font>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
-                   <property name="text">
-                    <string>Sortieren nach</string>
+                   <property name="title">
+                    <string>Quellen</string>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-                   </property>
+                   <layout class="QGridLayout" name="gridLayout_10">
+                    <item row="0" column="0">
+                     <widget class="QCheckBox" name="cbTOPs_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string>Tagesordnungspunkte</string>
+                      </property>
+                      <property name="text">
+                       <string>TOPs</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QCheckBox" name="cbTOPBeschreibungen_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string>Tagesordnungspunkte Beschreibungen</string>
+                      </property>
+                      <property name="text">
+                       <string>TOP Beschreibungen</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QCheckBox" name="cbVorlagen_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string>Beschlussvorlagen</string>
+                      </property>
+                      <property name="text">
+                       <string>Vorlagen</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QCheckBox" name="cbVorlagenBeschreibungen_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string>Beschlussvorlagen Beschreibungen</string>
+                      </property>
+                      <property name="text">
+                       <string>Vorlagen Beschreibungen</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QCheckBox" name="cbDokumente_search">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
+                      <property name="toolTip">
+                       <string>Angehängte Dokumente</string>
+                      </property>
+                      <property name="text">
+                       <string>Dokumente</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="cobSortBy_search">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
+                  <widget class="QGroupBox" name="gbVerwaltungsebene_search">
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
                    </property>
-                   <item>
-                    <property name="text">
-                     <string>Aktuellste Neuigkeiten zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Zukünftige Sitzungen zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Älteste Sitzung zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Älteste Neuigkeiten zuerst</string>
-                    </property>
-                   </item>
+                   <property name="toolTip">
+                    <string>Schränkt die Suche auf bestimmte Verwaltungsebenen ein. Ohne Auswahl werden alle Ebenen durchsucht.</string>
+                   </property>
+                   <property name="title">
+                    <string>Verwaltungsebene</string>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_12">
+                    <item row="1" column="0">
+                     <widget class="QCheckBox" name="cbLandkreise_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Landkreise</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QCheckBox" name="cbPlanungsregionen_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Planungsregionen</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QCheckBox" name="cbGemeindeverbaende_search">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Gemeindeverbände und Gemeinden</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <spacer name="verticalSpacer_2">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Ignored</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
                   </widget>
                  </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QgsCollapsibleGroupBox" name="gbSucheinstellungen_search">
+                 <property name="title">
+                  <string>Sucheinstellungen</string>
+                 </property>
+                 <property name="collapsed">
+                  <bool>true</bool>
+                 </property>
+                 <property name="saveCollapsedState">
+                  <bool>false</bool>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_9">
+                  <item row="0" column="0">
+                   <layout class="QHBoxLayout" name="horizontalLayout_28">
+                    <item>
+                     <layout class="QVBoxLayout" name="verticalLayout_26">
+                      <item>
+                       <widget class="QGroupBox" name="gbSuchmodus_search">
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Semantisch: findet Ergebnisse nach Bedeutung, auch ohne genaue Worttreffer. Keyword: nur exakte Begriffe, schneller aber weniger
+  flexibel</string>
+                        </property>
+                        <property name="title">
+                         <string>Suchmodus</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_6">
+                         <item row="2" column="0">
+                          <widget class="QRadioButton" name="rbKeyword_search">
+                           <property name="text">
+                            <string>Keyword</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QRadioButton" name="rbSemantisch_search">
+                           <property name="text">
+                            <string>Semantisch</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QFrame" name="frame_15">
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QVBoxLayout" name="verticalLayout_27">
+                      <item>
+                       <widget class="QGroupBox" name="gbSuchtiefe_search">
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Bestimmt, wie viele Ergebnisse intern durchsucht werden:
+
+• Schnellsuche: 50 Ergebnisse – schnell, für gängige Themen
+• Tiefenrecherche: 100 Ergebnisse – breiter, etwas langsamer
+• Umfassend: 300 Ergebnisse – vollständig, höchste Ladezeit</string>
+                        </property>
+                        <property name="title">
+                         <string>Suchtiefe</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_7">
+                         <item row="2" column="0">
+                          <widget class="QRadioButton" name="rbUmfassend_search">
+                           <property name="text">
+                            <string>Umfassend</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QRadioButton" name="rbTiefenrecherche_search">
+                           <property name="text">
+                            <string>Tiefenrecherche</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="0">
+                          <widget class="QRadioButton" name="rbSchnellsuche_search">
+                           <property name="text">
+                            <string>Schnellsuche</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QVBoxLayout" name="verticalLayout_28">
+                      <item>
+                       <widget class="QGroupBox" name="gbScore_search">
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Präzise: nur sehr relevante Treffer | Ausgewogen: Standard | Breit: auch schwächere Treffer</string>
+                        </property>
+                        <property name="title">
+                         <string>Score</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_8">
+                         <item row="0" column="0">
+                          <widget class="QRadioButton" name="rbPraezise_search">
+                           <property name="text">
+                            <string>Präzise (0.50)</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QRadioButton" name="rbAusgewogen_search">
+                           <property name="text">
+                            <string>Ausgewogen (0.35)</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="2" column="0">
+                          <widget class="QRadioButton" name="rbBreit_search">
+                           <property name="text">
+                            <string>Breit (0.20)</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_29">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetMaximumSize</enum>
+                 </property>
                 </layout>
                </item>
               </layout>
              </item>
             </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lSortBy_search">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Sortieren nach</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cbxSortierung_search">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Relevanz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Datum (neueste zuerst)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Datum (älteste zuerst)</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item>
@@ -1683,7 +1412,56 @@
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="searchList"/>
+           <widget class="QListWidget" name="searchList">
+            <property name="whatsThis">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_11">
+            <item row="0" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_14">
+                <item>
+                 <widget class="QLabel" name="lblResultCount_search">
+                  <property name="styleSheet">
+                   <string notr="true">color:#718096;</string>
+                  </property>
+                  <property name="text">
+                   <string>0 von 0 Ergebnissen</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pbMehrLaden_search">
+                  <property name="styleSheet">
+                   <string notr="true">color:#718096;</string>
+                  </property>
+                  <property name="text">
+                   <string>Mehr Laden</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item row="0" column="0">
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -1698,7 +1476,7 @@
           <item>
            <widget class="QPushButton" name="searchBbSearchButton">
             <property name="text">
-             <string>BBox Suche</string>
+             <string>Kartenausschnitt Suche</string>
             </property>
             <property name="icon">
              <iconset>
@@ -1709,7 +1487,7 @@
           <item>
            <widget class="QPushButton" name="searchCenterSearchButton">
             <property name="text">
-             <string>Zentrum Suche</string>
+             <string>Kartenzentrum Suche</string>
             </property>
             <property name="icon">
              <iconset>
@@ -1779,7 +1557,7 @@
                 <enum>QLayout::SetMaximumSize</enum>
                </property>
                <item>
-                <widget class="QLabel" name="label_26">
+                <widget class="QLabel" name="lDateOfMeeting_watchlist">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                    <horstretch>0</horstretch>
@@ -1880,524 +1658,217 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_34">
+                <layout class="QHBoxLayout" name="horizontalLayout_10">
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_31">
-                   <item>
-                    <widget class="QLabel" name="label_27">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Scores</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_35">
-                     <property name="spacing">
-                      <number>0</number>
-                     </property>
-                     <property name="sizeConstraint">
-                      <enum>QLayout::SetFixedSize</enum>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="pbDeleteWindScore_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">    border: none;
-    background: transparent;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/x-circle.svg</normaloff>../resources/icons/x-circle.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore1_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind1_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind1_sel.svg</normalon>../resources/icons/Wind/Wind1_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore2_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind2_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind2_sel.svg</normalon>../resources/icons/Wind/Wind2_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoRepeat">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoExclusive">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbWindScore3_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>0</width>
-                         <height>0</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/Wind/Wind3_uns.svg</normaloff>
-                         <normalon>../resources/icons/Wind/Wind3_sel.svg</normalon>../resources/icons/Wind/Wind3_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_16">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_36">
-                     <property name="spacing">
-                      <number>0</number>
-                     </property>
-                     <property name="sizeConstraint">
-                      <enum>QLayout::SetFixedSize</enum>
-                     </property>
-                     <item>
-                      <widget class="QPushButton" name="pbDeletePVScore_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>16</width>
-                         <height>16</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">    border: none;
-    background: transparent;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/x-circle.svg</normaloff>../resources/icons/x-circle.svg</iconset>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore1_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV1_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV1_sel.svg</normalon>../resources/icons/PV/PV1_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore2_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>22</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV2_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV2_sel.svg</normalon>../resources/icons/PV/PV2_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>23</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoRepeat">
-                        <bool>false</bool>
-                       </property>
-                       <property name="autoExclusive">
-                        <bool>false</bool>
-                       </property>
-                       <property name="flat">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QPushButton" name="pbPVScore3_watchlist">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="sizeIncrement">
-                        <size>
-                         <width>0</width>
-                         <height>0</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                       <property name="icon">
-                        <iconset>
-                         <normaloff>../resources/icons/PV/PV3_uns.svg</normaloff>
-                         <normalon>../resources/icons/PV/PV3_sel.svg</normalon>../resources/icons/PV/PV3_uns.svg</iconset>
-                       </property>
-                       <property name="iconSize">
-                        <size>
-                         <width>24</width>
-                         <height>21</height>
-                        </size>
-                       </property>
-                       <property name="checkable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_17">
-                       <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <widget class="QFrame" name="frame_18">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QGroupBox" name="rbOrtsfilter_watchlist">
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="title">
+                    <string>Ortsfilter</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_8">
+                    <item>
+                     <widget class="QRadioButton" name="rbAlleAnzeigen_watchlist">
+                      <property name="text">
+                       <string>Alle Anzeigen</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                      <attribute name="buttonGroup">
+                       <string notr="true">buttonGroup</string>
+                      </attribute>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="rbBbox_watchlist">
+                      <property name="text">
+                       <string>Kartenausschnitt Suche</string>
+                      </property>
+                      <attribute name="buttonGroup">
+                       <string notr="true">buttonGroup</string>
+                      </attribute>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="rbZentrum_watchlist">
+                      <property name="text">
+                       <string>Kartenzentrum Suche</string>
+                      </property>
+                      <attribute name="buttonGroup">
+                       <string notr="true">buttonGroup</string>
+                      </attribute>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="rbFokusregion_watchlist">
+                      <property name="text">
+                       <string>Fokusregionen</string>
+                      </property>
+                      <attribute name="buttonGroup">
+                       <string notr="true">buttonGroup</string>
+                      </attribute>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
                  </item>
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_32">
-                   <item>
-                    <widget class="QLabel" name="label_28">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Status</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusAll_watchlist">
-                     <property name="text">
-                      <string>Alle Sitzungen</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusWithBeschlussVorlage_watchlist">
-                     <property name="text">
-                      <string>Mit Beschlussvorlage</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QRadioButton" name="rbStatusWithBeschluss_watchlist">
-                     <property name="text">
-                      <string>Mit Beschluss</string>
-                     </property>
-                    </widget>
-                   </item>
+                  <widget class="QGroupBox" name="gbVerwaltungsebene_watchlist">
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string>Schränkt die Suche auf bestimmte Verwaltungsebenen ein. Ohne Auswahl werden alle Ebenen durchsucht.</string>
+                   </property>
+                   <property name="title">
+                    <string>Verwaltungsebene</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_7">
+                    <item>
+                     <widget class="QCheckBox" name="cbPlanungsregionen_watchlist">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Planungsregionen</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="cbLandkreise_watchlist">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Landkreise</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="cbGemeindeverbaende_watchlist">
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Gemeindeverbände und Gemeinden</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_3">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Ignored</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="leFokusregionFilter_watchlist">
+                 <property name="placeholderText">
+                  <string>Fokusregion suchen...</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QScrollArea" name="saFokusregionen_watchlist">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>100</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>200</height>
+                  </size>
+                 </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <widget class="QWidget" name="saFokusregionenContents_watchlist">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>400</width>
+                    <height>200</height>
+                   </rect>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayoutFokusregionen_watchlist">
+                   <property name="leftMargin">
+                    <number>4</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>4</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>4</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>4</number>
+                   </property>
                   </layout>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutFokusregionenButtons_watchlist">
+                 <item>
+                  <widget class="QPushButton" name="pbAlleAnwaehlen_watchlist">
+                   <property name="text">
+                    <string>Alle anwählen</string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_33">
-                   <item>
-                    <widget class="QLabel" name="label_29">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin: 3px 0px 0px 0px;</string>
-                     </property>
-                     <property name="text">
-                      <string>Speicher</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherSaved_watchlist">
-                     <property name="text">
-                      <string>Gespeichert</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherNotSaved_watchlist">
-                     <property name="text">
-                      <string>Nicht gespeichert</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="cbSpeicherHiddenMeetings_watchlist">
-                     <property name="text">
-                      <string>Versteckte Sitzungen</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QPushButton" name="pbAlleAbwaehlen_watchlist">
+                   <property name="text">
+                    <string>Alle abwählen</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -2407,7 +1878,7 @@
                   <enum>QLayout::SetMaximumSize</enum>
                  </property>
                  <item>
-                  <widget class="QLabel" name="label_30">
+                  <widget class="QLabel" name="lSortBy_watchlist">
                    <property name="font">
                     <font>
                      <weight>75</weight>
@@ -2423,7 +1894,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="cobSortBy_watchlist">
+                  <widget class="QComboBox" name="cbxSortierung_watchlist">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -2432,22 +1903,12 @@
                    </property>
                    <item>
                     <property name="text">
-                     <string>Aktuellste Neuigkeiten zuerst</string>
+                     <string>Datum (neueste zuerst)</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Zukünftige Sitzungen zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Älteste Sitzung zuerst</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Älteste Neuigkeiten zuerst</string>
+                     <string>Datum (älteste zuerst)</string>
                     </property>
                    </item>
                   </widget>
@@ -2487,8 +1948,14 @@
           </property>
           <item>
            <widget class="QPushButton" name="watchlistRefButton">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>Aktualisieren</string>
+             <string>Liste aktualisieren</string>
             </property>
             <property name="icon">
              <iconset>
@@ -2535,41 +2002,110 @@
            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Einrichtung&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Zur Nutzung des Poliscope Plugins benötigst Du einen API-Key. Dieser fungiert als Schlüssel und identifiziert Dich auf den Poliscope Servern.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Um einen API-Key zu erstellen, besuche die Seite &lt;/span&gt;&lt;a href=&quot;https://app.poliscope.de/gis-plugin&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;GIS-Plugin&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon). Anschließend musst Du QGIS neu starten.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Neuigkeiten&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Hier findest Du die neusten Sitzungen aus Deinen Fokusregionen. Fokusregionen kannst Du &lt;/span&gt;&lt;a href=&quot;https://app.poliscope.de/search&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;hier&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; erstellen. Mithilfe der Filter kannst Du die Suche verfeinern oder umsortieren. Vergiss nicht, auf &amp;quot;Aktualisieren&amp;quot; zu drücken, sobald Du Deine Filter fertig eingestellt hast.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Tipp: Klappe auf kleinen Bildschirmen die Filter wieder zu, um einen besseren Überblick über die Ergebnisse zu erhalten.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; font-style:italic;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Zur Nutzung des Poliscope Plugins benötigst Du einen API-Key. Dieser dient als Schlüssel und identifiziert Dich auf den Poliscope-Servern.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Um einen API-Key zu erstellen, besuche die Seite &lt;/span&gt;&lt;a href=&quot;https://poliscope.de/app/gis-plugin&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;GIS-Plugin&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; und folge den Anweisungen. Kopiere den Schlüssel und füge ihn hier im Plugin ein (Zahnrad-Icon).&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Fokusregionen&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Hier siehst Du Ergebnisse aus Deinen Fokusregionen. Wähle eine Fokusregion aus und klicke auf &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Liste aktualisieren&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;, um Ergebnisse zu laden und den Neuigkeitenzähler zurückzusetzen.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Mit &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Nur Neuigkeiten&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; siehst Du nur Ergebnisse seit Deinem letzten Besuch. Die Datumsfelder sind dann deaktiviert. Deaktiviere die Option, um selbst einen Zeitraum festzulegen.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Mit den Filtern kannst Du die Anzeige nach Quellen (TOPs, Vorlagen, Dokumente) und nach Verwaltungsebene einschränken.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;• &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;In Karte zentrieren&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – zoomt die Karte auf das Gebiet der Fokusregion&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;• &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Suchbegriff öffnen&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – öffnet den gespeicherten Suchbegriff im Suche-Tab&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;• &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Zentriert in Suche öffnen&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – kombiniert beides: Karte zentrieren und Suche öffnen&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Fokusregionen mit neuen Ergebnissen werden &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;fett&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; dargestellt. Das Suchfeld über der Liste filtert die Anzeige.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Tipp: Fokusregionen können nur im Browser verwaltet werden: &lt;/span&gt;&lt;a href=&quot;https://poliscope.de/app/focusregions&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic; text-decoration: underline; color:#0000ff;&quot;&gt;poliscope.de/app/focusregions&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Suche&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;In diesem Tab findest Du eine Suchfunktion. Wenn Du auf &amp;quot;BBox Suche&amp;quot; drückst, werden alle Sitzungen von Verwaltungseinheiten angezeigt, die sich im aktuellen Viewport befinden. Wenn du auf &amp;quot;Zentrum Suche&amp;quot; drückst, wird im Zentrum des Viewports gesucht.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Wenn Du etwas genauer suchen willst, kannst Du auch auswählen, dass nur die Verwaltungseinheit in der Mitte des Viewports berücksichtigt wird. So kannst Du z.B. in einzelnen Städten nach Sitzungen suchen, ohne, dass die angrenzenden Gebiete berücksichtigt werden, weil sie ggf. den Viewport schneiden.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Hinweis: Die meisten Gemeindesitzungen werden im Ratsinformationssystem der übergeordneten Verwaltungseinheit veröffentlicht, sodass auch Sitzungen von umliegenden Verwaltungseinheiten in Deiner Suche auftauchen können.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; font-style:italic;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Hier kannst Du gezielt nach Themen suchen. Gib einen Suchbegriff ein und starte mit &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Kartenausschnitt Suche&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; (aktueller Kartenausschnitt) oder &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Kartenzentrum Suche&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; (Kartenzentrum).&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Unter &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Sucheinstellungen&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; findest Du weitere Optionen: &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Semantisch&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; findet Ergebnisse nach inhaltlicher Bedeutung, auch ohne genaue Worttreffer. &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Keyword&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; sucht nur nach exakten Begriffen – schneller, aber weniger flexibel. Die &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Suchtiefe&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; bestimmt, wie viele Ergebnisse intern durchsucht werden; höhere Werte erhöhen die Ladezeit. Der &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Score&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; (nur semantisch) steuert die Relevanzschwelle: Präzise (0,50), Ausgewogen (0,35), Breit (0,20).&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Hinweis: Die meisten Gemeindesitzungen werden im Ratsinformationssystem der übergeordneten Gemeindeverband veröffentlicht, sodass auch Sitzungen von umliegenden Gemeinden in Deiner Suche auftauchen können.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Merkliste&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Alle Sitzungen, die Du im QGIS-Plugin oder in der Webapp auf Deine Merkliste setzt, kannst Du hier einsehen und wie gewohnt filtern.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Alle Einträge, die Du im Plugin oder in der Webapp mit einem Lesezeichen versehen hast, findest Du hier. Klicke auf &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Liste aktualisieren&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;, um Deine Merkliste zu laden.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Mit dem räumlichen Filter kannst Du Deine Lesezeichen regional eingrenzen:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;• &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Kartenausschnitt Suche&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – zeigt Sitzungen aus dem sichtbaren Kartenausschnitt&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;• &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Kartenzentrum Suche&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – zeigt Sitzungen der Verwaltungseinheit am Kartenmittelpunkt&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;• &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Fokusregion&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – zeigt nur Sitzungen aus den gewählten Fokusregionen; das Suchfeld und die Buttons &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Alle anwählen / Alle abwählen&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; erleichtern die Auswahl&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Zusätzlich kannst Du nach Verwaltungsebene und Datum filtern.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Mit dem Lesezeichen-Symbol kannst Du eine Sitzung von der Merkliste entfernen. Sie bleibt bis zum nächsten &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Liste aktualisieren&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; sichtbar – durch erneutes Klicken kannst Du sie wieder hinzufügen.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Auf die angezeigten Koordinaten einer Sitzung klicken, um in der Karte direkt zum Ort zu springen.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Detailansicht&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Ein Klick auf den Ortsnamen in der Detailansicht zoomt die Karte auf den Sitzungsort. Mit dem Button &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Im Web öffnen&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; lässt sich die Sitzung direkt auf poliscope.de aufrufen.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Fragen &amp;amp; Kontakt&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://github.com/poliscope-de/poliscope-qgis-plugin&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;Github&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; - Für das Melden von Fehlern und für Feature-Anfragen&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://www.poliscope.de/contact&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;Kontaktseite&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; - Für allgemeine Fragen&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://github.com/poliscope-de/poliscope-qgis-plugin&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;Github&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – Für das Melden von Fehlern und für Feature-Anfragen&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://www.poliscope.de/contact&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;Kontaktseite&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; – Für allgemeine Fragen&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="openExternalLinks">
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_help">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer_help">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbOptions_help">
+            <property name="maximumSize">
+             <size>
+              <width>26</width>
+              <height>26</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">    border: none;
+    background: transparent;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../resources/icons/settings.svg</normaloff>../resources/icons/settings.svg</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -2593,4 +2129,7 @@ p, li { white-space: pre-wrap; }
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
