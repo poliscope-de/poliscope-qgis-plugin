@@ -7,10 +7,18 @@
 
 import sys
 import getpass
-import xmlrpc.client
-from optparse import OptionParser
 
-standard_library.install_aliases()
+try:
+    from defusedxml.xmlrpc import monkey_patch
+    monkey_patch()
+except ImportError:
+    sys.stderr.write(
+        "Warning: 'defusedxml' is not installed. Install it for safer XML-RPC "
+        "parsing: pip install defusedxml\n"
+    )
+
+import xmlrpc.client  # nosec B411 - hardened by defusedxml.monkey_patch above
+from optparse import OptionParser
 
 # Configuration
 PROTOCOL = 'https'
