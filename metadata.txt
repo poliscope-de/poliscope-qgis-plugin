@@ -7,7 +7,7 @@ name=Poliscope Plugin
 qgisMinimumVersion=3.0
 description=KI-basiertes Crawling von Ratsinformationssystemen der 5.000+ Planungsträger optimiert Ihre Flächensicherung und verschafft den Wissensvorsprung am Erneuerbare Energie - Markt.
 version=2.0.0
-author=Poliscope GmbH (v2 rewrite: Nastasia Würpel)
+author=Poliscope GmbH
 email=info@poliscope.de
 
 about=Die zentrale Sammlung planungsrechtlicher Beschlüsse für Onshore-Wind & PV KI-basiertes Crawling von Ratsinformationssystemen der 5.000+ Planungsträger optimiert Ihre Flächensicherung und verschafft den Wissensvorsprung am Erneuerbare Energie - Markt.
