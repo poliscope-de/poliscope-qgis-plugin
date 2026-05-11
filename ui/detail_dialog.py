@@ -1,120 +1,193 @@
 from PyQt5 import uic
 from qgis.PyQt.QtCore import Qt
 from PyQt5.QtCore import QTimer
-
-from PyQt5.QtWidgets import QLayout, QTextBrowser, QDialog, QGroupBox, QTabWidget, QInputDialog, QMessageBox, QDialog, QVBoxLayout, QFrame, QWidget, QLabel, QPushButton, QApplication, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QApplication)
 from qgis.PyQt.QtGui import QFont
-import os
 from qgis.gui import QgsCollapsibleGroupBox
+import os
+import re
+import webbrowser
+from functools import cmp_to_key
 
 from ..utils.utils import Utils
 
 
+def _compare_agenda_number(a_num, b_num):
+    a = a_num or ""
+    b = b_num or ""
+
+    am = re.match(r'^([^\d]+)', a)
+    bm = re.match(r'^([^\d]+)', b)
+    a_prefix = am.group(0) if am else ""
+    b_prefix = bm.group(0) if bm else ""
+
+    if a_prefix != b_prefix:
+        a_s = a_prefix.rstrip().upper()
+        b_s = b_prefix.rstrip().upper()
+        if a_s == "N" and b_s == "Ö":
+            return 1
+        if a_s == "Ö" and b_s == "N":
+            return -1
+        return (a_prefix > b_prefix) - (a_prefix < b_prefix)
+
+    a_nums = [int(x) for x in re.findall(r'\d+', a)]
+    b_nums = [int(x) for x in re.findall(r'\d+', b)]
+    for ai, bi in zip(a_nums, b_nums):
+        if ai != bi:
+            return ai - bi
+    return len(a_nums) - len(b_nums)
+
+
 class DetailDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, result_group=None, api=None, parent=None):
         super().__init__(parent)
         self.plugin_dir = os.path.dirname(os.path.abspath(__file__))
         ui_path = os.path.join(self.plugin_dir, "detail_dialog.ui")
         uic.loadUi(ui_path, self)
 
-    def openInDialog(self, meeting):
-        dialog = QDialog()
-        dialog.setWindowTitle(meeting.title)
+        if result_group is not None and api is not None:
+            self.populate(result_group, api)
 
-        layout = QVBoxLayout(dialog)
+    def populate(self, result_group, api):
+        context = result_group.context
 
-        # Fenstergröße richtet sich nach Inhalt
-        layout.setSizeConstraint(QLayout.SetFixedSize)
+        self.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(context))
+        loc_text = Utils.getLocationString(context.entity_name)
+        if context.location:
+            lat, lon = context.location['lat'], context.location['lon']
+            loc_text = f'<a href="#" style="text-decoration:none; color:inherit;">{loc_text}</a>'
+            self.lLocation.setTextInteractionFlags(Qt.TextBrowserInteraction)
+            self.lLocation.setOpenExternalLinks(False)
+            self.lLocation.setCursor(Qt.PointingHandCursor)
+            self.lLocation.linkActivated.connect(
+                lambda href, _lat=lat, _lon=lon: Utils.zoom_to_point(_lat, _lon))
+        self.lLocation.setText(loc_text)
 
-        # Frame mit Details
-        dDialog = DetailDialog()
-        dDialog.setStyleSheet("""
-        QWidget {
-            background-color: #FFFFFF;
-            }
-            """)
-        dDialog.setFocusPolicy(Qt.StrongFocus)
-        dDialog.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-        dDialog.setAttribute(Qt.WA_StyledBackground, True)
-
-        # Details des Meetings hinzufügen
-        pvScore = meeting.solar_score
-        windScore = meeting.wind_score
-
-        dDialog.lTitle.setText(meeting.title)
-        if not meeting.description:
-            # Entfernt das QLabel aus dem Layout & UI
-            dDialog.lDescription.setParent(None)
+        if context.date:
+            self.lDate.setText(Utils.format_date(context.date))
         else:
-            dDialog.lDescription.setText(meeting.description)
-            dDialog.lDescription.adjustSize()
+            self.lDate.hide()
 
-        dDialog.lDescription.setWordWrap(True)
-        dDialog.lDescription.setSizePolicy(
-            QSizePolicy.Preferred, QSizePolicy.Minimum)
-        dDialog.lDescription.setText(meeting.description)
-        dDialog.lDescription.adjustSize()
-
-        dDialog.lDate.setText(Utils.format_date(meeting.date))
-        dDialog.lLastStatusUpdate.setText(
-            Utils.format_last_status_update(meeting.last_status_update))
-
-        dDialog.lRISBreadcrumbs.setText(Utils.buildRISBreadcrumbs(meeting))
-
-        # PV Score
-        Utils.setPVScore(dDialog, pvScore)
-        # Wind Score
-        Utils.setWindScore(dDialog, windScore)
-
-        # Set Line
-        Utils.setLineIcon(dDialog, meeting.status)
-
-        # Set Location
-        dDialog.lLocation.setText(Utils.getLocationString(meeting.rsName))
-
-        # Set Topics
-        if meeting.topics:
-            for topic in meeting.topics:
-                self.setTopicToGroubbox(topic, dDialog.gbTopics)
-            self.setHorizontalSpacer(dDialog.gbTopics)
+        web_url = Utils.build_web_url(result_group)
+        if web_url:
+            self.pbImWebOeffnen_detailDialog.clicked.connect(
+                lambda checked=False, url=web_url: webbrowser.open(url))
         else:
-            if dDialog.gbTopics:
-                gblayout = dDialog.gbTopics.parent().layout()
-                if gblayout:
-                    gblayout.removeWidget(dDialog.gbTopics)
-                dDialog.gbTopics.hide()
-                dDialog.gbTopics.setParent(None)
-                dDialog.gbTopics.deleteLater()
-                dDialog.gbTopics = None
+            self.pbImWebOeffnen_detailDialog.setEnabled(False)
 
-        layout.addWidget(dDialog)
+        hit_ids = {h.agenda_item_id for h in result_group.hits if h.agenda_item_id}
 
-        # Schließen-Button
-        close_button = QPushButton("Schließen")
-        close_button.clicked.connect(dialog.accept)
-        layout.addWidget(close_button, alignment=Qt.AlignRight)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            if result_group.group_type == "meeting":
+                meeting_id = result_group.group_key.split(":", 1)[1]
+                meeting = api.get_meeting(meeting_id, detail="full")
+                if meeting:
+                    self._populate_meeting(meeting, hit_ids, result_group.hits)
+            elif result_group.group_type == "proposal":
+                proposal_id = result_group.group_key.split(":", 1)[1]
+                proposal = api.get_proposal(proposal_id, detail="full")
+                if proposal:
+                    self._populate_proposal(proposal, hit_ids, result_group.hits)
+        finally:
+            QApplication.restoreOverrideCursor()
 
-        # Documents
-        self.setDocumentBoxes(meeting.documents, dDialog.gbDocuments)
+    def _populate_meeting(self, meeting, hit_ids=None, hits=None):
+        self.lTitle.setText(meeting.title or "")
+        self.lTitle.setWordWrap(True)
 
-        # Agenda Items
-        dDialog.tbAgendaItems.setOpenExternalLinks(True)
-        dDialog.tbAgendaItems.setTextInteractionFlags(
-            Qt.TextBrowserInteraction)
-        html = self.generate_agenda_html(meeting.relevant_agenda_items)
-        dDialog.tbAgendaItems.setHtml(html)
-        dDialog.tbAgendaItems.document().adjustSize()
-        QTimer.singleShot(
-            0, lambda: self.adjustTextBrowserHeight(dDialog.tbAgendaItems))
+        if meeting.description:
+            html, first_pos = self._build_description_html(meeting.description, hits)
+            if html:
+                self.tbDescription.setHtml(html)
+                QTimer.singleShot(0, lambda p=first_pos: self._scroll_description_to(p))
+            else:
+                self.tbDescription.setPlainText(meeting.description)
+            self.tbDescription.show()
+            QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbDescription))
+        else:
+            self.tbDescription.hide()
 
-        dialog.exec_()
+        self._set_document_boxes(meeting.documents)
 
-    def setDocumentBoxes(self, documents: list[dict[str, any]], parent_gb: QGroupBox) -> None:
-        """
-        Befüllt parent_gb mit collapsible PDFs. 
-        Entfernt parent_gb komplett, wenn keine PDFs gefunden werden.
-        """
-        # 1) Filter & Sortierung wie gehabt
+        self.tbAgendaItems.setOpenExternalLinks(True)
+        self.tbAgendaItems.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        html = self._generate_agenda_html(meeting.agenda_items, hit_ids or set())
+        self.tbAgendaItems.setHtml(html)
+        self.tbAgendaItems.document().adjustSize()
+        QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbAgendaItems))
+
+    def _populate_proposal(self, proposal, hit_ids=None, hits=None):
+        self.lTitle.setText(proposal.title or "")
+        self.lTitle.setWordWrap(True)
+
+        if proposal.description:
+            html, first_pos = self._build_description_html(proposal.description, hits)
+            if html:
+                self.tbDescription.setHtml(html)
+                QTimer.singleShot(0, lambda p=first_pos: self._scroll_description_to(p))
+            else:
+                self.tbDescription.setPlainText(proposal.description)
+            self.tbDescription.show()
+            QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbDescription))
+        else:
+            self.tbDescription.hide()
+
+        self._set_document_boxes(proposal.documents)
+
+        self.tbAgendaItems.setOpenExternalLinks(True)
+        self.tbAgendaItems.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        html = self._generate_agenda_html(proposal.agenda_items, hit_ids or set())
+        self.tbAgendaItems.setHtml(html)
+        self.tbAgendaItems.document().adjustSize()
+        QTimer.singleShot(0, lambda: self._adjust_text_browser_height(self.tbAgendaItems))
+
+    def _scroll_description_to(self, pos):
+        cursor = self.tbDescription.textCursor()
+        cursor.setPosition(pos)
+        self.tbDescription.setTextCursor(cursor)
+        self.tbDescription.ensureCursorVisible()
+        sb = self.tbDescription.verticalScrollBar()
+        sb.setValue(sb.value() + self.tbDescription.viewport().height() * 5 // 6)
+
+    def _build_description_html(self, description, hits):
+        if not description or not hits:
+            return None, 0
+        ranges = []
+        for hit in hits:
+            if not hit.text:
+                continue
+            offset = description.find(hit.text)
+            if offset == -1:
+                continue
+            ranges.append([offset, offset + len(hit.text)])
+        if not ranges:
+            return None, 0
+        ranges.sort()
+        merged = []
+        for start, end in ranges:
+            if merged and start <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], end)
+            else:
+                merged.append([start, end])
+        def esc(s):
+            return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br/>')
+        first_pos = merged[0][0]
+        result = []
+        pos = 0
+        for start, end in merged:
+            if pos < start:
+                result.append(esc(description[pos:start]))
+            result.append('<span style="background-color:#fff9c4;">')
+            result.append(esc(description[start:end]))
+            result.append('</span>')
+            pos = end
+        if pos < len(description):
+            result.append(esc(description[pos:]))
+        return ''.join(result), first_pos
+
+    def _set_document_boxes(self, documents):
+        parent_gb = self.gbDocuments
         categories = {
             "invitation": ("Einladungen", []),
             "beschluss":  ("Beschlüsse",  []),
@@ -122,31 +195,24 @@ class DetailDialog(QDialog):
             "other":      ("Sonstiges",   []),
         }
 
-        for idx, doc in enumerate(documents or []):
-            if not isinstance(doc, dict):
+        seen_ids = set()
+        for doc in (documents or []):
+            if not doc.file or doc.file.mime_type != "application/pdf":
                 continue
-            file_info = doc.get("file")
-            if not file_info or file_info.get("type") != "application/pdf":
+            if doc.file.id in seen_ids:
                 continue
-            key = doc.get("type", "").lower()
+            seen_ids.add(doc.file.id)
+            key = (doc.type or "").lower()
             if key not in categories:
                 key = "other"
             categories[key][1].append(doc)
 
-        # 2) Prüfen, ob überhaupt etwas da ist
         any_docs = any(items for _, items in categories.values())
         if not any_docs:
-            # Parent-Layout der GroupBox holen und Widget entfernen
-            container = parent_gb.parent()
-            if container is not None and isinstance(container.layout(), QVBoxLayout):
-                container.layout().removeWidget(parent_gb)
-            parent_gb.deleteLater()
             parent_gb.hide()
             parent_gb.setParent(None)
-            parent_gb = None
             return
 
-        # 3) Layout der gbDocuments aufräumen oder neu anlegen
         layout = parent_gb.layout()
         if layout is None:
             layout = QVBoxLayout()
@@ -157,7 +223,6 @@ class DetailDialog(QDialog):
                 if child.widget():
                     child.widget().deleteLater()
 
-        # 4) Collapsible-Boxen anlegen
         order = ["invitation", "beschluss", "agenda", "other"]
         for key in order:
             title, items = categories[key]
@@ -169,14 +234,15 @@ class DetailDialog(QDialog):
             cgb.setCursor(Qt.PointingHandCursor)
             cgb.setFont(QFont("Lucida Sans", 10))
             cgb.setCollapsed(True)
+            cgb.collapsedStateChanged.connect(lambda _: QTimer.singleShot(0, self.adjustSize))
             inner = QVBoxLayout(cgb)
 
             for doc in items:
-                file_info = doc["file"]
-                file_title = file_info.get("title") or doc.get(
-                    "url", "").split("/")[-1]
-                filesize = Utils.format_bytes(file_info.get("filesize", ""))
-                lbl = QLabel(f'<a href="{doc["url"]}"><span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#4E607A;">{file_title}</span></a><span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#A0AEC0;"> ({filesize})</span>', cgb)
+                file_name = doc.file.file_name or doc.original_url or "Dokument"
+                lbl = QLabel(
+                    f'<a href="{doc.file.download_url}"><span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#4E607A;">{file_name}</span></a>',
+                    cgb
+                )
                 lbl.setOpenExternalLinks(True)
                 lbl.setTextInteractionFlags(Qt.TextBrowserInteraction)
                 inner.addWidget(lbl)
@@ -185,55 +251,14 @@ class DetailDialog(QDialog):
 
         layout.addStretch()
 
-    def setTopicToGroubbox(self, topic, groupBox):
-        layout = groupBox.layout()
-
-        # Topic als QPushButton mit Stil
-        topic_button = QPushButton(topic['publicProcedureName'])
-        if topic['topic'] == "solar":
-            topic_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FDAC54;
-                border-radius: 5px;
-                padding: 6px;
-                color: #fff;
-                font-weight: bold;
-            }
-            """)
-        elif topic['topic'] == "wind":
-            topic_button.setStyleSheet("""
-            QPushButton {
-                background-color: #137BDC;
-                border-radius: 5px;
-                padding: 6px;
-                color: #fff;
-                font-weight: bold;
-            }
-            """)
-
-        topic_button.setToolTip(topic['publicProcedureDescription'])
-        topic_button.setFlat(True)  # Optional: Kein 3D-Effekt
-        layout.addWidget(topic_button)
-
-    def adjustTextBrowserHeight(self, textBrowser):
-        doc_height = textBrowser.document().size().height()
-        textBrowser.setFixedHeight(int(doc_height) + 5)
-
-    def setHorizontalSpacer(self, groupBox):
-        layout = groupBox.layout()
-        spacerItem = QSpacerItem(
-            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addItem(spacerItem)
-
-    def generate_agenda_html(self, agenda_items: list[dict]) -> str:
-        # Prüfen, ob überhaupt Dokumente vorhanden sind
+    def _generate_agenda_html(self, agenda_items, hit_ids=None):
+        agenda_items = sorted(agenda_items, key=cmp_to_key(lambda a, b: _compare_agenda_number(a.number, b.number)))
+        hit_ids = hit_ids or set()
         documents_present = any(
-            item.get("documents")
-            and any(doc and doc.get("file") for doc in item["documents"])
+            item.documents and any(d.file for d in item.documents)
             for item in agenda_items
         )
 
-        # Tabellenkopf dynamisch erzeugen
         html = '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
     <html><head><meta name="qrichtext" content="1" /><style type="text/css">
     p, li { white-space: pre-wrap; padding: 0px; margin: 0px; }
@@ -251,30 +276,27 @@ class DetailDialog(QDialog):
         html += '</tr></thead>'
 
         for item in agenda_items:
-            number = item.get('number', '')
-            title = item.get('title', '').replace('\n', '<br />')
-            documents = item.get('documents', [])
+            number = item.number or ''
+            title = (item.title or '').replace('\n', '<br />')
+            is_hit = item.id in hit_ids
+            row_bg = ' bgcolor="#eef6ee"' if is_hit else ''
+            weight = 'font-weight:600; ' if is_hit else ''
 
             valid_docs = []
-            for doc in documents:
-                if doc is None:
+            for doc in item.documents:
+                if not doc.file:
                     continue
-                file_info = doc.get('file')
-                if not file_info:
-                    continue
-                url = doc.get('url', '#')
-                title_text = file_info.get('title', 'Dokument')
-                filesize = Utils.format_bytes(file_info.get('filesize', ''))
+                url = doc.file.download_url
+                file_name = doc.file.file_name or 'Dokument'
                 valid_docs.append(
-                    f'<a href="{url}"><span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#4E607A;">{title_text}</span></a>'
-                    f'<span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#A0AEC0;"> ({filesize})</span>'
+                    f'<a href="{url}"><span style=" font-family:\'Lucida Sans\',\'sans-serif\'; font-size:10pt; text-decoration: underline; color:#4E607A;">{file_name}</span></a>'
                 )
 
-            html += f'''<tr>
+            html += f'''<tr{row_bg}>
     <td style=" padding:3;">
-    <p style=" margin:0px; text-align:center;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt;">{number}</span></p></td>
+    <p style=" margin:0px; text-align:center;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt; {weight}">{number}</span></p></td>
     <td style=" padding:3;">
-    <p style=" margin:0px;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt;">{title}</span></p></td>'''
+    <p style=" margin:0px;"><span style=" font-family:'Lucida Sans','sans-serif'; font-size:10pt; {weight}">{title}</span></p></td>'''
 
             if documents_present:
                 doc_html = "<br />".join(valid_docs) if valid_docs else '&nbsp;'
@@ -286,3 +308,10 @@ class DetailDialog(QDialog):
 
         html += '</table></body></html>'
         return html
+
+    def _adjust_text_browser_height(self, textBrowser):
+        doc_height = textBrowser.document().size().height()
+        screen_h = QApplication.primaryScreen().availableGeometry().height()
+        max_h = int(screen_h * 0.4)
+        textBrowser.setFixedHeight(min(int(doc_height) + 5, max_h))
+        self.adjustSize()

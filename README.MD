@@ -9,16 +9,16 @@ Poliscope revolutioniert die Informations- und Datenbeschaffung für Projektentw
 ## Features
 
 - **🗺️ Direkte QGIS-Integration**: Nahtlose Einbindung kommunaler Planungsdaten in Ihre QGIS-Arbeitsumgebung
-- **🔍 Geografische Suche**: Suche nach Sitzungsdaten basierend auf dem aktuellen Kartenausschnitt
-- **📍 Fokusregionen**: Definieren Sie bevorzugte Regionen für automatische Updates
-- **📋 Merkliste**: Speichern und verwalten Sie wichtige Sitzungsdaten
+- **🔍 KI-basierte Suche**: Semantische und Keyword-Suche nach Sitzungen, Vorlagen und Dokumenten
+- **📍 Fokusregionen**: Gespeicherte Suchabonnements mit Neuigkeitenzähler und automatischen Updates
+- **📋 Merkliste**: Gespeicherte Sitzungen synchronisiert zwischen Plugin und Web-App
 - **🔄 Live-Datenverbindung**: Echtzeit-Zugriff auf die Poliscope-Datenbank
-- **🎯 Erweiterte Filter**: Präzise Suchfilter für effiziente Datenanalyse
+- **🎯 Erweiterte Filter**: Verwaltungsebene, Quellen, Suchmodus und Suchtiefe
 - **🔒 Sichere API-Anbindung**: Verschlüsselte Verbindung über persönlichen API-Key
 
 ## Systemanforderungen
 
-- **QGIS**: Version 3.16 oder höher
+- **QGIS**: Version 3.0 oder höher
 - **Python**: Version 3.7+
 - **Internet**: Aktive Internetverbindung erforderlich
 - **Account**: Gültiger Poliscope-Account mit API-Key
@@ -34,50 +34,53 @@ Poliscope revolutioniert die Informations- und Datenbeschaffung für Projektentw
 
 ### Manuelle Installation
 
-1. Plugin-ZIP aus dem [GitHub Repository](https://github.com/poliscope-de/poliscope-qgis-plugin) oder direkt unter [QGIS-Plugins](https://plugins.qgis.org/plugins/poliscope_qgis_plugin/) herunterladen
+1. Plugin-ZIP aus dem [GitHub Repository](https://github.com/poliscope-de/poliscope-qgis-plugin) herunterladen
 2. In QGIS: **Plugins** → **Plugins verwalten und installieren** → **Aus ZIP installieren**
 3. ZIP-Datei auswählen und installieren
 
 ## Konfiguration
 
-### 1. API-Key erstellen
+### API-Key einrichten
 
-1. Besuchen Sie die [Poliscope GIS-Plugin Seite](https://www.poliscope.de/gis-plugin)
-2. Generieren Sie einen neuen API-Key
-3. **Wichtig**: Speichern Sie den Key sicher ab - er wird nur einmal angezeigt!
-
-### 2. Plugin konfigurieren
-
-1. In QGIS das Poliscope Plugin öffnen
-2. Auf das **Zahnrad-Icon** (Einstellungen) klicken
-3. API-Key einfügen
-4. **QGIS neu starten** (erforderlich!)
+1. Besuchen Sie die [Poliscope GIS-Plugin Seite](https://poliscope.de/app/gis-plugin) und erstellen Sie einen API-Key
+2. In QGIS das Poliscope Plugin öffnen
+3. Auf das **Zahnrad-Icon** (Einstellungen) klicken
+4. API-Key einfügen und bestätigen
 
 ## Nutzung
 
-### Neuigkeiten Tab
-- Aktuelle Sitzungen aus Ihren Fokusregionen
-- Erstellen Sie Fokusregionen auf der Poliscope-Website
-- Nutzen Sie Filter zur Verfeinerung der Suche
-- Klicken Sie "Aktualisieren" nach Filteränderungen
+### Fokusregionen Tab
+
+- Zeigt Neuigkeiten aus Ihren gespeicherten Fokusregionen
+- Fokusregion auswählen und **Liste aktualisieren** klicken, um Ergebnisse zu laden und den Neuigkeitenzähler zurückzusetzen
+- Fokusregionen werden auf [poliscope.de/app/focusregions](https://poliscope.de/app/focusregions) verwaltet
+- Filter nach Verwaltungsebene, Quellen und Datum
 
 ### Suche Tab
-- **Viewport-Suche**: Alle Sitzungen im aktuellen Kartenausschnitt
-- **Zentrale Suche**: Nur Verwaltungseinheit in der Kartenmitte
-- Ideal für gezielte Suchen in einzelnen Städten
+
+- **Kartenausschnitt Suche**: Alle Ergebnisse im aktuellen Kartenausschnitt
+- **Kartenzentrum Suche**: Nur Verwaltungseinheit in der Kartenmitte
+- Suchmodus: **Semantisch** (bedeutungsbasiert) oder **Keyword** (exakte Treffer)
+- Suchtiefe: Schnellsuche / Tiefenrecherche / Umfassend
+- Filter nach Verwaltungsebene, Quellen und Datum
 
 ### Merkliste Tab
+
 - Alle gespeicherten Sitzungen aus Plugin und Web-App
-- Gewohnte Filterfunktionen verfügbar
+- Räumliche Filter: Kartenausschnitt, Kartenzentrum oder Fokusregion
 - Synchronisation zwischen verschiedenen Poliscope-Anwendungen
 
 ## Tipps & Tricks
 
 💡 **Kleiner Bildschirm**: Klappen Sie Filter zu für bessere Übersicht der Ergebnisse
 
-💡 **Präzise Suche**: Nutzen Sie die "Zentrum-Suche"-Option für exakte geografische Abgrenzung
+💡 **Präzise Suche**: Nutzen Sie den Keyword-Modus für exakte Begriffe
 
-💡 **Automatische Updates**: Konfigurieren Sie Fokusregionen für relevante Gebiete
+💡 **Automatische Updates**: Konfigurieren Sie Fokusregionen für relevante Gebiete und prüfen Sie den Neuigkeitenzähler
+
+## Bekannte Einschränkungen
+
+- **WSL (Windows Subsystem for Linux)**: Das Plugin wird unter WSL nicht vollständig unterstützt. Links lassen sich nicht öffnen und Fehlermeldungen werden möglicherweise nicht korrekt angezeigt. Bitte natives QGIS unter Windows oder Linux verwenden.
 
 ## Support & Feedback
 
@@ -87,24 +90,14 @@ Poliscope revolutioniert die Informations- und Datenbeschaffung für Projektentw
 
 ## Lizenz
 
-Dieses Plugin steht unter der [GPL-3.0 license](LICENSE).
+Dieses Plugin steht unter der [GPL-2.0 license](LICENSE).
 
-## Entwicklung
+## Erstellen einer installierbaren ZIP-Datei
 
-Interessiert an der Weiterentwicklung? Wir freuen uns über Contributions!
-
-### Erstellen einer installierbaren ZIP-Datei
-
-1. Kopiere das gesamte Plugin-Verzeichnis in einen neuen Ordner `poliscope_qgis_plugin`.
-2. Entferne das `.git` Verzeichnis.
-3. Erstelle eine ZIP-Datei aus diesem Ordner.
-
-Punkte 1 + 2 sind nur für öffentliche Releases im QGIS Plugin Repository notwendig. Für lokale Installationen kann die ZIP-Datei direkt aus dem Repository erstellt werden.
-
-## Über uns
-
-Poliscope GmbH ist ein Technologieführer im Bereich der kommunalpolitischen Datenanalyse mit Sitz in Lüneburg. Unser Ziel ist es, den Standard für politische Transparenz und datengetriebene Entscheidungsfindung in Deutschland zu setzen.
+1. Kopiere das gesamte Plugin-Verzeichnis in einen neuen Ordner `poliscope_qgis_plugin`
+2. Entferne das `.git` Verzeichnis
+3. Erstelle eine ZIP-Datei aus diesem Ordner
 
 ---
 
-**Poliscope GmbH** | Katzenstr. 1a, 21335 Lüneburg | [www.poliscope.de](https://www.poliscope.de)
+**Poliscope GmbH** | Große Bäckerstraße 10, 21335 Lüneburg | [www.poliscope.de](https://www.poliscope.de)

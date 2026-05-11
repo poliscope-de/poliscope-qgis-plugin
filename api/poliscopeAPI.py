@@ -1,411 +1,1179 @@
-from datetime import datetime
+"""
+Poliscope API v2 client.
+
+Provides the PoliscopeAPI class for communicating with the Poliscope REST API
+(https://api.poliscope.de/v2). All endpoints use Bearer token authentication.
+
+Data classes defined here map raw API JSON responses to typed Python objects.
+Each class implements a from_dict() classmethod for parsing API responses.
+
+Usage:
+    api = PoliscopeAPI(api_key="your_key")
+    result_groups, map_points, meta = api.search("Windpark")
+    meeting = api.get_meeting("some-id")
+"""
+from dataclasses import dataclass
+from typing import List, Tuple, Optional, Dict, Any
 import requests
-from typing import List, Dict, Any, Optional
-from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QMessageBox
+from qgis.core import QgsMessageLog, Qgis
+
+# ---------------------------------------------------------------------------
+# DATA MODELS
+# ---------------------------------------------------------------------------
+# Each class maps one API response schema to typed Python attributes.
+# Use from_dict() to parse a raw JSON dict returned by the API.
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Entity:
+    """
+    An administrative entity (Verwaltungseinheit) such as a municipality,
+    district, or planning region.
+
+    Returned by GET /entities. Field availability depends on the 'detail'
+    level requested: summary returns only id, name, level. standard and full
+    return all fields.
+
+    Fields:
+        id           — Regionalschlüssel (RS code) uniquely identifying the entity
+        name         — display name (e.g. "Aachen, Stadt")
+        level        — administrative level: "10"=Bundesland, "pr"=Planungsregion,
+                       "40"=Landkreis, "50"=Verbandsgemeinde, "60"=Kommune
+        population   — population count. Optional.
+        area         — area in km². Optional.
+        postal_code  — postal code. Optional.
+        city         — city name. Optional.
+        street       — street address. Optional.
+        location     — geographic coordinates {"lat", "lon"} in WGS84. Optional.
+        ris          — RIS metadata including provider and associated entities. Optional.
+        parent       — RS code of the parent entity. Optional.
+        state        — RS code of the Bundesland this entity belongs to. Optional.
+        weblinks     — list of related web links. Optional.
+        ai_summary   — AI-generated summary text. Optional.
+        ai_summary_date — date the AI summary was generated (ISO 8601). Optional.
+    """
+    id: str
+    name: str
+    level: str
+    population: Optional[int]
+    area: Optional[float]
+    postal_code: Optional[str]
+    city: Optional[str]
+    street: Optional[str]
+    location: Optional[Dict[str, float]]
+    ris: Optional[Dict[str, Any]]
+    parent: Optional[str]
+    state: Optional[str]
+    weblinks: Optional[List[Dict[str, Any]]]
+    ai_summary: Optional[str]
+    ai_summary_date: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Entity':
+        return cls(
+            id = data.get('id', ""),
+            name = data.get('name', ""),
+            level = data.get('level', "10"),
+            population = data.get('population'),
+            area = data.get('area'),
+            postal_code = data.get('postalCode'),
+            city = data.get('city'),
+            street = data.get('street'),
+            location = data.get('location'),
+            ris = data.get('ris'),
+            parent = data.get('parent'),
+            state = data.get('state'),
+            weblinks = data.get('weblinks'),
+            ai_summary = data.get('aiSummary'),
+            ai_summary_date = data.get('aiSummaryDate')
+        )
+
+@dataclass
+class FileContent:
+    """
+    OCR-extracted text content for a file, returned by GET /files/{id}/content.
+    Contains the full OCR result broken down by page, each with Markdown text.
+
+    Fields:
+        version      — OCR pipeline version string
+        model        — OCR model used for text extraction
+        processed_at — ISO 8601 timestamp when the file was processed
+        page_count   — total number of pages in the file
+        pages        — per-page OCR results. Each entry has 'page' (1-indexed int)
+                       and 'markdown' (extracted text as Markdown string, or null
+                       if the page could not be processed)
+        failed_pages — list of 1-indexed page numbers that failed OCR. The API
+                       marks this field as required but nullable — it will be None
+                       if the API returns null, or an empty list if all pages
+                       succeeded.
+    """
+    version: str
+    model: str
+    processed_at: str
+    page_count: int
+    pages: List[Dict[str, Any]]
+    failed_pages: Optional[List[int]]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'FileContent':
+        return cls(
+            version = data.get('version', ""),
+            model = data.get('model', ""),
+            processed_at = data.get('processedAt', ""),
+            page_count = data.get('pageCount', 0),
+            pages = data.get('pages', []),
+            failed_pages = data.get('failedPages')
+        )
 
 
+@dataclass
+class FileSummary:
+    """
+    Metadata for a file attachment, including its download URL.
+    Used inside DocumentSummary to reference downloadable files.
+
+    Fields:
+        id           — unique file identifier
+        file_name    — original file name. Optional.
+        mime_type    — MIME type (e.g. "application/pdf"). Optional.
+        download_url — direct download URL for the file.
+    """
+    id: str
+    file_name: Optional[str]
+    mime_type: Optional[str]
+    download_url:str
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'FileSummary':
+        return cls(
+            id = data.get('id', ""),
+            file_name = data.get('fileName'),
+            mime_type = data.get('mimeType'),
+            download_url= "https://api.poliscope.de" + data.get("downloadUrl", "") if data.get("downloadUrl", "").startswith("/") else data.get("downloadUrl", "")
+        )
+
+@dataclass
+class UserSummary:
+    """
+    A lightweight user reference, used to identify who bookmarked a meeting.
+
+    Fields:
+        id         — unique user identifier
+        first_name — user's first name. Optional.
+        last_name  — user's last name. Optional.
+    """
+    id: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'UserSummary':
+        return cls(
+            id = data.get("id", ""),
+            first_name= data.get('firstName'),
+            last_name=data.get('lastName')
+        )
+@dataclass
+class MapPoint:
+    """
+    A single geo-located point for map rendering.
+
+    Returned alongside search results to place result groups on the map.
+    Each MapPoint corresponds to exactly one ResultGroup and represents
+    the geographic location of its source entity. Scores are normalised
+    to 0–1 regardless of search mode, making them suitable for controlling
+    visual rendering (e.g. dot size or opacity) but not for comparing
+    relevance across results.
+
+    Fields:
+        location    — geographic coordinates {"lat", "lon"} of the source
+                      entity in WGS84.
+        score       — normalised relevance score (0–1), intended for visual
+                      rendering. Not comparable to ChunkHit scores.
+        entity_id   — Regionalschlüssel (RS code) of the source entity.
+        entity_name — display name of the source entity.
+        group_key   — unique group key matching the corresponding ResultGroup
+                      in data[]. Use this to cross-reference map points with
+                      search results.
+    """
+    location: Dict[str, float]
+    score: float
+    entity_id: str
+    entity_name: str
+    group_key: str
+
+    @classmethod
+    def from_dict(cls, data:Dict[str, Any]) -> 'MapPoint':
+        return cls(
+            location = data.get('location', {}),
+            score = data.get('score', 0.0),
+            entity_id = data.get('entityId', ""),
+            entity_name = data.get('entityName', ""),
+            group_key = data.get('groupKey', "")
+
+        )    
+
+@dataclass
+class ChunkHit:
+    """
+    A single matching text chunk within a search result group.
+
+    The v2 API segments source documents, agenda items, and proposals into
+    discrete text chunks and searches across them. Each ChunkHit represents
+    one such chunk that matched the search query. A ResultGroup contains
+    up to 3 ChunkHits, sorted by relevance score descending.
+
+    Fields:
+        id                   — composite chunk identifier in the format
+                               'chunkType:sourceId:chunkIndex'
+        score                — relevance score. Semantic mode: 0–1 (higher is more
+                               relevant). Keyword mode: unbounded. Scores are not
+                               comparable across modes.
+        text                 — full text of the matching chunk
+        chunk_type           — content category of this chunk. One of:
+                               'agendaItemTitle', 'agendaItemDescription',
+                               'proposalTitle', 'proposalDescription', 'document'
+        highlights           — character offset pairs [startOffset, endOffset] within
+                               text, marking literal query term matches. Optional —
+                               only present when query terms appear literally in text.
+        agenda_item_id       — ID of the source agenda item, if applicable. Optional.
+        document_id          — ID of the source document, if applicable. Optional.
+        proposal_id          — ID of the source proposal, if applicable. Optional.
+        poliscope_url        — relative URL path to view this hit's context in the
+                               Poliscope web app. Optional.
+        page_from            — first page number in the source PDF (1-based). Optional.
+        page_to              — last page number in the source PDF (1-based). Optional.
+        page_from_offset_pct — approximate percentage (0–100) into page_from where
+                               this chunk starts. Useful for scrolling to position
+                               within the page. Optional.
+        file_url             — relative API path to the source file, including a
+                               #page= fragment when available (e.g.
+                               '/v2/files/{id}/download#page=4'). Only present for
+                               document-type chunks. Optional.
+    """
+    id: str
+    score: float
+    text: str
+    chunk_type: str
+    highlights: Optional[List[Tuple[int, int]]]
+    agenda_item_id: Optional[str]
+    document_id: Optional[str]
+    proposal_id: Optional[str]
+    poliscope_url: Optional[str]
+    page_from: Optional[float]
+    page_to: Optional[float]
+    page_from_offset_pct: Optional[float]
+    file_url: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ChunkHit':
+        return cls(
+            id=data.get('id', ""),
+            score=data.get('score', 0.0),
+            text=data.get('text', ""),
+            chunk_type=data.get('chunkType', ""),
+            highlights=data.get('highlights'),
+            agenda_item_id=data.get('agendaItemId'),
+            document_id=data.get("documentId"),
+            proposal_id=data.get("proposalId"),
+            poliscope_url=data.get("poliscopeUrl"),
+            page_from=data.get("pageFrom"),
+            page_to=data.get("pageTo"),
+            page_from_offset_pct=data.get("pageFromOffsetPct"),
+            file_url=data.get("fileUrl")
+        )
+    
+@dataclass
+class ResultContext:
+    """
+    Contextual metadata for a search result group.
+
+    Provides the administrative and geographic context of a ResultGroup,
+    identifying the source entity (municipality, district, etc.) and the
+    specific item (meeting, proposal, or document) the result originates from.
+    Exactly one ResultContext is present per ResultGroup.
+
+    Fields:
+        date         — datetime of the source item (ISO 8601). Optional.
+        entity_name  — display name of the administrative entity
+                       (e.g. "Gemeinde Freren")
+        entity_level — administrative level of the entity:
+                       0=Deutschland, 10=Bundesland, pr=Planungsregion,
+                       40=Landkreis, 50=Verbandsgemeinde, 60=Kommune
+        entity_id    — Regionalschlüssel (RS code) uniquely identifying the
+                       administrative entity (e.g. "03404")
+        parents      — ordered list of parent entities (e.g. Landkreis,
+                       Bundesland), each as {"id", "name", "level"}.
+                       Used to construct breadcrumb navigation.
+        location     — geographic coordinates {"lat", "lon"} of the entity
+                       in WGS84. Optional. Used for map rendering.
+        meeting      — populated when groupType is 'meeting'. Contains
+                       id, title, date, url, committee, bookmarks.
+        proposal     — populated when groupType is 'proposal'. Contains
+                       id, title, type, url, reference.
+        document     — populated when groupType is 'document'. Contains
+                       id, title, type, url.
+    """
+    date: Optional[str]
+    entity_name: str
+    entity_level: str
+    entity_id: str
+    parents: List[Dict[str, str]]
+    location: Optional[Dict[str, float]]
+    meeting: Optional[Dict[str, Any]]
+    proposal: Optional[Dict[str, Any]]
+    document: Optional[Dict[str, Any]]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ResultContext':
+        return cls(
+            date = data.get('date'),
+            entity_name = data.get('entityName', ""),
+            entity_level = data.get('entityLevel', ""),
+            entity_id = data.get('entityId', ""),
+            parents = data.get('parents', []),
+            location = data.get('location'),
+            meeting = data.get('meeting'),
+            proposal = data.get('proposal'),
+            document = data.get('document')
+        )
+
+@dataclass
+class ResultGroup:
+    """
+    A grouped search result representing one source item (meeting, proposal, or document).
+
+    The v2 API groups matching text chunks by their source item. Each ResultGroup
+    contains the top 3 matching ChunkHits for that item, the overall relevance
+    score, and a ResultContext describing where and when the item originates from.
+    Results are sorted by score descending.
+
+    Fields:
+        group_key           — unique identifier for this group, e.g.
+                              'meeting:0f91effc-7d62-4e24-b4af-f887b08e65f7'.
+                              Can be used to cross-reference with mapPoints[].
+        group_type          — type of the source item: 'meeting', 'proposal',
+                              or 'document'. Determines which detail endpoint
+                              to call and how to render the detail dialog.
+        group_creation_date — ISO 8601 datetime when this item was first
+                              ingested into the search index. Optional.
+        score               — highest relevance score among all hits in this
+                              group. Groups are sorted by this value descending.
+        hits                — top matching ChunkHits (max 3, sorted by score
+                              descending). Use hits[0].text for the preview.
+        total_hits          — total number of matching chunks found for this
+                              group before the per-group limit of 3 is applied.
+        context             — contextual metadata (entity, location, date,
+                              meeting/proposal/document info). See ResultContext.
+    """
+
+    group_key: str
+    group_type: str
+    group_creation_date: Optional[str]
+    score: float
+    hits: List[ChunkHit]
+    total_hits: int
+    context: ResultContext
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ResultGroup':
+        return cls(
+            group_key = data.get('groupKey', ""),
+            group_type = data.get('groupType', ""),
+            group_creation_date = data.get('groupCreationDate'),
+            score = data.get('score', 0.0),
+            hits = [ChunkHit.from_dict(h) for h in data.get('hits', [])],
+            total_hits = data.get('totalHits', 0),
+            context = ResultContext.from_dict(data.get('context', {}))
+        )
+    
+@dataclass
+class Focusregion:
+    """
+    A saved search region with team membership and notification support.
+    Returned by GET /focusregions and GET /focusregions/{id}.
+
+    Fields:
+        id           — unique focus region identifier
+        name         — display name of the focus region. Optional.
+        type         — focus region type. Optional.
+        query        — saved search query string used for this region. Optional.
+        team         — list of team members. Each entry has userId (required),
+                       paused (bool), lastVisit (ISO 8601 or null),
+                       newResultsCount (number or null), and optionally
+                       firstName, lastName, email.
+        search_mode  — search mode for the saved query ("semantic" or
+                       "keyword"). Optional.
+        entity_ids   — list of Regionalschlüssel (RS codes) this region covers.
+                       Optional.
+        levels       — list of administrative level filters. Optional.
+        topics       — free-form topic data. Structure not yet defined in the
+                       spec (anyOf: any | null). Optional.
+        rpm_edits    — free-form RPM edit data. Structure not yet defined in
+                       the spec (anyOf: any | null). Optional.
+        rpm_entities — list of entity references, each with id, name, level.
+                       Optional.
+    """
+    id: str
+    name: Optional[str]
+    type: Optional[str]
+    query: Optional[str]
+    team: List[Dict[str, Any]]
+    search_mode: Optional[str]
+    entity_ids: Optional[List[str]]
+    levels: Optional[List[str]]
+    topics: Optional[Any]
+    rpm_edits: Optional[Any]
+    rpm_entities: Optional[List[Dict[str, Any]]]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Focusregion':
+        return cls(
+            id = data.get('id', ""),
+            name = data.get('name'),
+            type = data.get('type'),
+            query = data.get('query'),
+            team = data.get('team', []),
+            search_mode = data.get('searchMode'),
+            entity_ids = data.get('entityIds'),
+            levels = data.get('levels'),
+            topics = data.get('topics'),
+            rpm_edits = data.get('rpmEdits'),
+            rpm_entities = data.get('rpmEntities')
+        )
+
+
+@dataclass
+class DocumentSummary:
+    """
+    A reference to a document attached to a meeting or agenda item.
+
+    Contains the document's ID, type, and an optional file attachment.
+    Used inside Meeting and AgendaItem. For downloading the file, use
+    the FileSummary.download_url field.
+
+    Fields:
+        id           — unique document identifier
+        type         — document category (e.g. 'invitation', 'protocol'). Optional.
+        original_url — original source URL of the document. Optional.
+        file         — file attachment metadata including download URL. Optional —
+                       not all documents have an associated file.
+    """
+    id: str
+    type: Optional[str]
+    original_url: Optional[str]
+    file: Optional[FileSummary]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'DocumentSummary':
+        return cls(
+            id = data.get('id', ""),
+            type = data.get('type'),
+            original_url = data.get('originalUrl'),
+            file = FileSummary.from_dict(data['file']) if data.get('file') else None
+        )
+
+
+@dataclass
+class MeetingSummary:
+    """
+    Lightweight meeting reference used inside AgendaItem.
+
+    A reduced version of Meeting containing only the fields needed to
+    identify and locate a meeting without loading full detail. Used when
+    an AgendaItem needs to reference its parent meeting.
+
+    Fields:
+        id         — unique meeting identifier
+        title      — meeting title. Optional.
+        date       — meeting datetime (ISO 8601, no timezone). Optional.
+        location   — geographic coordinates {"lat", "lon"} of the meeting's
+                     entity. Required by the spec.
+        created_at — record creation timestamp (ISO 8601). Optional.
+    """
+    id: str
+    title: Optional[str]
+    date: Optional[str]
+    location: Optional[Dict[str, float]]
+    created_at: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'MeetingSummary':
+        return cls(
+            id=data.get('id', ""),
+            title=data.get('title'),
+            date=data.get('date'),
+            location=data.get('location'),
+            created_at=data.get('createdAt')
+        )
+
+
+@dataclass
+class AgendaItem:
+    """
+    A single agenda item (Tagesordnungspunkt) within a meeting.
+
+    Agenda items are the individual topics discussed in a meeting. Each
+    can have a title, description, voting result, attached documents, and
+    a reference back to its parent meeting.
+
+    Fields:
+        id          — unique agenda item identifier
+        number      — display number within the meeting (e.g. "3.2"). Optional.
+        title       — agenda item title. Optional.
+        description — full text description. Optional.
+        url         — source URL in the RIS. Optional.
+        voting      — voting result and resolution text as a dict. Optional.
+                      Contains 'result' (yes/no/abstain/recusal counts) and
+                      'resolution' (text of the resolution passed).
+        documents   — list of attached documents.
+        meeting     — reference to the parent meeting. Optional — only present
+                      when the agenda item is returned outside of a full Meeting.
+    """
+    id: str
+    number: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    url: Optional[str]
+    voting: Optional[Dict[str, Any]]
+    documents: List[DocumentSummary]
+    meeting: Optional[MeetingSummary]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'AgendaItem':
+        return cls(
+            id=data.get('id', ""),
+            number=data.get('number'),
+            title=data.get('title'),
+            description=data.get('description'),
+            url=data.get('url'),
+            voting=data.get('voting'),
+            documents=[DocumentSummary.from_dict(d) for d in data.get('documents', [])],
+            meeting=MeetingSummary.from_dict(data['meeting']) if data.get('meeting') else None
+        )
+
+
+@dataclass
 class Meeting:
     """
-    Modell für Meetings, das die relevanten Attribute speichert.
+    Full meeting detail, returned by GET /meetings/{id}.
+
+    Represents a council meeting (Sitzung) with all its metadata, agenda
+    items, documents, and bookmarks. This is the detail object loaded when
+    a user clicks a meeting result in the plugin.
+
+    Fields:
+        id           — unique meeting identifier
+        title        — meeting title. Optional.
+        date         — meeting datetime (ISO 8601, no timezone). Optional.
+        location     — geographic coordinates {"lat", "lon"}. Optional.
+        created_at   — record creation timestamp (ISO 8601). Optional.
+        description  — meeting description text. Optional.
+        ris          — RIS metadata including the list of associated entities.
+                       Always present. Contains 'entities' array with id/name/level.
+        documents    — list of documents attached directly to the meeting.
+        agenda_items — list of agenda items (Tagesordnungspunkte).
+        bookmarks    — list of users who bookmarked this meeting.
     """
+    id: str
+    title: Optional[str]
+    date: Optional[str]
+    location: Optional[Dict[str, float]]
+    created_at: Optional[str]
+    description: Optional[str]
+    ris: Dict[str, Any]
+    documents: List[DocumentSummary]
+    agenda_items: List[AgendaItem]
+    bookmarks: List[UserSummary]
 
-    def __init__(self, data: Dict[str, Any]):
-        self.id = data.get("id")
-        self.url = data.get("url")
-        self.ris_id = data.get("ris", {}).get("id")
-
-        entities = data.get("ris", {}).get("entities", [])
-        entity = entities[0] if entities else {}
-        self.rs = entity.get("rs")
-        self.rsName = entity.get("name")
-        self.children_name = entity.get("children", [{}])[0].get(
-            "name") if entity.get("children") else None
-
-        parent = entity.get("parent") or {}
-        self.parent_name = parent.get("name")
-        self.parent_type = parent.get("type")
-        self.parent_rs = parent.get("rs")
-
-        grandparent = parent.get("parent") if isinstance(
-            parent.get("parent"), dict) else {}
-        self.grandparent_name = grandparent.get("name")
-        self.grandparent_type = grandparent.get("type")
-        self.grandparent_rs = grandparent.get("rs")
-
-        great_grandparent = grandparent.get("parent") if isinstance(
-            grandparent.get("parent"), dict) else {}
-        self.great_grandparent_name = great_grandparent.get("name")
-        self.great_grandparent_type = great_grandparent.get("type")
-        self.great_grandparent_rs = great_grandparent.get("rs")
-
-        self.topics = []
-        for t in data.get("topics", []):
-            topic_name = t.get("topic")
-            public_proc = t.get("publicProcedure", {})
-            proc_name = public_proc.get("name")
-            proc_description = public_proc.get("description")
-
-            self.topics.append({
-                "topic": topic_name,
-                "publicProcedureName": proc_name,
-                "publicProcedureDescription": proc_description
-            })
-
-        bookmarks = data.get("bookmarks", [])
-        if isinstance(bookmarks, list) and bookmarks:
-            self.bookmark_id = bookmarks[0].get("user", {}).get("id")
-        else:
-            self.bookmark_id = None
-
-        self.topics.sort(
-            key=lambda x: 0 if "wind" in x["topic"].lower() else 1)
-
-        self.last_status_update = data.get("lastStatusUpdate")
-        self.title = data.get("title")
-        self.description = data.get("description")
-        self.status = data.get("status")
-        self.date = data.get("date")
-
-        self.solar_score = data.get("solarScore")
-        self.wind_score = data.get("windScore")
-        self.documents = data.get("documents")
-
-        # Signale laden
-        self.signals = data.get("signals", [])
-        self.signals_agenda_item_ids = [
-            junction.get("agendaItem_id")
-            for signal in data.get("signals", [])
-            for junction in signal.get("agendaItems", [])
-            if "agendaItem_id" in junction
-        ]
-
-        self.agenda_items = data.get("agendaItems")
-        self.relevant_agenda_items = [
-            item for item in data.get("agendaItems", [])
-            if not self.signals_agenda_item_ids or item.get("id") in self.signals_agenda_item_ids
-        ]
-
-        # Alle relevanten Dokumente sammeln
-        self.relevant_documents = []
-
-        # 1. Normale Dokumente
-        for doc in self.documents or []:
-            seen_ids = set()
-            if doc.get("file"):
-                file_info = doc.get("file")
-                if file_info and file_info.get("type") == "application/pdf":
-                    if file_info.get("id") not in seen_ids:
-                        seen_ids.add(file_info.get("id"))
-                        self.relevant_documents.append(doc.get("file"))
-
-        # 2. AgendaItem-Dokumente
-        self.relevant_agenda_items_relevant_documents = []
-        for item in self.relevant_agenda_items or []:
-            for group in item.get("documents", []):
-                if group.get("file"):
-                    file_info = group.get("file")
-                    if file_info and file_info.get("type") == "application/pdf":
-
-                        self.relevant_agenda_items_relevant_documents.append(
-                            group.get("file"))
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Meeting':
+        return cls(
+            id=data.get('id', ""),
+            title=data.get('title'),
+            date=data.get('date'),
+            location=data.get('location'),
+            created_at=data.get('createdAt'),
+            description=data.get('description'),
+            ris=data.get('ris', {}),
+            documents=[DocumentSummary.from_dict(d) for d in data.get('documents', [])],
+            agenda_items=[AgendaItem.from_dict(a) for a in data.get('agendaItems', [])],
+            bookmarks=[UserSummary.from_dict(u) for u in data.get('bookmarks', [])]
+        )
 
 
-class MeetingsAPI:
+@dataclass
+class Proposal:
     """
-    Klasse zum Abrufen von Meetings von der API.
-    """
-    MEETINGS_URL = "https://api.poliscope.de/v1/meetings/query"
-    MEETINGS_COUNT_URL = "https://api.poliscope.de/v1/meetings/count"
-    MEETINGS_FOCUSREGIONS_URL = "https://api.poliscope.de/v1/meetings/focusregions/query"
-    MEETINGS_FOCUSREGIONS_COUNT_URL = "https://api.poliscope.de/v1/meetings/focusregions/count"
-    MEETINGS_BOOKMARKED_URL = "https://api.poliscope.de/v1/meetings/bookmarked/query"
-    MEETINGS_BOOKMARKED_COUNT_URL = url = "https://api.poliscope.de/v1/meetings/bookmarked/count"
-    MEETINGS_BOOKMARK_URL = url = "https://api.poliscope.de/v1/meetings/{meeting_id}/bookmark"
-    ENTITIES_URL = "https://api.poliscope.de/v1/entities/{rs}"
+    Full proposal detail, returned by GET /proposals/{id}.
 
-    FOCUSREGION_URL = "https://api.poliscope.de/v1/focusregions/query"
-    VERSION_URL = "https://api.poliscope.de/v1/version"
+    Represents a legislative proposal (Vorlage) with its metadata, attached
+    documents, and related agenda items. Loaded when a user clicks a proposal
+    result in the plugin.
+
+    Fields:
+        id             — unique proposal identifier
+        title          — proposal title. Optional.
+        type           — proposal category (e.g. 'Beschlussvorlage'). Optional.
+        url            — source URL in the RIS. Optional.
+        description    — full proposal text. Optional.
+        reference      — official reference number. Optional.
+        case_reference — case reference number. Optional.
+        documents      — list of attached documents.
+        agenda_items   — list of agenda items this proposal appears in.
+        external_id    — external system identifier. Optional.
+    """
+    id: str
+    title: Optional[str]
+    type: Optional[str]
+    url: Optional[str]
+    description: Optional[str]
+    reference: Optional[str]
+    case_reference: Optional[str]
+    documents: List[DocumentSummary]
+    agenda_items: List[AgendaItem]
+    external_id: Optional[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Proposal':
+        return cls(
+            id=data.get('id', ""),
+            title=data.get('title'),
+            type=data.get('type'),
+            url=data.get('url'),
+            description=data.get('description'),
+            reference=data.get('reference'),
+            case_reference=data.get('caseReference'),
+            documents=[DocumentSummary.from_dict(d) for d in data.get('documents', [])],
+            agenda_items=[AgendaItem.from_dict(a) for a in data.get('agendaItems', [])],
+            external_id=data.get('externalId')
+        )
+    
+
+
+class PoliscopeAPI:
+    """
+    HTTP client for the Poliscope API v2.                                                                                                                                                
+    Handles authentication and provides one method per API endpoint.                                                                                            
+    All methods return typed Python objects built from the data classes                                                                                         
+    defined above.
+
+    Usage:
+        api = PoliscopeAPI(api_key="your_key")
+        results = api.search("Windpark")
+    """
+    BASE_URL = "https://api.poliscope.de/v2"
+    TIMEOUT = 60
 
     def __init__(self, api_key: str):
-        self.headers = {"x-api-key": api_key,
-                        "Content-Type": "application/json"}
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Bearer {api_key}",
+            "x-client": "qgis-plugin",
+        })
 
-        # Teste die API-Verbindung mit einem einfachen Request
-        try:
-            response = requests.post(self.MEETINGS_URL, json={
-                                     "page": 1, "limit": 1}, headers=self.headers)
-            if response.status_code != 200:
-                raise ValueError("API-Key ungültig oder Zugriff verweigert.")
-        except Exception as e:
-            raise
-
-    # type: ignore
-    def get_meetings(self, filters: Optional[Dict[str, Any]] = None, entityRSCodes: Optional[str] = None, sortString: Optional[str] = None, page: Optional[int] = 1) -> List[Meeting]:
+    def get_qgis_plugin_version(self) -> Optional[str]:
         """
-        Ruft Meetings von der API mit optionalen Filtern ab und speichert die Ergebnisse zwisch.
+        Fetch the minimum required QGIS plugin version from the API health endpoint.
+        Used at startup to check whether the installed plugin version is still compatible.
+        Returns the version string (e.g. "2.1.0") or None on error.
         """
-        if not filters:
-            filters = {}
-
-        payload = {"filter": filters, "fields": ["id", "url", "ris.id", "bookmarks.user.id",
-                                                 "ris.entities.rs", "ris.entities.name", "ris.entities.children.name",
-                                                 "ris.entities.parent.name", "ris.entities.parent.type", "ris.entities.parent.rs",
-                                                 "ris.entities.parent.parent.name", "ris.entities.parent.parent.type", "ris.entities.parent.parent.rs",
-                                                 "ris.entities.parent.parent.parent.name", "ris.entities.parent.parent.parent.type", "ris.entities.parent.parent.parent.rs",
-                                                 "lastStatusUpdate", "title", "description", "status", "date",
-                                                 "topics.publicProcedure.name", "topics.publicProcedure.description", "topics.topic",
-                                                 "solarScore", "windScore", "documents.type", "documents.url", "documents.file.title", "documents.file.id", "documents.file.type", "documents.file.filesize", "signals.agendaItems.agendaItem_id", "agendaItems.id", "agendaItems.description",
-                                                 "agendaItems.number", "agendaItems.title", "agendaItems.documents.url", "agendaItems.documents.file.title", "agendaItems.documents.file.filesize",
-                                                 "agendaItems.documents.file.id", "agendaItems.documents.file.type",
-                                                 ], "entity_rs": entityRSCodes, "sort": sortString, "page": page, "limit": 10}
-        response = requests.post(
-            self.MEETINGS_URL, json=payload, headers=self.headers)
-        print(payload)
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                return [Meeting(item) for item in data]
-            return [Meeting(item) for item in data.get("data", [])]
-        else:
-            response.raise_for_status()
-
-    def get_meetings_count(self, filters: Optional[Dict[str, Any]] = None, entityRSCodes: Optional[str] = None) -> int:
-        """
-        Ruft Meetings von der API mit optionalen Filtern ab und speichert die Ergebnisse zwisch.
-        """
-        if not filters:
-            filters = {}
-
-        payload = {"filter": filters, "entity_rs": entityRSCodes}
-        response = requests.post(
-            self.MEETINGS_COUNT_URL, json=payload, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            response.raise_for_status()
-
-    def get_focusregion_meetings(self, filters: Optional[Dict[str, Any]] = None, focusregion_ids: Optional[List[str]] = None, sortString: Optional[str] = None, page: Optional[int] = 1) -> List[Meeting]:
-        """
-        Ruft Meetings von der API mit Fokusregionen-Filtern ab.
-        Diese Methode nutzt den speziellen Fokusregionen-Endpoint, der die konfigurierten
-        Scores und Topics der Fokusregionen auf Backend-Seite anwendet.
-        """
-        if not filters:
-            filters = {}
-
-        if not focusregion_ids:
-            focusregion_ids = []
-
-        payload = {"filter": filters, "fields": ["id", "url", "ris.id", "bookmarks.user.id",
-                                                 "ris.entities.rs", "ris.entities.name", "ris.entities.children.name",
-                                                 "ris.entities.parent.name", "ris.entities.parent.type", "ris.entities.parent.rs",
-                                                 "ris.entities.parent.parent.name", "ris.entities.parent.parent.type", "ris.entities.parent.parent.rs",
-                                                 "ris.entities.parent.parent.parent.name", "ris.entities.parent.parent.parent.type", "ris.entities.parent.parent.parent.rs",
-                                                 "lastStatusUpdate", "title", "description", "status", "date",
-                                                 "topics.publicProcedure.name", "topics.publicProcedure.description", "topics.topic",
-                                                 "solarScore", "windScore", "documents.type", "documents.url", "documents.file.title", "documents.file.id", "documents.file.type", "documents.file.filesize", "signals.agendaItems.agendaItem_id", "agendaItems.id", "agendaItems.description",
-                                                 "agendaItems.number", "agendaItems.title", "agendaItems.documents.url", "agendaItems.documents.file.title", "agendaItems.documents.file.filesize",
-                                                 "agendaItems.documents.file.id", "agendaItems.documents.file.type",
-                                                 ], "focusregion_ids": focusregion_ids, "sort": sortString, "page": page, "limit": 10}
-        response = requests.post(
-            self.MEETINGS_FOCUSREGIONS_URL, json=payload, headers=self.headers)
-        print(payload)
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                return [Meeting(item) for item in data]
-            return [Meeting(item) for item in data.get("data", [])]
-        else:
-            response.raise_for_status()
-
-    def get_focusregion_meetings_count(self, filters: Optional[Dict[str, Any]] = None, focusregion_ids: Optional[List[str]] = None) -> int:
-        """
-        Ruft die Anzahl der Meetings von der API mit Fokusregionen-Filtern ab.
-        """
-        if not filters:
-            filters = {}
-
-        if not focusregion_ids:
-            focusregion_ids = []
-
-        payload = {"filter": filters, "focusregion_ids": focusregion_ids}
-        response = requests.post(
-            self.MEETINGS_FOCUSREGIONS_COUNT_URL, json=payload, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            response.raise_for_status()
-
-    def get_qgis_plugin_version(self,) -> Optional[str]:
-        try:
-            response = requests.get(self.VERSION_URL, headers=self.headers)
+        try:    
+            response = self.session.get(f"{self.BASE_URL}/health", timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
-                return data.get("qgisPluginVersion")
+                return data.get("version")
             else:
-                print(
-                    f"[Fehler] Status {response.status_code}: {response.text}")
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
         except Exception as e:
-            print(f"[Exception] Fehler beim Abrufen der Plugin-Version: {e}")
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Plugin-Version: {e}", level=Qgis.Warning)
         return None
 
-    def get_bookmarked_meetings(self, filters: Optional[Dict[str, Any]] = None, sortString: Optional[str] = None, page: Optional[int] = 1) -> List[Meeting]:
+    
+    def list_entities(self, q=None, level=None, parent_id=None, state_id=None, ids=None, limit=None, offset=None, detail=None, silent=False):
         """
-        Ruft Meetings von der API mit optionalen Filtern ab und speichert die Ergebnisse zwisch.
+        List administrative entities with optional filtering and pagination.
+        Returns a tuple (list[Entity], meta) where meta contains pagination info,
+        or (None, None) on error.
+
+        Parameters:
+            q         — filter by name (case-insensitive substring)
+            level     — filter by administrative level ("10", "40", "50", "60", "pr")
+            parent_id — filter by parent entity RS code
+            state_id  — filter by Bundesland RS code
+            ids       — comma-separated RS codes to fetch specific entities
+            limit     — max results to return (default 10, max 500)
+            offset    — pagination offset (default 0)
+            detail    — response detail level: "summary", "standard", or "full"
         """
-        if not filters:
-            filters = {}
-
-        payload = {"filter": filters, "fields": ["id", "url", "ris.id", "bookmarks.user.id",
-                                                 "ris.entities.rs", "ris.entities.name", "ris.entities.children.name",
-                                                 "ris.entities.parent.name", "ris.entities.parent.type", "ris.entities.parent.rs",
-                                                 "ris.entities.parent.parent.name", "ris.entities.parent.parent.type", "ris.entities.parent.parent.rs",
-                                                 "ris.entities.parent.parent.parent.name", "ris.entities.parent.parent.parent.type", "ris.entities.parent.parent.parent.rs",
-                                                 "lastStatusUpdate", "title", "description", "status", "date",
-                                                 "topics.publicProcedure.name", "topics.publicProcedure.description", "topics.topic",
-                                                 "solarScore", "windScore", "documents.type", "documents.url", "documents.file.title", "documents.file.id", "documents.file.type", "documents.file.filesize", "signals.agendaItems.agendaItem_id", "agendaItems.id", "agendaItems.description",
-                                                 "agendaItems.number", "agendaItems.title", "agendaItems.documents.url", "agendaItems.documents.file.title", "agendaItems.documents.file.filesize",
-                                                 "agendaItems.documents.file.id", "agendaItems.documents.file.type",
-                                                 ], "entity_rs": [], "sort": sortString, "page": page, "limit": 10}
-        response = requests.post(
-            self.MEETINGS_BOOKMARKED_URL, json=payload, headers=self.headers)
-        print(payload)
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                return [Meeting(item) for item in data]
-            return [Meeting(item) for item in data.get("data", [])]
-        else:
-            response.raise_for_status()
-
-    def get_bookmarked_meetings_count(self, filters: Optional[Dict[str, Any]] = None) -> int:
-
-        if not filters:
-            filters = {}
-
-        payload = {"filter": filters}
-        response = requests.post(
-            self.MEETINGS_BOOKMARKED_COUNT_URL, json=payload, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            response.raise_for_status()
-
-    def get_entity(self, rs: str) -> Optional[Dict[str, Any]]:
-        """
-        Ruft die Entität mit dem angegebenen RS-Code von der API ab.
-        """
-        url = self.ENTITIES_URL.format(rs=rs)
-        response = requests.get(url, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                return data[0] if data else None
-            return data
-        else:
-            response.raise_for_status()
-
-    def get_fokusregionen(self) -> List[Dict[str, Any]]:
-        """
-        Ruft die Fokusregionen von der API ab und speichert die Ergebnisse zwisch.
-        """
-        response = requests.post(self.FOCUSREGION_URL, json={"filter": {"type": {"_eq": "core"}}, "fields": [
-                                 "*", "team.paused"], "sort": "-id", "page": 1, "limit": 10}, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                return data
-            return data.get("data", [])
-        else:
-            response.raise_for_status()
-
-    def bookmark_meeting(self, meeting_id: str) -> bool:
-        url = self.MEETINGS_BOOKMARK_URL.format(meeting_id=meeting_id)
-
-        response = requests.put(url, headers=self.headers)
-        return response.status_code == 200
-
-    def remove_meeting_bookmark(self, meeting_id: str) -> bool:
-        url = self.MEETINGS_BOOKMARK_URL.format(meeting_id=meeting_id)
-
-        response = requests.delete(url, headers=self.headers)
-        return response.status_code == 200
-
-    @staticmethod
-    def create_date_range_filter(start_date: str, end_date: str) -> Dict[str, Any]:
-        dt_start_date = datetime.strptime(start_date, "%d.%m.%Y")
-        start_date = dt_start_date.strftime("%Y-%m-%d")
-        dt_end_date = datetime.strptime(end_date, "%d.%m.%Y")
-        end_date = dt_end_date.strftime("%Y-%m-%d")
-        if dt_start_date > dt_end_date:
-            QMessageBox.critical(
-                None, "Fehler", "Das Startdatum muss vor dem Enddatum liegen.")
-            return {}
-        return {"_and": [{"date": {"_gte": start_date}}, {"date": {"_lte": end_date}}]}
-
-    @staticmethod
-    def create_wind_and_solar_score_filter(wind_strength: int, solar_strength: int) -> Dict[str, Any]:
-        filters = []
-        if wind_strength > 0:
-            filters.append({"windScore": {"_gte": wind_strength}})
-        if solar_strength > 0:
-            filters.append({"solarScore": {"_gte": solar_strength}})
-
-        if len(filters) == 0:
-            return {}
-        elif len(filters) == 1:
-            return filters[0]
-        else:
-            return {"_and": filters}
-
-    @staticmethod
-    def create_status_filter(status_list: List[str]) -> Dict[str, Any]:
-        return {"status": {"_in": status_list}}
-
-    @staticmethod
-    def create_saved_meetings_filter() -> Dict[str, Any]:
-        return {"bookmarks": {"user": {"_eq": "$CURRENT_USER"}}}
-
-    @staticmethod
-    def create_not_saved_meetings_filter() -> Dict[str, Any]:
-        return {"_or": [{"bookmarks": {"directus_users_id": {"_neq": "$CURRENT_USER"}}}, {"bookmarks": {"_null": True}}]}
-
-    @staticmethod
-    def create_hidden_meetings_filter() -> Dict[str, Any]:
-        return {"hidden": {"user": {"_eq": "$CURRENT_USER"}}}
-
-    @staticmethod
-    def create_exclude_hidden_meetings_filter() -> Dict[str, Any]:
-        return {"_or": [{"hidden": {"_null": True}}, {"hidden": {"user": {"_neq": "$CURRENT_USER"}}}]}
-
-    @staticmethod
-    def create_bounds_filter(coords: List[List[float]]) -> Dict[str, Any]:
-        """
-        Erstellt einen Filter mit einem GeoJSON-Polygon aus übergebenen Koordinaten.
-        Die Koordinaten müssen eine gültige Polygon-Umrisslinie bilden (geschlossen).
-        """
-        if coords[0] != coords[-1]:
-            # Polygon schließen, falls nicht bereits geschehen
-            coords.append(coords[0])
-
-        return {
-            "ris": {
-                "entities": {
-                    "bounds": {
-                        "_intersects": {
-                            "type": "Feature",
-                            "geometry": {
-                                "type": "Polygon",
-                                # GeoJSON benötigt doppelte Verschachtelung
-                                "coordinates": [coords]
-                            }
-                        }
-                    }
-                }
-            }
+        params = {
+            "q": q,
+            "level": level,
+            "parentId": parent_id,
+            "stateId": state_id,
+            "ids": ids,
+            "limit": limit,
+            "offset": offset,
+            "detail": detail
         }
+        params = {k: v for k, v in params.items() if v is not None}
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/entities", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                entities = [Entity.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return entities, meta
+            else:
+                if not silent:
+                    QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return (None, None)
+        except Exception as e:
+            if not silent:
+                QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Verwaltungseinheiten: {e}", level=Qgis.Warning)
+        return (None, None)
+
+    def get_entity(self, id: str, detail=None):
+        """
+        Fetch a single administrative entity by its Regionalschlüssel (RS code).
+        Returns an Entity object, or None on error or if not found.
+
+        Parameters:
+            id     — Regionalschlüssel of the entity (e.g. "083355001001"). Required.
+            detail — response detail level: "summary", "standard" (default), or "full"
+        """
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/entities/{id}", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return Entity.from_dict(data["data"])
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Verwaltungseinheit: {e}", level=Qgis.Warning)
+        return None
+    
+    def get_file(self, id: str):
+        """
+        Fetch file metadata by ID, including the download URL.
+        Returns a FileSummary object, or None on error or if not found.
+
+        Parameters:
+            id — unique file identifier. Required.
+        """
+        try:
+            response = self.session.get(f"{self.BASE_URL}/files/{id}", timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return FileSummary.from_dict(data["data"])
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Datei: {e}", level=Qgis.Warning)
+        return None
+    
+    def get_file_content(self, id: str):
+        """
+        Fetch OCR-extracted text content for a file by ID.
+        Returns a FileContent object with per-page Markdown text, or None on error or if not found.
+
+        Parameters:
+            id — unique file identifier. Required.
+        """
+        try:
+            response = self.session.get(f"{self.BASE_URL}/files/{id}/content", timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return FileContent.from_dict(data["data"])
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen des Dateiinhalts: {e}", level=Qgis.Warning)
+        return None
+    
+    def get_focusregions(self, limit=None, offset=None, detail=None):
+        """
+        List focus regions where the authenticated user is a team member.
+        Returns a tuple (list[Focusregion], meta) where meta contains pagination
+        info, or (None, None) on error.
+
+        Parameters:
+            limit  — max results to return (API default 10, max 500)
+            offset — pagination offset (API default 0)
+            detail — response detail level: "summary" (API default), "standard",
+                     or "full"
+        """
+        params = {
+            'limit': limit,
+            'offset': offset,
+            'detail': detail
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/focusregions", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                focusregions = [Focusregion.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return focusregions, meta
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return (None, None)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Fokusregionen: {e}", level=Qgis.Warning)
+        return (None, None)
+
+    def get_focusregion(self, id: str, detail=None):
+        """
+        Fetch a single focus region by ID.
+        The authenticated user must be a team member of this focus region.
+        Returns a Focusregion object, or None on error or if not found.
+
+        Parameters:
+            id     — focus region ID. Required.
+            detail — response detail level: "summary", "standard" (default),
+                     or "full"
+        """
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/focusregions/{id}", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return Focusregion.from_dict(data["data"])
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Fokusregion (ID: {id}): {e}", level=Qgis.Warning)
+        return None
+
+    def mark_focusregion_visited(self, id: str):
+        """
+        Record a visit to a focus region for the authenticated user.
+        Sets the user's lastVisit timestamp to now, which resets the new
+        results counter returned by get_focusregion_counts().
+        Returns True on success, False on error or if not found.
+
+        Parameters:
+            id — focus region ID. Required.
+        """
+        try:
+            response = self.session.post(f"{self.BASE_URL}/focusregions/{id}/visit", timeout=self.TIMEOUT)
+            if response.status_code == 204:
+                return True
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return False
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Aktualisieren des Zeitstempels: {e}", level=Qgis.Warning)
+        return False
+    
+    def pause_focusregion(self, id: str):
+        """
+        Pause this focus region for the authenticated user.
+        Pausing is per-user — other team members are unaffected. While paused,
+        new results are no longer counted for this user in get_focusregion_counts().
+        Returns True on success, False on error or if not found.
+
+        Parameters:
+            id — focus region ID. Required.
+        """
+        try:
+            response = self.session.post(f"{self.BASE_URL}/focusregions/{id}/pause", timeout=self.TIMEOUT)
+            if response.status_code == 204:
+                return True
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return False
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Pausieren der Fokusregion: {e}", level=Qgis.Warning)
+        return False    
+    
+    def unpause_focusregion(self, id: str):
+        """
+        Resume this focus region for the authenticated user after it was paused.
+        New results will be counted again in get_focusregion_counts().
+        Returns True on success, False on error or if not found.
+
+        Parameters:
+            id — focus region ID. Required.
+        """
+        try:
+            response = self.session.post(f"{self.BASE_URL}/focusregions/{id}/unpause", timeout=self.TIMEOUT)
+            if response.status_code == 204:
+                return True
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return False
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Aufheben der Pausierung der Fokusregion: {e}", level=Qgis.Warning)
+        return False
+
+    def get_focusregion_results(self, id: str, new_since=None):
+        """
+        Execute a saved focus region search and return results.
+        The authenticated user must be a member of the focus region's team.
+        Returns a tuple (list[ResultGroup], list[MapPoint], meta), or (None, None, None) on error.
+
+        Parameters:
+            id        — focus region ID. Required.
+            new_since — only return results ingested since this date (ISO 8601, e.g. "2024-01-01").
+                        Useful for polling new content since the last check. Optional.
+        """
+        params = {}
+        if new_since is not None:
+            params["newSince"] = new_since
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/focusregions/{id}/results", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                result_groups = [ResultGroup.from_dict(r) for r in data["data"]]
+                map_points = [MapPoint.from_dict(m) for m in data["mapPoints"]]
+                meta = data["meta"]
+                return result_groups, map_points, meta
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None, None, None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Fokusregionergebnisse: {e}", level=Qgis.Warning)
+        return None, None, None
+    
+    def list_meetings(self, limit=None, offset=None, detail=None, entity_ids=None, from_date=None, to_date=None):
+        """
+        List meetings with optional filtering and pagination.
+        For text search, use search() instead.
+        Returns a tuple (list[Meeting], meta) where meta contains pagination info,
+        or (None, None) on error.
+
+        Parameters:
+            limit      — max results to return (API default 10, max 500)
+            offset     — pagination offset (API default 0)
+            detail     — response detail level: "summary" (API default), "standard", or "full"
+            entity_ids — comma-separated RS codes to filter by entity, supports * prefix matching
+                         (e.g. "01*" for all of Schleswig-Holstein)
+            from_date  — filter meetings from this date inclusive (ISO 8601, e.g. "2024-01-01")
+            to_date    — filter meetings up to this date inclusive (ISO 8601)
+        """
+        params={
+            "limit": limit,
+            "offset": offset,
+            "detail": detail,
+            "entityIds": entity_ids,
+            "fromDate": from_date,
+            "toDate": to_date
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/meetings", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                meetings = [Meeting.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return meetings, meta
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return (None, None)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Sitzungsliste: {e}", level=Qgis.Warning)
+        return (None, None)
+
+    def get_bookmarked_meetings(self, limit=None, offset=None, detail=None):
+        """
+        List meetings bookmarked by the authenticated user.
+        Returns a tuple (list[Meeting], meta) where meta contains pagination
+        info, or (None, None) on error.
+
+        Parameters:
+            limit  — max results to return (API default 10, max 500)
+            offset — pagination offset (API default 0)
+            detail — response detail level: "summary" (API default), "standard",
+                     or "full"
+        """
+        params = {
+        'limit': limit,
+        'offset': offset,
+        'detail': detail
+        }
+        params = {k: v for k,v in params.items() if v is not None}
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/meetings/bookmarked", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                bookmarked_meetings = [Meeting.from_dict(item) for item in data["data"]]
+                meta = data["meta"]
+                return bookmarked_meetings, meta
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return (None, None)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Merkliste: {e}", level=Qgis.Warning)
+        return (None, None)
+
+    def add_bookmarked_meeting(self, id: str):
+        """
+        Bookmark a meeting for the authenticated user. Idempotent — calling
+        this on an already-bookmarked meeting has no effect.
+        Returns True on success, False on error.
+
+        Parameters:
+            id — unique meeting identifier. Required.
+        """
+        try:
+            response = self.session.post(f"{self.BASE_URL}/meetings/{id}/bookmark", timeout=self.TIMEOUT)
+            if response.status_code == 204:
+                return True
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return False
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Hinzufügen zur Merkliste: {e}", level=Qgis.Warning)
+        return False
+    
+    def remove_bookmarked_meeting(self, id: str):
+        """
+        Remove a bookmark from a meeting for the authenticated user.
+        Returns True on success, False on error or if the bookmark does not exist.
+
+        Parameters:
+            id — unique meeting identifier. Required.
+        """
+        try:
+            response = self.session.delete(f"{self.BASE_URL}/meetings/{id}/bookmark", timeout=self.TIMEOUT)
+            if response.status_code == 204:
+                return True
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return False
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Entfernen von der Merkliste: {e}", level=Qgis.Warning)
+        return False
+
+    def get_meeting(self, id: str, detail=None):
+        """
+        Fetch a single meeting by ID, including its agenda items, documents, and bookmarks.
+        Returns a Meeting object, or None on error or if not found.
+
+        Parameters:
+            id     — unique meeting identifier. Required.
+            detail — response detail level: "summary", "standard" (default), or "full"
+        """
+
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/meetings/{id}", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return Meeting.from_dict(data["data"])
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Sitzung: {e}", level=Qgis.Warning)
+        return None
+
+    def get_proposal(self, id: str, detail=None):
+        """
+        Fetch a single proposal by ID, including its documents and agenda items.
+        Returns a Proposal object, or None on error or if not found.
+
+        Parameters:
+            id     — unique proposal identifier. Required.
+            detail — response detail level: "summary", "standard" (default), or "full"
+        """
+
+        params = {}
+        if detail is not None:
+            params["detail"] = detail
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/proposals/{id}", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return Proposal.from_dict(data["data"])
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return None
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Vorlage: {e}", level=Qgis.Warning)
+        return None
+    
+    def search(self, q: str, mode=None, types=None, entity_ids=None, bbox=None, levels=None, date_from=None, date_to=None, new_since=None, limit=None, score_threshold=None):
+        """
+        Universal search across meetings, proposals, and documents.
+        Returns a tuple (list[ResultGroup], list[MapPoint], meta), or (None, None, None) on error.
+
+        Parameters:
+            q               — search phrase. Supports OR-separated sub-queries (max 5). Required.
+            mode            — "semantic" (API default, meaning-based) or "keyword" (exact match)
+            types           — comma-separated chunkType filter: "agendaItemTitle",
+                              "agendaItemDescription", "proposalTitle", "proposalDescription",
+                              "document"
+            entity_ids      — comma-separated RS codes, supports * prefix matching (e.g. "01*").
+                              Mutually exclusive with bbox.
+            bbox            — bounding box as "west,south,east,north" (lon/lat).
+                              Mutually exclusive with entity_ids.
+            levels          — administrative level filter: "10", "pr", "40", "50", "60"
+            date_from       — filter results from this date inclusive (ISO 8601, e.g. "2024-01-01")
+            date_to         — filter results up to this date inclusive (ISO 8601)
+            new_since       — only return results ingested since this date (ISO 8601)
+            limit           — max result groups to return (API default 50, max 500)
+            score_threshold — minimum relevance score (0.05–1). Semantic mode only;
+                              ignored in keyword mode. API default 0.35.
+        """
+        params={
+            "q": q,
+            "mode": mode,
+            "types": types,
+            "entityIds": entity_ids,
+            "bbox": bbox,
+            "levels": levels,
+            "dateFrom": date_from,
+            "dateTo": date_to,
+            "newSince": new_since,
+            "limit": limit,
+            "scoreThreshold": score_threshold
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+
+        try:
+            response = self.session.get(f"{self.BASE_URL}/search", params=params, timeout=self.TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                result_groups = [ResultGroup.from_dict(item) for item in data["data"]]
+                map_points = [MapPoint.from_dict(item) for item in data["mapPoints"]]
+                meta = data["meta"]
+                return result_groups, map_points, meta
+            else:
+                QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
+                return (None, None, None)
+        except Exception as e:
+            QgsMessageLog.logMessage(f"[Poliscope] Fehler beim Abrufen der Suche: {e}", level=Qgis.Warning)
+        return (None, None, None)
+
+
+
+            
+
+
+
+
+
