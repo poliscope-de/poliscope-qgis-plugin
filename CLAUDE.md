@@ -50,11 +50,11 @@ Key endpoints:
 - `GET /proposals/{id}?detail=full` — full proposal detail
 - `GET /meetings/bookmarked` — user's bookmarked meetings
 - `POST /meetings/{id}/bookmark` / `DELETE /meetings/{id}/bookmark` — add/remove bookmark
-- `GET /health` — returns `version` field (minimum required plugin version)
+- `GET /health` — returns `minCompatibleClientVersions.qgis-plugin` (minimum compatible plugin version)
 
 ### Version Check
 
-On startup, `get_qgis_plugin_version()` fetches the minimum required version from `/v2/health`. It is compared against the local version in `metadata.txt` using semver tuple comparison. If outdated, all three tab lists show `ListWrongPluginVersionErrorWidget` and all refresh buttons are disabled.
+On startup, `get_qgis_plugin_version()` fetches the minimum compatible version from `/v2/health` (`minCompatibleClientVersions.qgis-plugin`). It is compared against the local version in `metadata.txt` using semver tuple comparison. If outdated, all three tab lists show `ListWrongPluginVersionErrorWidget` and all refresh buttons are disabled.
 
 ## Development
 

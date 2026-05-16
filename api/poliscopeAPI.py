@@ -180,16 +180,16 @@ class MapPoint:
 
     Returned alongside search results to place result groups on the map.
     Each MapPoint corresponds to exactly one ResultGroup and represents
-    the geographic location of its source entity. Scores are normalised
-    to 0–1 regardless of search mode, making them suitable for controlling
-    visual rendering (e.g. dot size or opacity) but not for comparing
-    relevance across results.
+    the geographic location of its source entity. The intensity is
+    normalised to 0–1 regardless of search mode, making it suitable for
+    controlling visual rendering (e.g. heatmap weighting, dot size, or
+    opacity) but not for comparing relevance across results.
 
     Fields:
         location    — geographic coordinates {"lat", "lon"} of the source
                       entity in WGS84.
-        score       — normalised relevance score (0–1), intended for visual
-                      rendering. Not comparable to ChunkHit scores.
+        intensity   — normalised value (0–1) for heatmap rendering. Not
+                      comparable to ChunkHit scores.
         entity_id   — Regionalschlüssel (RS code) of the source entity.
         entity_name — display name of the source entity.
         group_key   — unique group key matching the corresponding ResultGroup
@@ -197,7 +197,7 @@ class MapPoint:
                       search results.
     """
     location: Dict[str, float]
-    score: float
+    intensity: float
     entity_id: str
     entity_name: str
     group_key: str
@@ -206,12 +206,12 @@ class MapPoint:
     def from_dict(cls, data:Dict[str, Any]) -> 'MapPoint':
         return cls(
             location = data.get('location', {}),
-            score = data.get('score', 0.0),
+            intensity = data.get('intensity', 0.0),
             entity_id = data.get('entityId', ""),
             entity_name = data.get('entityName', ""),
             group_key = data.get('groupKey', "")
 
-        )    
+        )
 
 @dataclass
 class ChunkHit:
@@ -310,7 +310,7 @@ class ResultContext:
         meeting      — populated when groupType is 'meeting'. Contains
                        id, title, date, url, committee, bookmarks.
         proposal     — populated when groupType is 'proposal'. Contains
-                       id, title, type, url, reference.
+                       id, title, url, reference.
         document     — populated when groupType is 'document'. Contains
                        id, title, type, url.
     """
@@ -407,12 +407,15 @@ class Focusregion:
         entity_ids   — list of Regionalschlüssel (RS codes) this region covers.
                        Optional.
         levels       — list of administrative level filters. Optional.
-        topics       — free-form topic data. Structure not yet defined in the
-                       spec (anyOf: any | null). Optional.
-        rpm_edits    — free-form RPM edit data. Structure not yet defined in
-                       the spec (anyOf: any | null). Optional.
-        rpm_entities — list of entity references, each with id, name, level.
-                       Optional.
+        topics                            — free-form topic data. Structure not
+                                            yet defined in the spec (anyOf:
+                                            any | null). Optional.
+        regional_plan_amendment_edits     — free-form regional plan amendment
+                                            edit data. Structure not yet
+                                            defined in the spec (anyOf:
+                                            any | null). Optional.
+        regional_plan_amendment_entities  — list of entity references, each
+                                            with id, name, level. Optional.
     """
     id: str
     name: Optional[str]
@@ -423,8 +426,8 @@ class Focusregion:
     entity_ids: Optional[List[str]]
     levels: Optional[List[str]]
     topics: Optional[Any]
-    rpm_edits: Optional[Any]
-    rpm_entities: Optional[List[Dict[str, Any]]]
+    regional_plan_amendment_edits: Optional[Any]
+    regional_plan_amendment_entities: Optional[List[Dict[str, Any]]]
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Focusregion':
@@ -438,8 +441,8 @@ class Focusregion:
             entity_ids = data.get('entityIds'),
             levels = data.get('levels'),
             topics = data.get('topics'),
-            rpm_edits = data.get('rpmEdits'),
-            rpm_entities = data.get('rpmEntities')
+            regional_plan_amendment_edits = data.get('regionalPlanAmendmentEdits'),
+            regional_plan_amendment_entities = data.get('regionalPlanAmendmentEntities')
         )
 
 
@@ -614,7 +617,6 @@ class Proposal:
     Fields:
         id             — unique proposal identifier
         title          — proposal title. Optional.
-        type           — proposal category (e.g. 'Beschlussvorlage'). Optional.
         url            — source URL in the RIS. Optional.
         description    — full proposal text. Optional.
         reference      — official reference number. Optional.
@@ -625,7 +627,6 @@ class Proposal:
     """
     id: str
     title: Optional[str]
-    type: Optional[str]
     url: Optional[str]
     description: Optional[str]
     reference: Optional[str]
@@ -639,7 +640,6 @@ class Proposal:
         return cls(
             id=data.get('id', ""),
             title=data.get('title'),
-            type=data.get('type'),
             url=data.get('url'),
             description=data.get('description'),
             reference=data.get('reference'),
@@ -674,15 +674,15 @@ class PoliscopeAPI:
 
     def get_qgis_plugin_version(self) -> Optional[str]:
         """
-        Fetch the minimum required QGIS plugin version from the API health endpoint.
+        Fetch the minimum compatible QGIS plugin version from the API health endpoint.
         Used at startup to check whether the installed plugin version is still compatible.
-        Returns the version string (e.g. "2.1.0") or None on error.
+        Returns the version string (e.g. "2.0.1") or None on error.
         """
-        try:    
+        try:
             response = self.session.get(f"{self.BASE_URL}/health", timeout=self.TIMEOUT)
             if response.status_code == 200:
                 data = response.json()
-                return data.get("version")
+                return (data.get("minCompatibleClientVersions") or {}).get("qgis-plugin")
             else:
                 QgsMessageLog.logMessage(f"[Poliscope] Status {response.status_code}: {response.text}", level=Qgis.Warning)
                 return None
@@ -712,7 +712,7 @@ class PoliscopeAPI:
             "level": level,
             "parentId": parent_id,
             "stateId": state_id,
-            "ids": ids,
+            "entityIds": ids,
             "limit": limit,
             "offset": offset,
             "detail": detail
@@ -973,8 +973,8 @@ class PoliscopeAPI:
             "offset": offset,
             "detail": detail,
             "entityIds": entity_ids,
-            "fromDate": from_date,
-            "toDate": to_date
+            "dateFrom": from_date,
+            "dateTo": to_date
         }
         params = {k: v for k, v in params.items() if v is not None}
 
