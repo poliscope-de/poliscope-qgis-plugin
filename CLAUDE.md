@@ -67,9 +67,9 @@ pyrcc5 resources.qrc -o resources_rc.py
 
 ### Creating Release ZIP
 
-1. Copy plugin directory to folder named `poliscope_qgis_plugin`
-2. Remove `.git` directory
-3. Create ZIP from that folder
+Run `python build_release.py` from the repo root. The script copies the repo to `../poliscope_qgis_plugin/` (excluding `.git/`, `.claude/`, `.github/`, `.vscode/`, `__pycache__/`, `CLAUDE.md`, `HANDOVER.md`, `build_release.py` itself, `*.pyc`, and similar dev-only files) and packages it as `../poliscope_qgis_plugin.zip` — ready for upload to plugins.qgis.org. If exclusion rules need to change, edit `EXCLUDE_PATTERNS` in `build_release.py`.
+
+Before building, bump `version=` in `metadata.txt` and prepend a one-line entry to the `changelog=` block (keep it generic — no implementation details).
 
 ### UI Files
 
